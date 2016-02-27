@@ -2,34 +2,36 @@ module.exports = function(config) {
   config.set({
     basePath: '.',
 
-    frameworks: ['jasmine'],
-
-    files: [
-		'node_modules/crossfilter2/crossfilter.min.js',
-		'node_modules/lodash/index.js',
-		'univerce.min.js',
-		'test/**/*.spec.js'
+    frameworks: [
+      'jasmine',
     ],
 
-	browsers: [
-		// 'Chrome'
-		// 'ChromeCanary',
-		// 'Firefox',
-		'PhantomJS'
-		// 'PhantomJS'
-	],
+    files: [
+      'node_modules/crossfilter2/crossfilter.min.js',
+      'node_modules/lodash/index.js',
+      'universe.min.js',
+      'test/**/*.spec.js'
+    ],
 
-	plugins: [
-		'karma-jasmine',
-		'karma-chrome-launcher',
-		'karma-firefox-launcher',
-		'karma-phantomjs-launcher'
-	],
+    browsers: [
+      // 'Chrome'
+      // 'ChromeCanary',
+      // 'Firefox',
+      'PhantomJS'
+      // 'PhantomJS'
+    ],
 
-	reporters: ['dots'],
+    plugins: [
+      'karma-jasmine',
+      'karma-chrome-launcher',
+      'karma-firefox-launcher',
+      'karma-phantomjs-launcher'
+    ],
 
-	singleRun: true,
+    reporters: ['dots'],
 
-	captureTimeout: 60000
+    singleRun: true,
+
+    captureTimeout: 60000
   });
 };

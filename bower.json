@@ -1,8 +1,8 @@
 {
-  "name": "univerce",
-  "main": "univerce.js",
+  "name": "universe",
+  "main": "universe.js",
   "version": "0.0.1",
-  "homepage": "https://github.com/crossfilter/univerce",
+  "homepage": "https://github.com/crossfilter/universe",
   "authors": [
     "Tanner Linsley"
   ],

@@ -1,38 +1,45 @@
 {
-  "name": "univerce",
+  "name": "universe",
   "version": "0.5.3",
   "description": "Schemas and dimension/group management for Crossfilter",
-  "main": "src/univerce.js",
+  "main": "src/universe.js",
   "directories": {
     "test": "test"
   },
   "dependencies": {
-    "crossfilter2": "^2.0.0-alpha.03"
+    "crossfilter2": "^2.0.0-alpha.3",
+    "lodash": "^4.5.1",
+    "reductio": "^0.5.2"
   },
   "devDependencies": {
-    "browserify": "^8.1.1",
-    "browserify-shim": "^3.7.0",
-    "gulp": "^3.7.0",
-    "gulp-bump": "^0.1.13",
-    "gulp-concat": "^2.2.0",
-    "gulp-karma": "0.0.4",
-    "gulp-rename": "^1.2.0",
-    "gulp-streamify": "0.0.5",
-    "gulp-uglify": "^1.0.2",
-    "karma": "^0.12.16",
-    "karma-chrome-launcher": "^0.1.4",
-    "karma-firefox-launcher": "^0.1.4",
-    "karma-jasmine": "~0.1.0",
-    "karma-phantomjs-launcher": "^0.1.4",
-    "lodash": "^3.3.0",
-    "vinyl-source-stream": "^1.0.0"
+    "babel-preset-es2015": "^6.5.0",
+    "babel-preset-react": "^6.5.0",
+    "babelify": "^7.2.0",
+    "browserify": "^13.0.0",
+    "browserify-shim": "^3.8.12",
+    "gulp": "^3.9.1",
+    "gulp-bump": "^1.0.0",
+    "gulp-concat": "^2.6.0",
+    "gulp-karma": "0.0.5",
+    "gulp-rename": "^1.2.2",
+    "gulp-streamify": "^1.0.2",
+    "gulp-uglify": "^1.5.3",
+    "jasmine-core": "^2.4.1",
+    "karma": "^0.13.21",
+    "karma-chrome-launcher": "^0.2.2",
+    "karma-firefox-launcher": "^0.1.7",
+    "karma-jasmine": "^0.3.7",
+    "karma-phantomjs-launcher": "^1.0.0",
+    "karma-source-map-support": "^1.1.0",
+    "phantomjs-prebuilt": "^2.1.4",
+    "vinyl-source-stream": "^1.1.0"
   },
   "scripts": {
     "test": "./node_modules/karma/bin/karma start --browsers PhantomJS --single-run"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/crossfilter/univerce.git"
+    "url": "https://github.com/crossfilter/universe.git"
   },
   "keywords": [
     "crossfilter"
@@ -40,13 +47,7 @@
   "author": "Tanner Linsley",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/crossfilter/univerce/issues"
+    "url": "https://github.com/crossfilter/universe/issues"
   },
-  "homepage": "https://github.com/crossfilter/univerce",
-  "browser": {
-    "crossfilter": "crossfilter2"
-  },
-  "browserify-shim": {
-    "crossfilter": "global:crossfilter"
-  }
+  "homepage": "https://github.com/crossfilter/universe"
 }
