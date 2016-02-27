@@ -1,0 +1,52 @@
+{
+  "name": "univerce",
+  "version": "0.5.3",
+  "description": "Schemas and dimension/group management for Crossfilter",
+  "main": "src/univerce.js",
+  "directories": {
+    "test": "test"
+  },
+  "dependencies": {
+    "crossfilter2": "^2.0.0-alpha.03"
+  },
+  "devDependencies": {
+    "browserify": "^8.1.1",
+    "browserify-shim": "^3.7.0",
+    "gulp": "^3.7.0",
+    "gulp-bump": "^0.1.13",
+    "gulp-concat": "^2.2.0",
+    "gulp-karma": "0.0.4",
+    "gulp-rename": "^1.2.0",
+    "gulp-streamify": "0.0.5",
+    "gulp-uglify": "^1.0.2",
+    "karma": "^0.12.16",
+    "karma-chrome-launcher": "^0.1.4",
+    "karma-firefox-launcher": "^0.1.4",
+    "karma-jasmine": "~0.1.0",
+    "karma-phantomjs-launcher": "^0.1.4",
+    "lodash": "^3.3.0",
+    "vinyl-source-stream": "^1.0.0"
+  },
+  "scripts": {
+    "test": "./node_modules/karma/bin/karma start --browsers PhantomJS --single-run"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/crossfilter/univerce.git"
+  },
+  "keywords": [
+    "crossfilter"
+  ],
+  "author": "Tanner Linsley",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/crossfilter/univerce/issues"
+  },
+  "homepage": "https://github.com/crossfilter/univerce",
+  "browser": {
+    "crossfilter": "crossfilter2"
+  },
+  "browserify-shim": {
+    "crossfilter": "global:crossfilter"
+  }
+}

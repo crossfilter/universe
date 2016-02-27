@@ -1,0 +1,23 @@
+{
+  "name": "univerce",
+  "main": "univerce.js",
+  "version": "0.0.1",
+  "homepage": "https://github.com/crossfilter/univerce",
+  "authors": [
+    "Tanner Linsley"
+  ],
+  "description": "Schemas and dimension/group management for Crossfilter",
+  "keywords": [
+    "crossfilter"
+  ],
+  "license": "Apache 2.0",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test"
+  ],
+  "dependencies": {
+    "crossfilter2": "^v2.0.0-alpha.03"
+  }
+}
