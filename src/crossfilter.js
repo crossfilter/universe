@@ -1,8 +1,8 @@
 'use strict'
 
-import crossfilter from 'crossfilter2'
+var crossfilter = require('crossfilter2')
 
-import _ from './lodash'
+var _ = require('./lodash')
 
 module.exports = cf
 

@@ -1,8 +1,8 @@
 'use strict'
 
-import reductio from 'reductio'
+var reductio = require('reductio')
 
-import _ from './lodash'
+var _ = require('./lodash')
 
 module.exports = function(service) {
   return function query(query) {

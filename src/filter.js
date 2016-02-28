@@ -1,6 +1,6 @@
 'use strict'
 
-import _ from './lodash'
+var _ = require('./lodash')
 
 module.exports = function(service) {
   return function filter(fil) {

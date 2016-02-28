@@ -1,8 +1,8 @@
 'use strict'
 
-import _ from './lodash'
+var _ = require('./lodash')
 
-import cf from './crossfilter'
+var cf = require('./crossfilter')
 
 module.exports = universe
 

@@ -1,13 +1,19 @@
 'use strict'
 
-import assign from 'lodash/assign'
-import find from 'lodash/find'
-import remove from 'lodash/remove'
-import isArray from 'lodash/isArray'
+var assign = require('lodash/assign')
+var find = require('lodash/find')
+var remove = require('lodash/remove')
+var isArray = require('lodash/isArray')
+var isObject = require('lodash/isObject')
+var get = require('lodash/get')
+var map = require('lodash/map')
 
 module.exports = {
   assign: assign,
   find: find,
   remove: remove,
   isArray: isArray,
+  isObject: isObject,
+  get: get,
+  map: map,
 }

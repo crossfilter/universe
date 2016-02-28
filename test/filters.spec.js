@@ -1,4 +1,6 @@
-describe('universe column', function() {
+describe('universe filter', function() {
+
+  var filters = require('../src/filters')
 
   var u = universe(crossfilter([]))
 
@@ -6,31 +8,31 @@ describe('universe column', function() {
     u.clear()
   })
 
-  it('has the columns properties', function() {
-    expect(u.columns).toEqual([])
+  it('has the filters properties', function() {
+    expect(u.filters).toEqual([])
   })
 
-  it('has the column method', function() {
-    expect(typeof(u.column)).toEqual('function')
+  it('has the filter method', function() {
+    expect(typeof(u.filter)).toEqual('function')
   })
 
-  it('can add a column without a default type of string', function() {
-    u.column({
+  it('can add a filter', function() {
+    u.filter({
       key: 'a'
     })
-    expect(u.columns[0].key).toEqual('a')
-    expect(u.columns[0].type).toEqual('string')
-    expect(u.columns[0].dimension).toBeDefined()
+    expect(u.filters[0].key).toEqual('a')
+    expect(u.filters[0].type).toEqual('string')
+    expect(u.filters[0].dimension).toBeDefined()
   })
 
-  it('can add a column without a specified type', function() {
-    u.column({
+  it('can add a filter without a specified type', function() {
+    u.filter({
       key: 'a',
       type: 'number'
     })
-    expect(u.columns[0].key).toEqual('a')
-    expect(u.columns[0].type).toEqual('number')
-    expect(u.columns[0].dimension).toBeDefined()
+    expect(u.filters[0].key).toEqual('a')
+    expect(u.filters[0].type).toEqual('number')
+    expect(u.filters[0].dimension).toBeDefined()
   })
 
 

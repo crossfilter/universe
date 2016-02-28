@@ -5,6 +5,7 @@ module.exports = {
   $and: $and,
   $or: $or,
   $not: $not,
+
   // Expressions
   $eq: $eq,
   $gt: $gt,
@@ -13,10 +14,13 @@ module.exports = {
   $lte: $lte,
   $ne: $ne,
   $type: $type,
-  // Collections
+
+  // Array Expressions
   $in: $in,
   $nin: $nin,
   $size: $size,
+
+  // Aggregations
   $sum: $sum,
   $avg: $avg,
   $max: $max,
@@ -25,107 +29,173 @@ module.exports = {
   $last: $last,
 }
 
-function $and(parent, children) {
-  for (var i = 0; i < children.length; i++) {
-    if (!children[i](parent)) {
-      return false
+// Operators
+
+function $and() {
+  return function(children) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    for (var i = 0; i < children.length; i++) {
+      if (!children[i].apply(null, args)) {
+        return false
+      }
     }
+    return true
   }
-  return true
 }
 
-function $or(parent, children) {
-  for (var i = 0; i < children.length; i++) {
-    if (children[i](parent)) {
-      return true
+function $or() {
+  return function(children) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].apply(null, args)) {
+        return true
+      }
     }
+    return true
   }
-  return true
 }
 
-function $not(parent, children) {
-  for (var i = 0; i < children.length; i++) {
-    if (children[i](parent)) {
-      return false
+function $not() {
+  return function(children) {
+    var args = Array.prototype.slice.call(arguments, 1);
+    for (var i = 0; i < children.length; i++) {
+      if (children[i].apply(null, args)) {
+        return false
+      }
     }
+    return true
   }
-  return true
 }
-
-
 
 
 // Expressions
 
-function $eq(parent, child) {
-  return parent === child
+function $eq() {
+  return function(a, b) {
+    return a === b
+  }
 }
 
-function $gt(parent, child) {
-  return parent > child
+function $gt() {
+  return function(a, b) {
+    return a > b
+  }
 }
 
-function $gte(parent, child) {
-  return parent >= child
+function $gte() {
+  return function(a, b) {
+    return a >= b
+  }
 }
 
-function $lt(parent, child) {
-  return parent < child
+function $lt() {
+  return function(a, b) {
+    return a < b
+  }
 }
 
-function $lte(parent, child) {
-  return parent <= child
+function $lte() {
+  return function(a, b) {
+    return a <= b
+  }
 }
 
-function $ne(parent, child) {
-  return parent !== child
+function $ne() {
+  return function(a, b) {
+    return a !== b
+  }
 }
 
-function $type(parent, child) {
-  return typeof(parent) === child
+function $type() {
+  return function(a, b) {
+    return typeof(a) === b
+  }
+}
+
+// Array Expressions
+
+function $in() {
+  return function(haystack, needle) {
+    return haystack.indexOf(needle) > -1
+  }
+}
+
+function $nin() {
+  return function(haystack, needle) {
+    return haystack.indexOf(needle) === -1
+  }
+}
+
+function $size() {
+  return function(obj, val) {
+    return obj.length === val
+  }
 }
 
 
 
 
-// Collections
+// Aggregations
 
-function $in(parent, children) {
-  return children.indexOf(parent) > -1
+function $sum() {
+  return function(children) {
+    return children.reduce(function(a, b) {
+      return function() {
+        return a + b;
+      }
+    })
+  }
 }
 
-function $nin(parent, children) {
-  return children.indexOf(parent) === -1
+function $avg() {
+  return function(children) {
+    return children.reduce(function(a, b) {
+      return function() {
+        return a + b;
+      }
+    }) / children.length
+  }
 }
 
-function $size(parent, children) {
-  return parent.length === children
+function $max() {
+  return function(children) {
+    return Math.max.apply(null, children)
+  }
 }
 
-function $sum(parent, children) {
-  return children.reduce(function(a, b) {
-    return a + b;
-  });
+function $min() {
+  return function(children) {
+    return Math.min.apply(null, children)
+  }
 }
 
-function $avg(parent, children) {
-  return children.reduce(function(a, b) {
-    return a + b;
-  }) / children.length
+function $count() {
+  return function(children) {
+    return children.length
+  }
 }
 
-function $max(parent, children) {
-  return Math.max.apply(null, children)
+function $med() {
+  return function(children) {
+    children.sort(function(a, b) {
+      return a - b;
+    });
+    var half = Math.floor(children.length / 2);
+    if (children.length % 2)
+      return children[half];
+    else
+      return (children[half - 1] + children[half]) / 2.0;
+  }
 }
 
-function $min(parent, children) {
-  return Math.min.apply(null, children)
+function $first() {
+  return function(children) {
+    return children[0]
+  }
 }
 
-function $first(parent, children) {
-  return children[0]
-}
-
-function $last(parent, children) {
-  return children[children.length - 1]
+function $last() {
+  return function(children) {
+    return children[children.length - 1]
+  }
 }
