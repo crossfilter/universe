@@ -4,9 +4,9 @@
 ## A Crossfilter Query Interface for Everyone
 Before Universe, a typical Crossfilter setup involved creating and keeping track of tons of dimensions and potentially hundreds of groups. These dimensions and groups then required intense map-reduce functions and an intimate knowledge with the inner-workings of Crossfilter to be productive.
 
-**Universe** skips this mess and allows you to query your data using a simple **JSON query syntax** or a powerful **SQL-based query language**
+**Universe** skips this mess and allows you to query your data using a simple **JSON query syntax** or **CFQL**, a powerful *SQL-based query language*
 
-### Installation
+## Installation
 
 **NPM**
 ```shell
@@ -15,8 +15,10 @@ npm install --save-dev crossfilter-universe
 
 **Download** from the [releases](https://github.com/crossfilter/universe/releases) page. Serve the universe.js or universe.min.js file in the top-level directory as part of your application.
 
-### Usage
-Create a new universe by passing `universe` some data or a Crossfilter instance:
+## Usage
+
+### Create a new Universe
+Pass `universe` an array of objects or a Crossfilter instance:
 
 ```javascript
 var myUniverse = universe([
@@ -31,6 +33,7 @@ var myUniverse = universe([
 var myUniverse = universe(myCrossfilter)
 ```
 
+### Query your data
 Use `find` to query:
 
 ```javascript
@@ -55,7 +58,9 @@ var typeQuery = myUniverse.find({
   })
 ```
 
-Results are accessed with a promise:
+### Access Results
+
+Via `promises`
 
 ```javascript
 typeQuery.then(function(res) {
@@ -91,7 +96,49 @@ typeQuery.then(function(res) {
 })
 ```
 
-Optionally pre-compile dimensions with column definitions
+### Explore your data
+Using `filters`
+
+```javascript
+// Filter records where 'type' === 'visa'
+myUniverse.filter({
+  type: 'visa'
+})
+
+// Filter records where 'type' === 'visa' or 'tab'
+myUniverse.filter({
+  type: {
+    $or: ['visa', 'tab']
+  }
+})
+
+// Filter records where 'type' !== 'tab' or 'cash'
+myUniverse.filter({
+  type: {
+    $ne: 'tab'
+    $ne: 'cash'
+  }
+})
+
+// Filter records where 'total' is between 25 and 75
+myUniverse.filter({
+  total: {
+    "$in": [25, 75]
+  }
+})
+
+// A custom filter function
+myUniverse.filter({
+  total: function(d){
+    return d.quantity > 3
+  }
+})
+
+// Clear all filters
+myUniverse.filterAll()
+```
+
+**Pre-compile** dimensions with column definitions
 
 ```javascript
 myUniverse.column({
