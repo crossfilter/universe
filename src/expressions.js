@@ -19,14 +19,6 @@ module.exports = {
   $in: $in,
   $nin: $nin,
   $size: $size,
-
-  // Aggregations
-  $sum: $sum,
-  $avg: $avg,
-  $max: $max,
-  $min: $min,
-  $first: $first,
-  $last: $last,
 }
 
 // Operators
@@ -129,73 +121,5 @@ function $nin() {
 function $size() {
   return function(obj, val) {
     return obj.length === val
-  }
-}
-
-
-
-
-// Aggregations
-
-function $sum() {
-  return function(children) {
-    return children.reduce(function(a, b) {
-      return function() {
-        return a + b;
-      }
-    })
-  }
-}
-
-function $avg() {
-  return function(children) {
-    return children.reduce(function(a, b) {
-      return function() {
-        return a + b;
-      }
-    }) / children.length
-  }
-}
-
-function $max() {
-  return function(children) {
-    return Math.max.apply(null, children)
-  }
-}
-
-function $min() {
-  return function(children) {
-    return Math.min.apply(null, children)
-  }
-}
-
-function $count() {
-  return function(children) {
-    return children.length
-  }
-}
-
-function $med() {
-  return function(children) {
-    children.sort(function(a, b) {
-      return a - b;
-    });
-    var half = Math.floor(children.length / 2);
-    if (children.length % 2)
-      return children[half];
-    else
-      return (children[half - 1] + children[half]) / 2.0;
-  }
-}
-
-function $first() {
-  return function(children) {
-    return children[0]
-  }
-}
-
-function $last() {
-  return function(children) {
-    return children[children.length - 1]
   }
 }

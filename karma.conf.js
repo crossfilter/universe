@@ -18,7 +18,6 @@ module.exports = function(config) {
       // 'ChromeCanary',
       // 'Firefox',
       'PhantomJS'
-      // 'PhantomJS'
     ],
 
     plugins: [

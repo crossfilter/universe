@@ -3,97 +3,120 @@
 import reductio from 'reductio'
 
 import _ from './lodash'
-import aggregators from './aggregators'
+import rAggregators from './reductioAggregators'
 import expressions from './expressions'
+import aggregators from './aggregators'
 
 module.exports = function(service) {
   return function parse(query) {
     var reducer = reductio()
     var groupBy = query.groupBy
-    var reductions = aggregateOrNest(query.columns)
+    var reductions = aggregateOrNest(reducer, query.select)
 
-    // aggregateOrNest returns an array of:
-    // (1) shorthand aggregations
-    // (2) aliased aggregations
-    // (3) nested value property
-    function aggregateOrNest(columns) {
+    return reducer
 
-      return _.map(columns, function(value, key) {
+    function aggregateOrNest(reducer, selects) {
 
-        // Shorthand aggregations return reductio aggregations as the value
-        if (typeof(value) === 'string' && typeof(value) === 'number') {
-          if (!aggregators[key](makeValue(value))) {
-            return defer('error', 'No aggregation method found for', key)
-          }
-          return defer('aggregation', aggregators[key](makeValue(value)))
-        }
-
-        // An object will either
-        // (1) alias an aggregation if there is only one key/value
-        // or
-        // (2) nest a new object and recursively run again until finding an aggregation point
-        if (_.isObject(value)) {
-          var nest = pluckKeyVals(value)
-
-          // Nothing found
-          if (!nest.length) {
-            return defer('error', 'No value found for key!', key)
-          }
-
-          // Alias the field name of the aggregation
-          if (nest.length === 1) {
-            if (aggregators[nest[0].key]) {
-              return defer('aggregation', aggregators[nest[0].key](makeValue(nest[0].value)))
-            } else {
-
-            }
-          }
-
-          return defer('nest', {
+      // Sort aggregations so that .value is very last
+      var sortedSelectKeyValue = _.sortBy(
+        _.map(selects, function(val, key) {
+          return {
             key: key,
-            value: aggregateOrNest(value, key)
-          })
-        }
-      })
-    }
-
-    function defer(type, cb) {
-      return function deferred() {
-        return cb.apply(null, arguments)
-      }
-    }
-
-    function makeValue(value) {
-      if (typeof(value) === 'string' || typeof(value) === 'number') {
-        return value + ''
-      }
-      if (_.isObject(value)) {
-        return makeExpressionFunction(value)
-      }
-    }
-
-    function makeExpressionFunction(value) {
-      return function(d) {
-
-        [].reduce(function(a, b) {
-          return a(b)
+            value: val
+          }
+        }),
+        function(s) {
+          if (rAggregators.aggregators[s.key]) {
+            return 0
+          }
+          return 1
         })
-        return $sum
-        return [0]
-      }
-    }
 
-    function pluckKeyVals(value) {
-      return _.map(value, function(val, key) {
-        return {
-          key: key,
-          value: val
+      return _.map(sortedSelectKeyValue, function(s) {
+
+        // Found Aggregation
+        if (rAggregators.aggregators[s.key]) {
+          // Build the valueAccessorFunction
+          var accessor = makeValueAccessor(s.value)
+            // Add the reducer with the ValueAccessorFunction to the reducer
+          reducer = rAggregators.aggregators[s.key](reducer, accessor)
+          return
         }
+
+        // Must be a nested object
+        if (!_.isObject(s.value)) {
+          console.error('Nested selects must be an object', s.key)
+          return
+        }
+
+        // Recursively aggregateOrNest
+        reducer = aggregateOrNest(reducer.value(s.key), s.value)
+
       })
     }
 
-    function validateAggregator() {
+    function makeValueAccessor(obj) {
+      if (typeof(obj) === 'string' || typeof(obj) === 'number') {
+        return obj + ''
+      }
+      if (_.isObject(obj)) {
+        return makeValueAccessorFunction(obj)
+      }
+    }
 
+    function makeValueAccessorFunction(obj) {
+
+      var stack = makeSubAggregationStack(obj)
+
+      return function(d) {
+        return stack.reduce(function(a, b) {
+          return a(b)
+        }, d)
+      }
+    }
+
+    function makeSubAggregationStack(obj, stack) {
+
+      stack = stack || []
+
+      // Column Name
+      if (typeof(obj) === 'string') {
+        stack.push(function(d) {
+          return d[obj]
+        })
+        return
+      }
+
+      // Object
+      if (_.isObject(obj)) {
+        var keyVal = extractKeyVal(obj)
+        if (!aggregators[keyVal.key]) {
+          console.error('Key must be a valid aggregation string', keyVal.key)
+          return
+        }
+        stack.push(aggregators[keyVal.key], makeSubAggregationStack(keyVal.value))
+      }
+
+      // Collections
+      if (_.isArray(obj)) {
+        stack.push(_.map(obj, function(o) {
+          return makeSubAggregationStack(o)
+        }))
+      }
+
+      return stack
+    }
+
+    function extractKeyVal(obj) {
+      for (var key in obj) {
+        if (obj.hasOwnProperty(key)) {
+          return {
+            key: key,
+            value: obj
+          }
+        }
+      }
+      return
     }
   }
 }

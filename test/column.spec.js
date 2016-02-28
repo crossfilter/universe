@@ -1,6 +1,6 @@
 describe('universe column', function() {
 
-  var u = universe(crossfilter([]))
+  var u = universe(crossfilter([{a: 1}, {b: 2}]))
 
   beforeEach(function() {
     u.clear()
@@ -15,21 +15,19 @@ describe('universe column', function() {
   })
 
   it('can add a column without a default type of string', function() {
-    u.column({
-      key: 'a'
-    })
+    u.column('a')
     expect(u.columns[0].key).toEqual('a')
-    expect(u.columns[0].type).toEqual('string')
+    expect(u.columns[0].type).toEqual('number')
     expect(u.columns[0].dimension).toBeDefined()
   })
 
   it('can add a column without a specified type', function() {
     u.column({
       key: 'a',
-      type: 'number'
+      array: true
     })
     expect(u.columns[0].key).toEqual('a')
-    expect(u.columns[0].type).toEqual('number')
+    expect(u.columns[0].type).toEqual('array')
     expect(u.columns[0].dimension).toBeDefined()
   })
 

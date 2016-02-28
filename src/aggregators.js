@@ -1,75 +1,61 @@
 'use strict'
 
-var _ = require('./lodash')
-
 module.exports = {
-  $count: $count,
+  // Collections
   $sum: $sum,
   $avg: $avg,
-  $min: $min,
   $max: $max,
-  $med: $med,
-  $sumSq: $sumSq,
-  $std: $std,
+  $min: $min,
+
+  // Pickers
+  $count: $count,
+  $first: $first,
+  $last: $last,
 }
 
-// Aggregators
-
-function $count(value, name){
-  return function(reducer){
-    name = name || 'count'
-    return reducer.count(true, name)
-  }
+function $sum(d, children) {
+  return children.reduce(function(a, b) {
+    return function() {
+      return a + b;
+    }
+  })
 }
 
-function $sum(value, name){
-  return function(reducer){
-    name = name || 'sum'
-    return reducer.sum(value, name)
-  }
+function $avg(d, children) {
+  return children.reduce(function(a, b) {
+    return function() {
+      return a + b;
+    }
+  }) / children.length
 }
 
-function $avg(value, name){
-  return function(reducer){
-    name = name || 'average'
-    return reducer.avg(value, name)
-  }
+function $max(d, children) {
+  return Math.max.apply(null, children)
 }
 
-function $min(value, name){
-  return function(reducer){
-    name = name || 'min'
-    return reducer.min(value, name)
-  }
+function $min(d, children) {
+  return Math.min.apply(null, children)
 }
 
-function $max(value, name){
-  return function(reducer){
-    name = name || 'max'
-    return reducer.max(value, name)
-  }
+function $count(d, children) {
+  return children.length
 }
 
-function $med(value, name){
-  return function(reducer){
-    name = name || 'med'
-    return reducer.median(value, name)
-  }
+function $med(d, children) {
+  children.sort(function(a, b) {
+    return a - b;
+  });
+  var half = Math.floor(children.length / 2);
+  if (children.length % 2)
+    return children[half];
+  else
+    return (children[half - 1] + children[half]) / 2.0;
 }
 
-function $sumSq(value, name){
-  return function(reducer){
-    name = name || 'sumOfSq'
-    return reducer.sumOfSq(value, name)
-  }
+function $first(d, children) {
+  return children[0]
 }
 
-function $std(value, name){
-  return function(reducer){
-    name = name || 'std'
-    return reducer.std(value, name)
-  }
+function $last(d, children) {
+  return children[children.length - 1]
 }
-
-// TODO histograms
-// TODO exceptions

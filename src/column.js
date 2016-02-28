@@ -2,36 +2,59 @@
 
 var _ = require('./lodash')
 
-var types = {
-  string: 'string',
-  number: 'number',
-  bool: 'bool',
-  array: 'array',
-}
-
 module.exports = function(service) {
 
   var dimension = require('./dimension')(service)
 
   return function column(def) {
-    if (_.find(service.columns, {
-        key: def.key
-      })) {
-      console.warn('Column has already been defined', arguments)
-      return service
+
+    if (!_.isArray(def)) {
+      def = [def]
     }
 
-    var column = {
-      key: def.key,
-      type: types[def.type] || types.string,
-    }
+    _.forEach(def, function(d) {
 
-    _.assign(column, {
-      dimension: dimension(column.key, column.type),
+      var column = _.isObject(d) ? d : {
+        key: d,
+      }
+
+      if(typeof(service.cf.all()[0][column.key]) === 'undefined'){
+        console.info('Column key does not exist in data!', column.key)
+        return service
+      }
+
+      if (_.find(service.columns, {
+          key: column.key
+        })) {
+        console.info('Column has already been defined', arguments)
+        return service
+      }
+
+      _.assign(column, {
+        type: column.array ? 'array' : getType(service.cf.all()[0][column.key]),
+        dimension: dimension(column.key, column.type),
+      })
+
+      service.columns.push(column)
     })
 
-    service.columns.push(column)
 
     return service
   }
+}
+
+function getType(d){
+    if(_.isNumber(d)){
+      return 'number'
+    }
+    if(_.isBoolean(d)){
+      return 'bool'
+    }
+    if(_.isArray(d)){
+      return 'array'
+    }
+    if(_.isObject(d)){
+      return 'object'
+    }
+    return 'string'
 }

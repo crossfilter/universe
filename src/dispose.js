@@ -5,23 +5,15 @@ var _ = require('./lodash')
 module.exports = function(service) {
   return function dispose(def) {
 
-    if(_.isArray(def)){
-      var columns = _.remove(service.columns, function(c){
-        return def.indexOf(c.key) > -1
-      })
+    def = _.isArray(def) ? def : [def]
 
-      columns.forEach(function(c){
-        c.dimension.dispose()
-      })
+    def.forEach(function(d) {
+      var column = _.remove(service.columns, {
+        key: d
+      })[0]
 
-      return service
-    }
-
-    var column = _.remove(service.columns, {
-      key: def.key
-    })[0]
-
-    column.dimension.dispose()
+      column.dimension.dispose()
+    })
 
     return service
   }
