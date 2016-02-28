@@ -3,7 +3,6 @@
 var _ = require('./lodash')
 
 module.exports = function(service) {
-
   return function dispose(def) {
 
     if(_.isArray(def)){
@@ -26,5 +25,4 @@ module.exports = function(service) {
 
     return service
   }
-
 }

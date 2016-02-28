@@ -3,7 +3,6 @@
 import _ from './lodash'
 
 module.exports = function(service) {
-
   return function dimension(key, type) {
 
     var accessorFunction = function(d) {
@@ -17,5 +16,4 @@ module.exports = function(service) {
     return service.cf.dimension(accessorFunction, type == 'array')
 
   }
-
 }

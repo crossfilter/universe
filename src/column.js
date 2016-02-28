@@ -34,5 +34,4 @@ module.exports = function(service) {
 
     return service
   }
-
 }
