@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="UTF-8">
+    <title>Universe by crossfilter</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <link rel="stylesheet" type="text/css" href="stylesheets/normalize.css" media="screen">
+    <link href='https://fonts.googleapis.com/css?family=Open+Sans:400,700' rel='stylesheet' type='text/css'>
+    <link rel="stylesheet" type="text/css" href="stylesheets/stylesheet.css" media="screen">
+    <link rel="stylesheet" type="text/css" href="stylesheets/github-light.css" media="screen">
+  </head>
+  <body>
+    <section class="page-header">
+      <h1 class="project-name">Universe</h1>
+      <h2 class="project-tagline">Crossfilter Query Interface, Schemas, and Dimension/Group Management</h2>
+      <a href="https://github.com/crossfilter/universe" class="btn">View on GitHub</a>
+      <a href="https://github.com/crossfilter/universe/zipball/master" class="btn">Download .zip</a>
+      <a href="https://github.com/crossfilter/universe/tarball/master" class="btn">Download .tar.gz</a>
+    </section>
+
+    <section class="main-content">
+      <h1>
+<a id="universe" class="anchor" href="#universe" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Universe</h1>
+
+<p><a href="https://gitter.im/crossfilter/universe?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/crossfilter/universe.svg" alt="Join the chat at https://gitter.im/crossfilter/universe"></a></p>
+
+<h2>
+<a id="a-crossfilter-query-interface-for-everyone" class="anchor" href="#a-crossfilter-query-interface-for-everyone" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>A Crossfilter Query Interface for Everyone</h2>
+
+<p>Before Universe, a typical Crossfilter setup involved creating and keeping track of tons of dimensions and potentially hundreds of groups. These dimensions and groups then required intense map-reduce functions and an intimate knowledge with the inner-workings of Crossfilter to be productive.</p>
+
+<p><strong>Universe</strong> skips this mess and allows you to query your data using a simple <strong>JSON query syntax</strong> or a powerful <strong>SQL-based query language</strong></p>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+
+<p><strong>NPM</strong></p>
+
+<div class="highlight highlight-source-shell"><pre>npm install --save-dev crossfilter-universe</pre></div>
+
+<p><strong>Download</strong> from the <a href="https://github.com/crossfilter/universe/releases">releases</a> page. Serve the universe.js or universe.min.js file in the top-level directory as part of your application.</p>
+
+<h3>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h3>
+
+<p>Create a new universe by passing <code>universe</code> some data or a Crossfilter instance:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> myUniverse <span class="pl-k">=</span> <span class="pl-en">universe</span>([
+    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:17:54Z<span class="pl-pds">"</span></span>,quantity<span class="pl-k">:</span> <span class="pl-c1">2</span>,total<span class="pl-k">:</span> <span class="pl-c1">190</span>,tip<span class="pl-k">:</span> <span class="pl-c1">100</span>,type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>,productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>001<span class="pl-pds">"</span></span>]},
+    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:20:19Z<span class="pl-pds">"</span></span>,quantity<span class="pl-k">:</span> <span class="pl-c1">2</span>,total<span class="pl-k">:</span> <span class="pl-c1">190</span>,tip<span class="pl-k">:</span> <span class="pl-c1">100</span>,type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>,productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>001<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>005<span class="pl-pds">"</span></span>]},
+    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:28:54Z<span class="pl-pds">"</span></span>,quantity<span class="pl-k">:</span> <span class="pl-c1">1</span>,total<span class="pl-k">:</span> <span class="pl-c1">300</span>,tip<span class="pl-k">:</span> <span class="pl-c1">200</span>,type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>visa<span class="pl-pds">"</span></span>,productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>004<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>005<span class="pl-pds">"</span></span>]},
+    <span class="pl-k">...</span>
+  ])
+
+<span class="pl-c">// Or</span>
+
+<span class="pl-k">var</span> myUniverse <span class="pl-k">=</span> <span class="pl-en">universe</span>(myCrossfilter)</pre></div>
+
+<p>Use <code>find</code> to query:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> typeQuery <span class="pl-k">=</span> <span class="pl-smi">myUniverse</span>.<span class="pl-c1">find</span>({
+    <span class="pl-c">// GroupBy the type key</span>
+    groupBy<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>
+    columns<span class="pl-k">:</span> {
+      <span class="pl-c">// Use a the built-in 'count' aggregation</span>
+      $count<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>
+      <span class="pl-c">// Create a custom 'quantity' column</span>
+      quantity<span class="pl-k">:</span> {
+        <span class="pl-c">// Limit 'the quantity' column to rows where quantity is greater than 50</span>
+        $filter<span class="pl-k">:</span> {
+          quantity<span class="pl-k">:</span> {
+            $gt<span class="pl-k">:</span> <span class="pl-c1">50</span>
+          }
+        },
+        <span class="pl-c">// Use the built-in 'sum' aggregation</span>
+        $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span>
+      },
+    },
+  })</pre></div>
+
+<p>Results are accessed with a promise:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">typeQuery</span>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">res</span>) {
+
+  <span class="pl-c">// Easily access the results</span>
+  <span class="pl-smi">res</span>.<span class="pl-c1">data</span> <span class="pl-k">===</span> [{
+    <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>cash<span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+      <span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>,
+      <span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">3</span>
+    }
+  }, {
+    <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+      <span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">8</span>,
+      <span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">16</span>
+    }
+  }, {
+    <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>visa<span class="pl-pds">"</span></span>,
+    <span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
+      <span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>,
+      <span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>
+    }
+  }]
+
+  <span class="pl-c">// Plot the data in DC.js using the dimension and group created for the query</span>
+  <span class="pl-smi">dc</span>.<span class="pl-en">pieChart</span>(<span class="pl-s"><span class="pl-pds">'</span>#chart<span class="pl-pds">'</span></span>)
+    .<span class="pl-en">dimension</span>(<span class="pl-smi">res</span>.<span class="pl-smi">dimension</span>)
+    .<span class="pl-en">group</span>(<span class="pl-smi">res</span>.<span class="pl-smi">group</span>);
+
+  <span class="pl-c">// Even access the crossfilter instance</span>
+  <span class="pl-k">var</span> size <span class="pl-k">=</span> <span class="pl-smi">res</span>.<span class="pl-smi">crossfilter</span>.<span class="pl-c1">size</span>()
+})</pre></div>
+
+<p>Optionally pre-compile dimensions with column definitions</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>({
+  key<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>,
+  type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>string<span class="pl-pds">'</span></span>
+})</pre></div>
+
+      <footer class="site-footer">
+        <span class="site-footer-owner"><a href="https://github.com/crossfilter/universe">Universe</a> is maintained by <a href="https://github.com/crossfilter">crossfilter</a>.</span>
+
+        <span class="site-footer-credits">This page was generated by <a href="https://pages.github.com">GitHub Pages</a> using the <a href="https://github.com/jasonlong/cayman-theme">Cayman theme</a> by <a href="https://twitter.com/jasonlong">Jason Long</a>.</span>
+      </footer>
+
+    </section>
+
+  
+  </body>
+</html>
