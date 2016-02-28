@@ -60,7 +60,7 @@ Results are accessed with a promise:
 ```javascript
 typeQuery.then(function(res) {
 
-  // Easy access the results
+  // Easily access the results
   res.data === [{
     "key": "cash",
     "value": {
