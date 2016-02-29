@@ -1,7 +1,7 @@
 'use strict'
 
+require('babel-polyfill')
 var _ = require('./lodash')
-
 var cf = require('./crossfilter')
 
 module.exports = universe

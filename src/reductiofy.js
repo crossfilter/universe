@@ -66,45 +66,44 @@ module.exports = function(service) {
 
     function makeValueAccessorFunction(obj) {
 
-      var stack = makeSubAggregationStack(obj)
+      var stack = makeSubAggregationStack(obj).reverse()
 
       return function(d) {
-        return stack.reduce(function(a, b) {
-          return a(b)
+        return stack.reduce(function(previous, current) {
+          return current(previous)
         }, d)
       }
     }
 
-    function makeSubAggregationStack(obj, stack) {
+    function makeSubAggregationStack(obj) {
 
-      stack = stack || []
+      var keyVal = _.isObject(obj) ? extractKeyVal(obj) : obj
 
-      // Column Name
-      if (typeof(obj) === 'string') {
-        stack.push(function(d) {
+      // Detect strings, the end of the line
+      if (_.isString(obj)) {
+        return function(d) {
           return d[obj]
-        })
-        return
-      }
-
-      // Object
-      if (_.isObject(obj)) {
-        var keyVal = extractKeyVal(obj)
-        if (!aggregators[keyVal.key]) {
-          console.error('Key must be a valid aggregation string', keyVal.key)
-          return
         }
-        stack.push(aggregators[keyVal.key], makeSubAggregationStack(keyVal.value))
       }
 
-      // Collections
+      // If an array, recurse into each item and return as a map
       if (_.isArray(obj)) {
-        stack.push(_.map(obj, function(o) {
-          return makeSubAggregationStack(o)
-        }))
+        var subStack = _.map(obj, makeSubAggregationStack)
+        return function(d){
+          return subStack.map(function(s){return s(d)})
+        }
       }
 
-      return stack
+      // If object, find the aggregation, and recurse into the value
+      if (keyVal.key) {
+        if (aggregators[keyVal.key]) {
+          return [aggregators[keyVal.key], makeSubAggregationStack(keyVal.value)]
+        } else {
+          console.error('Could not find aggregration method', keyVal)
+        }
+      }
+
+      return []
     }
 
     function extractKeyVal(obj) {
@@ -112,7 +111,7 @@ module.exports = function(service) {
         if (obj.hasOwnProperty(key)) {
           return {
             key: key,
-            value: obj
+            value: obj[key]
           }
         }
       }

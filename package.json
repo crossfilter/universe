@@ -7,6 +7,7 @@
     "test": "test"
   },
   "dependencies": {
+    "babel-polyfill": "^6.5.0",
     "crossfilter2": "^2.0.0-alpha.3",
     "lodash": "^4.5.1",
     "reductio": "^0.5.2"

@@ -8,6 +8,13 @@ module.exports = function(service) {
 
   return function column(def) {
 
+    // Support groupAll dimension
+    if (def === true) {
+      def = {
+        key: true
+      }
+    }
+
     if (!_.isArray(def)) {
       def = [def]
     }
@@ -18,7 +25,8 @@ module.exports = function(service) {
         key: d,
       }
 
-      if(typeof(service.cf.all()[0][column.key]) === 'undefined'){
+
+      if (column.key !== true && typeof(service.cf.all()[0][column.key]) === 'undefined') {
         console.info('Column key does not exist in data!', column.key)
         return service
       }
@@ -30,10 +38,12 @@ module.exports = function(service) {
         return service
       }
 
-      _.assign(column, {
-        type: column.array ? 'array' : getType(service.cf.all()[0][column.key]),
-        dimension: dimension(column.key, column.type),
-      })
+      column.type =
+        column.key === true ? 'all' :
+        column.array ? 'array' :
+        getType(service.cf.all()[0][column.key])
+
+      column.dimension = dimension(column.key, column.type)
 
       service.columns.push(column)
     })
@@ -43,18 +53,18 @@ module.exports = function(service) {
   }
 }
 
-function getType(d){
-    if(_.isNumber(d)){
-      return 'number'
-    }
-    if(_.isBoolean(d)){
-      return 'bool'
-    }
-    if(_.isArray(d)){
-      return 'array'
-    }
-    if(_.isObject(d)){
-      return 'object'
-    }
-    return 'string'
+function getType(d) {
+  if (_.isNumber(d)) {
+    return 'number'
+  }
+  if (_.isBoolean(d)) {
+    return 'bool'
+  }
+  if (_.isArray(d)) {
+    return 'array'
+  }
+  if (_.isObject(d)) {
+    return 'object'
+  }
+  return 'string'
 }

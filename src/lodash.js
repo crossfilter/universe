@@ -18,7 +18,7 @@ module.exports = {
   find: find,
   remove: remove,
   isArray: isArray,
-  isObject: isObject,
+  isObject: function(d){return isObject(d) && !isArray(d)},
   isBoolean: isBoolean,
   isString: isString,
   isNumber: isNumber,

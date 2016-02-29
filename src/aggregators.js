@@ -13,35 +13,31 @@ module.exports = {
   $last: $last,
 }
 
-function $sum(d, children) {
+function $sum(children) {
   return children.reduce(function(a, b) {
-    return function() {
-      return a + b;
-    }
+    return a + b;
   })
 }
 
-function $avg(d, children) {
+function $avg(children) {
   return children.reduce(function(a, b) {
-    return function() {
-      return a + b;
-    }
+    return a + b;
   }) / children.length
 }
 
-function $max(d, children) {
+function $max(children) {
   return Math.max.apply(null, children)
 }
 
-function $min(d, children) {
+function $min(children) {
   return Math.min.apply(null, children)
 }
 
-function $count(d, children) {
+function $count(children) {
   return children.length
 }
 
-function $med(d, children) {
+function $med(children) {
   children.sort(function(a, b) {
     return a - b;
   });
@@ -52,10 +48,10 @@ function $med(d, children) {
     return (children[half - 1] + children[half]) / 2.0;
 }
 
-function $first(d, children) {
+function $first(children) {
   return children[0]
 }
 
-function $last(d, children) {
+function $last(children) {
   return children[children.length - 1]
 }
