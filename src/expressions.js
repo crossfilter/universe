@@ -1,6 +1,8 @@
 'use strict'
 
 module.exports = {
+  // Getters
+  $field: $field,
   // Booleans
   $and: $and,
   $or: $or,
@@ -21,105 +23,84 @@ module.exports = {
   $size: $size,
 }
 
+// Getters
+function $field(d, child) {
+  return d[child]
+}
+
 // Operators
 
-function $and() {
-  return function(children) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    for (var i = 0; i < children.length; i++) {
-      if (!children[i].apply(null, args)) {
-        return false
-      }
+function $and(d, child) {
+  child = child(d)
+  for (var i = 0; i < child.length; i++) {
+    if (!child[i]) {
+      return false
     }
-    return true
   }
+  return true
 }
 
-function $or() {
-  return function(children) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    for (var i = 0; i < children.length; i++) {
-      if (children[i].apply(null, args)) {
-        return true
-      }
+function $or(d, child) {
+  child = child(d)
+  for (var i = 0; i < child.length; i++) {
+    if (child[i]) {
+      return true
     }
-    return true
   }
+  return false
 }
 
-function $not() {
-  return function(children) {
-    var args = Array.prototype.slice.call(arguments, 1);
-    for (var i = 0; i < children.length; i++) {
-      if (children[i].apply(null, args)) {
-        return false
-      }
+function $not(d, child) {
+  child = child(d)
+  for (var i = 0; i < child.length; i++) {
+    if (child[i]) {
+      return false
     }
-    return true
   }
+  return true
 }
 
 
 // Expressions
 
-function $eq() {
-  return function(a, b) {
-    return a === b
-  }
+function $eq(d, child) {
+  return d === child()
 }
 
-function $gt() {
-  return function(a, b) {
-    return a > b
-  }
+function $gt(d, child) {
+  return d > child()
 }
 
-function $gte() {
-  return function(a, b) {
-    return a >= b
-  }
+function $gte(d, child) {
+  return d >= child()
 }
 
-function $lt() {
-  return function(a, b) {
-    return a < b
-  }
+function $lt(d, child) {
+  return d < child()
 }
 
-function $lte() {
-  return function(a, b) {
-    return a <= b
-  }
+function $lte(d, child) {
+  return d <= child()
 }
 
-function $ne() {
-  return function(a, b) {
-    return a !== b
-  }
+function $ne(d, child) {
+  return d !== child()
 }
 
-function $type() {
-  return function(a, b) {
-    return typeof(a) === b
-  }
+function $type(d, child) {
+  return typeof(d) === child()
 }
 
 // Array Expressions
 
-function $in() {
-  return function(haystack, needle) {
-    return haystack.indexOf(needle) > -1
-  }
+function $in(d, child) {
+  return d.indexOf(child()) > -1
 }
 
-function $nin() {
-  return function(haystack, needle) {
-    return haystack.indexOf(needle) === -1
-  }
+function $nin(d, child) {
+  return d.indexOf(child()) === -1
 }
 
-function $size() {
-  return function(obj, val) {
-    return obj.length === val
-  }
+function $size(d, child) {
+  return d.length === child()
 }

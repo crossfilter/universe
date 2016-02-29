@@ -19,7 +19,7 @@ function universe(data) {
   _.assign(service, {
     column: require('./column')(service),
     query: require('./query')(service),
-    filter: require('./filter')(service),
+    filter: require('./filters')(service).filter,
     dispose: require('./dispose')(service),
     clear: require('./clear')(service),
   })

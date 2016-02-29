@@ -1,19 +1,35 @@
 'use strict'
 
-import reductio from 'reductio'
+var reductio = require('reductio')
 
-import _ from './lodash'
-import rAggregators from './reductioAggregators'
-import expressions from './expressions'
-import aggregators from './aggregators'
+var _ = require('./lodash')
+var rAggregators = require('./reductioAggregators')
+var expressions = require('./expressions')
+var aggregation = require('./aggregation')
 
 module.exports = function(service) {
+  var filters = require('./filters')(service)
+
   return function parse(query) {
     var reducer = reductio()
     var groupBy = query.groupBy
-    var reductions = aggregateOrNest(reducer, query.select)
+    if (query.filter) {
+      makeFilter(reducer, query.filter)
+    }
+    aggregateOrNest(reducer, query.select)
 
     return reducer
+
+
+
+
+
+    function makeFilter(reducer, fil) {
+      var filterFunction = filters.makeFunction(fil)
+      if (filterFunction) {
+        reducer.filter(filterFunction)
+      }
+    }
 
     function aggregateOrNest(reducer, selects) {
 
@@ -60,62 +76,8 @@ module.exports = function(service) {
         return obj + ''
       }
       if (_.isObject(obj)) {
-        return makeValueAccessorFunction(obj)
+        return aggregation.makeFunction(obj)
       }
-    }
-
-    function makeValueAccessorFunction(obj) {
-
-      var stack = makeSubAggregationStack(obj).reverse()
-
-      return function(d) {
-        return stack.reduce(function(previous, current) {
-          return current(previous)
-        }, d)
-      }
-    }
-
-    function makeSubAggregationStack(obj) {
-
-      var keyVal = _.isObject(obj) ? extractKeyVal(obj) : obj
-
-      // Detect strings, the end of the line
-      if (_.isString(obj)) {
-        return function(d) {
-          return d[obj]
-        }
-      }
-
-      // If an array, recurse into each item and return as a map
-      if (_.isArray(obj)) {
-        var subStack = _.map(obj, makeSubAggregationStack)
-        return function(d){
-          return subStack.map(function(s){return s(d)})
-        }
-      }
-
-      // If object, find the aggregation, and recurse into the value
-      if (keyVal.key) {
-        if (aggregators[keyVal.key]) {
-          return [aggregators[keyVal.key], makeSubAggregationStack(keyVal.value)]
-        } else {
-          console.error('Could not find aggregration method', keyVal)
-        }
-      }
-
-      return []
-    }
-
-    function extractKeyVal(obj) {
-      for (var key in obj) {
-        if (obj.hasOwnProperty(key)) {
-          return {
-            key: key,
-            value: obj[key]
-          }
-        }
-      }
-      return
     }
   }
 }

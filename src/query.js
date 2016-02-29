@@ -13,7 +13,6 @@ module.exports = function(service) {
 
     if(typeof(query.select) === 'undefined'){
       query.select = {$count: true}
-      console.info('Query object should contain at least one select property, but defaults to', query.select)
     }
 
     // Support
@@ -24,6 +23,7 @@ module.exports = function(service) {
     if(!column){
       service.column({
         key: query.groupBy,
+        type: !_.isUndefined(query.type) ? query.type : null,
         array: !!query.array
       })
     }

@@ -9,11 +9,12 @@ module.exports = function(service) {
   return function column(def) {
 
     // Support groupAll dimension
-    if (def === true) {
+    if (def === true || _.isUndefined(def)) {
       def = {
         key: true
       }
     }
+
 
     if (!_.isArray(def)) {
       def = [def]
