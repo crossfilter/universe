@@ -1,17 +1,19 @@
 'use strict'
 
+var Promise = require('bluebird');
 var crossfilter = require('crossfilter2')
 
 var _ = require('./lodash')
 
 module.exports = cf
 
-function cf(c){
-  if(_.isArray(c)){
-    return crossfilter(c)
+function cf(c) {
+  if (_.isArray(c)) {
+    // This allows support for crossfilter async
+    return Promise.resolve(crossfilter(c))
   }
-  if(!c || typeof(c.dimension) !== 'function'){
-    throw new Error('No Crossfilter data or instance found!')
+  if (!c || typeof(c.dimension) !== 'function') {
+    return Promise.reject(new Error('No Crossfilter data or instance found!'))
   }
-  return c
+  return Promise.resolve(c)
 }

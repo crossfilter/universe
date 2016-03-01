@@ -1,6 +1,5 @@
 'use strict'
 
-require('babel-polyfill')
 var _ = require('./lodash')
 var cf = require('./crossfilter')
 
@@ -8,21 +7,21 @@ module.exports = universe
 
 function universe(data) {
 
-  data = cf(data)
+  return cf(data)
+    .then(function(data) {
 
-  var service = {
-    cf: data,
-    columns: [],
-    filters: [],
-  }
+      var service = {
+        cf: data,
+        columns: [],
+        filters: {},
+      }
 
-  _.assign(service, {
-    column: require('./column')(service),
-    query: require('./query')(service),
-    filter: require('./filters')(service).filter,
-    dispose: require('./dispose')(service),
-    clear: require('./clear')(service),
-  })
-
-  return service
+      return _.assign(service, {
+        column: require('./column')(service),
+        query: require('./query')(service),
+        filter: require('./filters')(service).filter,
+        dispose: require('./dispose')(service),
+        clear: require('./clear')(service),
+      })
+    })
 }

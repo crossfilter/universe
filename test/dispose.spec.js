@@ -1,3 +1,14 @@
+var chai = require('chai')
+var chaiAsPromised = require('chai-as-promised')
+
+chai.use(chaiAsPromised)
+var expect = chai.expect
+
+var universe = require('../universe');
+var crossfilter = require('crossfilter2');
+
+
+
 describe('universe dispose', function() {
 
   var u = universe(crossfilter([{
@@ -8,27 +19,47 @@ describe('universe dispose', function() {
   }]))
 
   beforeEach(function() {
-    u.clear()
+    return u.then(function(u) {
+      return u.clear()
+    })
   })
 
   it('can remove a single column', function() {
-    u.column('a')
-    expect(u.columns.length).toEqual(1)
-    u.dispose('a')
-    expect(u.columns.length).toEqual(0)
+    return u.then(function(u) {
+        return u.column('a')
+      })
+      .then(function(u) {
+        expect(u.columns.length).to.deep.equal(1)
+        return u.dispose('a')
+      })
+      .then(function(u) {
+        expect(u.columns.length).to.deep.equal(0)
+      })
   })
 
   it('can remove a single column based on multiple keys', function() {
-    u.column(['a', 'b', 'c', 'd'])
-    expect(u.columns.length).toEqual(4)
-    u.dispose(['a', 'b', 'c', 'd'])
-    expect(u.columns.length).toEqual(0)
+    return u.then(function(u) {
+        return u.column(['a', 'b', 'c', 'd'])
+      })
+      .then(function(u) {
+        expect(u.columns.length).to.deep.equal(4)
+        return u.dispose(['a', 'b', 'c', 'd'])
+      })
+      .then(function(u) {
+        expect(u.columns.length).to.deep.equal(0)
+      })
   })
 
   it('can remove multiple columns', function() {
-    u.column(['a', 'b'])
-      .dispose(['a', 'b'])
-    expect(u.columns.length).toEqual(0)
+    return u.then(function(u) {
+        return u.column(['a', 'b'])
+      })
+      .then(function(u) {
+        return u.dispose(['a', 'b'])
+      })
+      .then(function(u) {
+        expect(u.columns.length).to.deep.equal(0)
+      })
   })
 
 })

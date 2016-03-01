@@ -1,46 +1,74 @@
+var chai = require('chai')
+var expect = chai.expect
+
+var chaiAsPromised = require('chai-as-promised')
+chai.use(chaiAsPromised)
+
+
+var universe = require('../universe');
+var crossfilter = require('crossfilter2');
+
 describe('universe query', function() {
 
   var u = universe(crossfilter(getData()))
 
   beforeEach(function() {
-    u.clear()
+    return u.then(function(u){
+      return u.clear()
+    })
   })
 
   it('has the query method', function() {
-    expect(typeof(u.query)).toEqual('function')
+    return u.then(function(u){
+      expect(typeof(u.query)).to.deep.equal('function')
+    })
   })
 
   it('can create ad-hoc dimensions for each column', function(){
-    u.query({
-      groupBy: 'date',
-      select: {}
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'date',
+        select: {}
+      })
     })
-    u.query({
-      groupBy: 'quantity',
-      select: {}
+    .then(function(res){
+      return res.universe.query({
+        groupBy: 'quantity',
+        select: {}
+      })
     })
-    u.query({
-      groupBy: 'total',
-      select: {}
+    .then(function(res){
+      return res.universe.query({
+        groupBy: 'total',
+        select: {}
+      })
     })
-    u.query({
-      groupBy: 'tip',
-      select: {}
+    .then(function(res){
+      return res.universe.query({
+        groupBy: 'tip',
+        select: {}
+      })
     })
-    u.query({
-      groupBy: 'type',
-      select: {}
+    .then(function(res){
+      return res.universe.query({
+        groupBy: 'type',
+        select: {}
+      })
     })
-    u.query({
-      groupBy: 'productIDs',
-      select: {}
+    .then(function(res){
+      return res.universe.query({
+        groupBy: 'productIDs',
+        select: {}
+      })
     })
   })
 
-  it('Defaults to counting each record', function(done){
-    u.query()
+  it('Defaults to counting each record', function(){
+    return u.then(function(u){
+      return u.query()
+    })
     .then(function(res){
-      expect(res.data).toEqual([
+      expect(res.data).to.deep.equal([
         {"key": 0,"value": {"count": 1}},
         {"key": 1,"value": {"count": 1}},
         {"key": 2,"value": {"count": 1}},
@@ -54,26 +82,26 @@ describe('universe query', function() {
         {"key": 10,"value": {"count": 1}},
         {"key": 11,"value": {"count": 1}}
       ])
-
     })
-    .then(done)
   })
 
-  it('supports all reductio aggregations', function(done){
-    u.query({
-      select: {
-        $count: true,
-        $sum: 'total',
-        $avg: 'total',
-        $min: 'total',
-        $max: 'total',
-        $med: 'total',
-        $sumSq: 'total',
-        $std: 'total',
-      }
+  it('supports all reductio aggregations', function(){
+    return u.then(function(u){
+      return u.query({
+        select: {
+          $count: true,
+          $sum: 'total',
+          $avg: 'total',
+          $min: 'total',
+          $max: 'total',
+          $med: 'total',
+          $sumSq: 'total',
+          $std: 'total',
+        }
+      })
     })
     .then(function(res){
-      expect(res.data).toEqual([
+      expect(res.data).to.deep.equal([
         {"key": 0,"value": {"count": 1,"sum": 190,"avg": 190,"valueList": [190],"median": 190,"min": 190,"max": 190,"sumOfSq": 36100,"std": 0}},
         {"key": 1,"value": {"count": 1,"sum": 190,"avg": 190,"valueList": [190],"median": 190,"min": 190,"max": 190,"sumOfSq": 36100,"std": 0}},
         {"key": 2,"value": {"count": 1,"sum": 300,"avg": 300,"valueList": [300],"median": 300,"min": 300,"max": 300,"sumOfSq": 90000,"std": 0}},
@@ -89,19 +117,20 @@ describe('universe query', function() {
         }
       ])
     })
-    .then(done)
   })
 
-  it('supports column aggregations', function(done){
-    u.query({
-      select: {
-        $sum: {
-          $sum: ['tip', 'total']
-        },
-      }
+  it('supports column aggregations', function(){
+    return u.then(function(u){
+      return u.query({
+        select: {
+          $sum: {
+            $sum: ['tip', 'total']
+          },
+        }
+      })
     })
     .then(function(res){
-      expect(res.data).toEqual([
+      expect(res.data).to.deep.equal([
         {"key": 0,"value": {"sum": 290}},
         {"key": 1,"value": {"sum": 290}},
         {"key": 2,"value": {"sum": 500}},
@@ -116,57 +145,58 @@ describe('universe query', function() {
         {"key": 11,"value": {"sum": 300}}
       ])
     })
-    .then(done)
   })
 
-  it('supports groupBy', function(done){
-    u.query({
-      groupBy: 'type'
+  it('supports groupBy', function(){
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type'
+      })
+      .then(function(res){
+        expect(res.data).to.deep.equal([
+          {"key": "cash","value": {"count": 2}},
+          {"key": "tab","value": {"count": 8}},
+          {"key": "visa","value": {"count": 2}}
+        ])
+      })
     })
-    .then(function(res){
-      expect(res.data).toEqual([
-        {"key": "cash","value": {"count": 2}},
-        {"key": "tab","value": {"count": 8}},
-        {"key": "visa","value": {"count": 2}}
-      ])
-    })
-    .then(done)
   })
 
-  it('supports group filters', function(done) {
-    u.query({
-      groupBy: 'type',
-      select: {
-        $count: 'true',
-        $sum: 'total'
-      },
-      filter: {
-        $or: [
-          {
-            total: {
-              $gt: 50
+  it('supports filtering', function() {
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: 'true',
+          $sum: 'total'
+        },
+        filter: {
+          $or: [
+            {
+              total: {
+                $gt: 50
+              }
+            },
+            {
+              quantity: {
+                $gt: 1
+              }
             }
-          },
-          {
-            quantity: {
-              $gt: 1
-            }
-          }
-        ]
+          ]
 
-      }
+        }
+      })
     })
     .then(function(res){
-      expect(res.data).toEqual([
+      expect(res.data).to.deep.equal([
         {"key": "cash","value": {"count": 2,"sum": 300}},
         {"key": "tab","value": {"count": 8,"sum": 920}},
         {"key": "visa","value": {"count": 2,"sum": 500}}
       ])
     })
-    .then(done)
   })
 
-  // it('supports nested aliases', function(done){
+  // it('supports nested aliases', function(){
   //   u.query({
   //     groupBy: 'type',
   //     select: {
@@ -183,13 +213,12 @@ describe('universe query', function() {
   //     }
   //   })
   //   .then(function(res){
-  //     expect(res.data).toEqual([
+  //     expect(res.data).to.deep.equal([
   //       {"key": "cash","value": {"count": 2}},
   //       {"key": "tab","value": {"count": 8}},
   //       {"key": "visa","value": {"count": 2}}
   //     ])
   //   })
-  //   .then(done)
   // })
 })
 

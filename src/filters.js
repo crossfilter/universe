@@ -1,5 +1,6 @@
 'use strict'
 
+var Promise = require('bluebird');
 var _ = require('./lodash')
 
 var expressions = require('./expressions');
@@ -10,8 +11,24 @@ module.exports = function(service) {
     makeFunction: makeFunction
   }
 
-  function filter(fil) {
+  function filter(dimension, f) {
 
+    var newFilters
+
+    if (!_.isArray(dimension)) {
+      if (f) {
+        var newFilter = {}
+        newFilter[dimension] = f
+        newFilters = [newFilter]
+      }
+    }
+
+    console.log(newFilters)
+
+
+    service.filters = {}
+
+    return Promise.resolve(service)
   }
 
   function makeFunction(obj) {
@@ -21,7 +38,7 @@ module.exports = function(service) {
     // Detect strings and numbers
     if (_.isString(obj) || _.isNumber(obj)) {
       return function(d) {
-        if(typeof(d) === 'undefined'){
+        if (typeof(d) === 'undefined') {
           return obj
         }
         return expressions.$eq(d, function() {

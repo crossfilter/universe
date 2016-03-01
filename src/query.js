@@ -1,5 +1,6 @@
 'use strict'
 
+var Promise = require('bluebird');
 var _ = require('./lodash')
 
 module.exports = function(service) {
@@ -7,40 +8,66 @@ module.exports = function(service) {
 
   return function find(query) {
 
-    if(typeof(query) === 'undefined'){
-      query = {select: {$count: true}}
+    // Default query
+    if (typeof(query) === 'undefined') {
+      query = {}
     }
 
-    if(typeof(query.select) === 'undefined'){
-      query.select = {$count: true}
+    // Default select
+    if (typeof(query.select) === 'undefined') {
+      query.select = {
+        $count: true
+      }
     }
 
-    // Support
+    // Support groupAll
     query.groupBy = query.groupBy || true
 
-    var column = _.find(service.columns, {key: query.groupBy})
-
-    if(!column){
-      service.column({
-        key: query.groupBy,
-        type: !_.isUndefined(query.type) ? query.type : null,
-        array: !!query.array
-      })
-    }
-
-    column = _.find(service.columns, {key: query.groupBy})
-
-    var group = column.dimension.group()
-    var reducer = reductiofy(query)
-    reducer(group)
-
-    return new Promise(function(resolve, reject){
-      resolve({
-        data: group.all(),
-        crossfilter: service.cf,
-        dimension: column.dimension,
-        group: group
-      })
+    // Find Existing Column
+    var column = _.find(service.columns, {
+      key: query.groupBy
     })
+
+
+    return Promise.try(function() {
+        // Create Column if not found
+        if (!column) {
+          return service.column({
+              key: query.groupBy,
+              type: !_.isUndefined(query.type) ? query.type : null,
+              array: !!query.array
+            })
+            .then(function(u) {
+              return _.find(u.columns, {
+                key: query.groupBy
+              })
+            })
+        }
+        // Or just return the exiting one
+        return column
+      })
+      .then(function(c) {
+        column = c
+        // Create the grouping on the columns dimension
+        // Using Promise Resolve allows support for crossfilter async
+        return Promise.resolve(column.dimension.group())
+      })
+      .then(function(group) {
+        // Create the reducer using reductio and the Universe Query Syntax
+        var reducer = reductiofy(query)
+          // Apply the reducer to the group
+        reducer(group)
+
+        return {
+          // The Universe for continuous promise chaining
+          universe: service,
+          // The valuables
+          data: group.all(),
+          // The bare metal
+          crossfilter: service.cf,
+          dimension: column.dimension,
+          group: group,
+        }
+      })
   }
 }

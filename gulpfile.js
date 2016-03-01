@@ -5,12 +5,10 @@ var rename = require('gulp-rename');
 var browserify = require('browserify');
 var source = require('vinyl-source-stream');
 var streamify = require('gulp-streamify');
-// var Gitdown = require('gitdown');
 var bump = require('gulp-bump');
-var karma = require('gulp-karma');
+var mocha = require('gulp-mocha');
 
 var testFiles = [
-  'node_modules/crossfilter2/crossfilter.min.js',
   'universe.js',
   'test/**/*.spec.js'
 ];
@@ -58,28 +56,19 @@ gulp.task('watch', function() {
 });
 
 gulp.task('test', function() {
-  return gulp.src(testFiles)
-    .pipe(karma({
-      configFile: 'karma.conf.js',
-      action: 'run'
-    }))
-    .on('error', function(err) {
-      // Make sure failed tests cause gulp to exit non-zero
-      throw err;
-    });
+  return gulp.src(testFiles, {
+      read: false
+    })
+    .pipe(mocha({
+      reporter: 'nyan'
+    }));
 });
 
+// Watch Files For Changes
 gulp.task('testWatch', function() {
-  return gulp.src(testFiles)
-    .pipe(karma({
-      configFile: 'karma.conf.js',
-      action: 'watch'
-    }))
-    // .on('error', function(err) {
-    //   // Make sure failed tests cause gulp to exit non-zero
-    //   throw err;
-    // });
-});
+  gulp.watch(testFiles, ['test']);
+  gulp.watch('universe.js', ['test']);
+})
 
 gulp.task('default', ['scripts', 'docs', 'testWatch', 'watch']);
 gulp.task('all', ['scripts', 'docs', 'test']);

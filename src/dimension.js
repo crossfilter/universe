@@ -1,5 +1,6 @@
 'use strict'
 
+var Promise = require('bluebird');
 var _ = require('./lodash')
 
 module.exports = function(service) {
@@ -17,7 +18,9 @@ module.exports = function(service) {
         return d[key]
       }
 
-    return service.cf.dimension(accessorFunction, type == 'array')
+    // Promise.resolve will handle promises or non promises, so
+    // this crossfilter async is supported if present
+    return Promise.resolve(service.cf.dimension(accessorFunction, type == 'array'))
 
   }
 }

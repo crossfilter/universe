@@ -22,8 +22,6 @@ module.exports = function(service) {
 
 
 
-
-
     function makeFilter(reducer, fil) {
       var filterFunction = filters.makeFunction(fil)
       if (filterFunction) {

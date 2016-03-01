@@ -1,38 +1,39 @@
+var chai = require('chai')
+var expect = chai.expect
+
+var chaiAsPromised = require('chai-as-promised')
+chai.use(chaiAsPromised)
+
+
+var universe = require('../universe');
+var crossfilter = require('crossfilter2');
+
+
+
 describe('universe', function() {
 
-  var oldLog = console.log
-  console.log = function(){
-    var args = Array.prototype.slice.call(arguments);
-    oldLog.apply(null, args.map(function(a){
-      return JSON.stringify(a, function(k, v){
-        if(typeof(v) === 'function'){
-          return v.toString()
-        }
-        return v
-      }, 2)
-    }))
-  }
-
   it('is a function', function() {
-    expect(typeof universe).toEqual('function');
+    expect(typeof universe).to.equal('function');
   });
 
   it('requires a crossfilter instance', function() {
-    expect(function() {
-      var u = universe()
-    }).toThrow();
+    return universe()
+      .then(function(res) {
+        return expect(res).to.be.undefined;
+      })
+      .catch(function(err) {
+        return expect(err).to.be.defined;
+      })
   })
 
   it('can accept a crossfilter instance', function() {
-    expect(function() {
-      var u = universe(crossfilter([]))
-    }).not.toThrow()
+    return universe(crossfilter([]))
   })
 
   it('can accept an array of data points', function() {
     expect(function() {
       var u = universe([])
-    }).not.toThrow()
+    }).not.to.throw()
   })
 
 });
