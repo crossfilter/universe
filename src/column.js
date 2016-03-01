@@ -52,13 +52,28 @@ module.exports = function(service) {
       key: d,
     }
 
+
     // Get a sample of the column
     return Promise.try(function() {
         return Promise.resolve(service.cf.all())
       })
       .then(function(all) {
-        var sample = all[0][column.key]
-        if (column.key !== true && typeof(sample) === 'undefined') {
+
+        var sample
+
+        // Complex column Keys
+        if (_.isArray(column.key)) {
+          column.complex = true
+          sample = _.map(_.pick(all[0], column.key))
+          if (sample.length !== column.key.length) {
+            throw new Error('Column key does not exist in data!', column.key)
+          }
+        } else {
+          sample = all[0][column.key]
+        }
+
+        // Index Column
+        if (!column.complex && column.key !== true && typeof(sample) === 'undefined') {
           throw new Error('Column key does not exist in data!', column.key)
         }
 
@@ -70,6 +85,7 @@ module.exports = function(service) {
 
         column.type =
           column.key === true ? 'all' :
+          column.complex ? 'complex' :
           column.array ? 'array' :
           getType(sample)
 

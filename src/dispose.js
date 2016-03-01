@@ -9,7 +9,7 @@ module.exports = function(service) {
 
     def.forEach(function(d) {
       var column = _.remove(service.columns, {
-        key: d
+        key: _.isObject(d) ? d.key : d
       })[0]
 
       column.dimension.dispose()

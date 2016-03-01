@@ -6,16 +6,13 @@ var expect = chai.expect
 
 var universe = require('../universe');
 var crossfilter = require('crossfilter2');
+var data = require('./data');
 
 
 
 describe('universe column', function() {
 
-  var u = universe(crossfilter([{
-    a: 1
-  }, {
-    b: 2
-  }]))
+  var u = universe(data)
 
   beforeEach(function() {
     return u.then(function(u) {
@@ -37,25 +34,38 @@ describe('universe column', function() {
 
   it('can add a column without a default type of string', function() {
     return u.then(function(u) {
-        return u.column('a')
+        return u.column('type')
       })
       .then(function(u) {
-        expect(u.columns[0].key).to.deep.equal('a')
-        expect(u.columns[0].type).to.deep.equal('number')
+        expect(u.columns[0].key).to.deep.equal('type')
+        expect(u.columns[0].type).to.deep.equal('string')
         expect(u.columns[0].dimension).to.be.defined
       })
   })
 
-  it('can add a column without a specified type', function() {
+  it('can add a column with a specified type', function() {
     return u.then(function(u) {
         return u.column({
-          key: 'a',
+          key: 'productIDs',
           array: true
         })
       })
       .then(function(u) {
-        expect(u.columns[0].key).to.deep.equal('a')
+        expect(u.columns[0].key).to.deep.equal('productIDs')
         expect(u.columns[0].type).to.deep.equal('array')
+        expect(u.columns[0].dimension).to.be.defined
+      })
+  })
+
+  it('can add a column with a complex key', function() {
+    return u.then(function(u) {
+        return u.column({
+          key: ['type', 'total', 'quantity', 'tip']
+        })
+      })
+      .then(function(u) {
+        expect(u.columns[0].key).to.deep.equal(['type', 'total', 'quantity', 'tip'])
+        expect(u.columns[0].type).to.deep.equal('complex')
         expect(u.columns[0].dimension).to.be.defined
       })
   })

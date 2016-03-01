@@ -6,10 +6,11 @@ var expect = chai.expect
 
 var universe = require('../universe');
 var crossfilter = require('crossfilter2');
+var data = require('./data');
 
 describe('universe clear', function() {
 
-  var u = universe(crossfilter([{a: 1, b: 2}]))
+  var u = universe(data)
 
   beforeEach(function() {
     return u.then(function(u){
@@ -19,7 +20,7 @@ describe('universe clear', function() {
 
   it('can clear all filters', function() {
     return u.then(function(u) {
-      return u.column(['a', 'b'])
+      return u.column(['type', 'total'])
     })
     .then(function(u){
       expect(u.columns.length).to.deep.equal(2)

@@ -6,17 +6,13 @@ var expect = chai.expect
 
 var universe = require('../universe');
 var crossfilter = require('crossfilter2');
+var data = require('./data');
 
 
 
 describe('universe dispose', function() {
 
-  var u = universe(crossfilter([{
-    a: 1,
-    b: 2,
-    c: 3,
-    d: 4
-  }]))
+  var u = universe(data)
 
   beforeEach(function() {
     return u.then(function(u) {
@@ -26,11 +22,11 @@ describe('universe dispose', function() {
 
   it('can remove a single column', function() {
     return u.then(function(u) {
-        return u.column('a')
+        return u.column('type')
       })
       .then(function(u) {
         expect(u.columns.length).to.deep.equal(1)
-        return u.dispose('a')
+        return u.dispose('type')
       })
       .then(function(u) {
         expect(u.columns.length).to.deep.equal(0)
@@ -39,11 +35,15 @@ describe('universe dispose', function() {
 
   it('can remove a single column based on multiple keys', function() {
     return u.then(function(u) {
-        return u.column(['a', 'b', 'c', 'd'])
+        return u.column({
+          key: ['type', 'total', 'quantity', 'tip']
+        })
       })
       .then(function(u) {
-        expect(u.columns.length).to.deep.equal(4)
-        return u.dispose(['a', 'b', 'c', 'd'])
+        expect(u.columns.length).to.deep.equal(1)
+        return u.dispose({
+          key: ['type', 'total', 'quantity', 'tip']
+        })
       })
       .then(function(u) {
         expect(u.columns.length).to.deep.equal(0)
@@ -52,10 +52,11 @@ describe('universe dispose', function() {
 
   it('can remove multiple columns', function() {
     return u.then(function(u) {
-        return u.column(['a', 'b'])
+        return u.column(['type', 'total'])
       })
       .then(function(u) {
-        return u.dispose(['a', 'b'])
+        expect(u.columns.length).to.deep.equal(2)
+        return u.dispose(['type', 'total'])
       })
       .then(function(u) {
         expect(u.columns.length).to.deep.equal(0)

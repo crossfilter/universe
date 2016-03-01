@@ -7,8 +7,7 @@ chai.use(chaiAsPromised)
 
 var universe = require('../universe');
 var crossfilter = require('crossfilter2');
-
-
+var data = require('./data');
 
 describe('universe', function() {
 
@@ -27,12 +26,12 @@ describe('universe', function() {
   })
 
   it('can accept a crossfilter instance', function() {
-    return universe(crossfilter([]))
+    return universe(crossfilter(data))
   })
 
   it('can accept an array of data points', function() {
     expect(function() {
-      var u = universe([])
+      var u = universe(data)
     }).not.to.throw()
   })
 

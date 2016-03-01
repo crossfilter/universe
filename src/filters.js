@@ -23,8 +23,6 @@ module.exports = function(service) {
       }
     }
 
-    console.log(newFilters)
-
 
     service.filters = {}
 

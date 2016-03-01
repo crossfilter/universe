@@ -13,6 +13,7 @@ var map = require('lodash/map')
 var sortBy = require('lodash/sortBy')
 var forEach = require('lodash/forEach')
 var isUndefined = require('lodash/isUndefined')
+var pick = require('lodash/pick')
 
 module.exports = {
   assign: assign,
@@ -28,4 +29,5 @@ module.exports = {
   sortBy: sortBy,
   forEach: forEach,
   isUndefined: isUndefined,
+  pick: pick,
 }
