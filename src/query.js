@@ -24,10 +24,7 @@ module.exports = function(service) {
     query.groupBy = query.groupBy || true
 
     // Find Existing Column
-    var column = _.find(service.columns, {
-      key: query.groupBy
-    })
-
+    var column = service.column.find(query.groupBy)
 
     return Promise.try(function() {
         // Create Column if not found
@@ -43,7 +40,9 @@ module.exports = function(service) {
               })
             })
         }
-        // Or just return the exiting one
+        // If the column exists, let's at least make sure it's marked
+        // as permanent. There is a slight chance it exists because
+        // of a filter, and the user has now decided to query on it
         return column
       })
       .then(function(c) {

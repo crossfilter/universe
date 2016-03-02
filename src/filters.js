@@ -8,33 +8,106 @@ var expressions = require('./expressions');
 module.exports = function(service) {
   return {
     filter: filter,
+    filterAll: filterAll,
+    applyFilters: applyFilters,
     makeFunction: makeFunction
   }
 
-  function filter(dimension, f) {
+  function filter(d, f) {
 
-    var newFilters
+    f = _.isUndefined(f) ? false : f
 
-    if (!_.isArray(dimension)) {
-      if (f) {
-        var newFilter = {}
-        newFilter[dimension] = f
-        newFilters = [newFilter]
+    var exists = service.column.find(d)
+
+    return Promise.try(function() {
+        // If the filters dimension doesn't exist yet, try and create it
+        if (!exists) {
+          return service.column({
+              key: d,
+              temporary: true
+            })
+            .then(function() {
+              // It was able to be created, so retrieve and return it
+              return service.column.find(d)
+            })
+        }
+        // It exists, so just return what we found
+        return exists
+      })
+      .then(function(column) {
+        var newfilters = _.clone(service.filters, true)
+          // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
+        var filterKey = column.complex ? JSON.stringify(column.key) : column.key
+        newfilters[filterKey] = f
+        return applyFilters(newfilters)
+      })
+
+  }
+
+  function filterAll(f) {
+    service.filters = f || {}
+  }
+
+  function applyFilters(newFilters) {
+    var ds = _.map(newFilters, function(f, i) {
+      // Filters are the same, so no change is needed on this column
+      if (service.filters[i] && _.isEqual(f, service.filters[i])) {
+        return Promise.resolve()
       }
-    }
+      var column
+        // Retrieve complex columns by decoding the column key as json
+      if (i.charAt(0) === '[') {
+        column = service.column.find(JSON.parse(i))
+      } else {
+        // Retrieve the column normally
+        column = service.column.find(i)
+      }
+      // Make the filter function
+      var filterFunction
+        // Undefined and false will perform a filterAll and remove the filter
+      if (_.isUndefined(f) || f === false) {
+        filterFunction = false
+      } else {
+        filterFunction = makeFunction(f)
+      }
+      // If filter function is falsey, tag the filter for removal
+      // and perform a filterAll on the dimension
+      if (!filterFunction) {
+        newFilters[i] = false
+        return Promise.resolve(column.dimension.filterAll())
+      }
+      // Filter the dimension using the filterFunction
+      return Promise.resolve(column.dimension.filter(filterFunction))
+    })
 
+    return Promise.all(ds)
+      .then(function() {
+        // Save the new filters satate
+        service.filters = newFilters
+          // Delete filter properties tagged for removal
+        return Promise.all(_.map(service.filters, function(v, k) {
+          if (!v) {
+            delete service.filters[k]
 
-    service.filters = {}
+            var column = service.column.find((k.charAt(0) === '[') ? JSON.parse(k) : k)
 
-    return Promise.resolve(service)
+            if (column.temporary) {
+              return service.dispose(column.key)
+            }
+
+          }
+        }))
+      })
+      .then(function() {
+        return service
+      })
   }
 
   function makeFunction(obj) {
 
     var subGetters
-
-    // Detect strings and numbers
-    if (_.isString(obj) || _.isNumber(obj)) {
+      // Detect strings and numbers
+    if (_.isString(obj) || _.isNumber(obj) || _.isBoolean(obj)) {
       return function(d) {
         if (typeof(d) === 'undefined') {
           return obj
@@ -89,6 +162,6 @@ module.exports = function(service) {
     }
 
     console.log('no expression found for ', obj)
-    return function() {}
+    return false
   }
 }

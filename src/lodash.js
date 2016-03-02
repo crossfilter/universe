@@ -14,6 +14,10 @@ var sortBy = require('lodash/sortBy')
 var forEach = require('lodash/forEach')
 var isUndefined = require('lodash/isUndefined')
 var pick = require('lodash/pick')
+var xor = require('lodash/xor')
+var clone = require('lodash/clone')
+var isEqual = require('lodash/isEqual')
+var each = require('lodash/each')
 
 module.exports = {
   assign: assign,
@@ -30,4 +34,8 @@ module.exports = {
   forEach: forEach,
   isUndefined: isUndefined,
   pick: pick,
+  xor: xor,
+  clone: clone,
+  isEqual: isEqual,
+  each: each,
 }

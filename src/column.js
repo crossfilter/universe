@@ -7,7 +7,12 @@ module.exports = function(service) {
 
   var dimension = require('./dimension')(service)
 
-  return function column(def) {
+  var columnFunc = column
+  columnFunc.find = findColumn
+
+  return columnFunc
+
+  function column(def) {
 
     // Support groupAll dimension
     if (def === true || _.isUndefined(def)) {
@@ -27,6 +32,15 @@ module.exports = function(service) {
       .then(function(res) {
         return service
       })
+  }
+
+  function findColumn(d){
+    return _.find(service.columns, function(c){
+      if(_.isArray(d)){
+        return !_.xor(c.key, d).length
+      }
+      return c.key === d
+    })
   }
 
 
@@ -52,7 +66,6 @@ module.exports = function(service) {
       key: d,
     }
 
-
     // Get a sample of the column
     return Promise.try(function() {
         return Promise.resolve(service.cf.all())
@@ -77,10 +90,15 @@ module.exports = function(service) {
           throw new Error('Column key does not exist in data!', column.key)
         }
 
-        if (_.find(service.columns, {
-            key: column.key
-          })) {
+        var existing = findColumn(column.key)
+
+        // If the column exists, let's at least make sure it's marked
+        // as permanent. There is a slight chance it exists because
+        // of a filter, and the user decides to make it permanent
+        if (existing) {
+          column.temporary = false
           console.info('Column has already been defined', arguments)
+          return service
         }
 
         column.type =

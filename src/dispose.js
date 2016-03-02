@@ -8,8 +8,16 @@ module.exports = function(service) {
     def = _.isArray(def) ? def : [def]
 
     def.forEach(function(d) {
-      var column = _.remove(service.columns, {
-        key: _.isObject(d) ? d.key : d
+
+      if(_.isObject(d)){
+        d = d.key
+      }
+
+      var column = _.remove(service.columns, function(c){
+        if(_.isArray(d)){
+          return !_.xor(c.key, d).length
+        }
+        return c.key === d
       })[0]
 
       column.dimension.dispose()
