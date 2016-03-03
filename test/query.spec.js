@@ -197,6 +197,94 @@ describe('universe query', function() {
     })
   })
 
+  it('can filter using $column data', function() {
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: 'true',
+        },
+        filter: {
+          date: {
+            $lt: {
+              '$get(date)': {
+                '$nth(2)': {
+                  $column: 'date'
+                }
+              }
+            }
+          }
+        }
+      })
+    })
+    .then(function(res){
+      expect(res.data).to.deep.equal([
+        {"key": "cash","value": {"count": 0}},
+        {"key": "tab","value": {"count": 2}},
+        {"key": "visa","value": {"count": 0}}
+      ])
+    })
+  })
+
+  it('can filter using all $data', function() {
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: 'true',
+        },
+        filter: {
+          date: {
+            $gt: {
+              '$get(date)': {
+                '$nthPct(50)': '$data'
+              }
+            }
+          }
+        }
+      })
+    })
+    .then(function(res){
+      expect(res.data).to.deep.equal([
+        {"key": "cash","value": {"count": 1}},
+        {"key": "tab","value": {"count": 3}},
+        {"key": "visa","value": {"count": 1}}
+      ])
+    })
+  })
+
+  it('can not remove colum that is used in dynamic filter', function() {
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: 'true',
+        },
+        filter: {
+          date: {
+            $gt: {
+              '$get(date)': {
+                '$nth(2)': {
+                  $column: 'date'
+                }
+              }
+            }
+          }
+        }
+      })
+    })
+    .then(function(res){
+      return res.universe.clear('date')
+    })
+    .catch(function(err){
+      expect(err).to.be.defined
+    })
+    .then(function(res){
+      expect(res).to.be.undefined
+    })
+  })
+
+
   // it('supports nested aliases', function(){
   //   u.query({
   //     groupBy: 'type',

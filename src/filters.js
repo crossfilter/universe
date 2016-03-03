@@ -1,22 +1,22 @@
 'use strict'
 
-var Promise = require('bluebird');
+var Promise = require('q')
 var _ = require('./lodash')
 
-var expressions = require('./expressions');
+var expressions = require('./expressions')
+var aggregation = require('./aggregation')
 
 module.exports = function(service) {
   return {
     filter: filter,
     filterAll: filterAll,
     applyFilters: applyFilters,
-    makeFunction: makeFunction
+    makeFunction: makeFunction,
+    scanForDynamicFilters: scanForDynamicFilters
   }
 
   function filter(d, f) {
-
     f = _.isUndefined(f) ? false : f
-
     var exists = service.column.find(d)
 
     return Promise.try(function() {
@@ -91,8 +91,8 @@ module.exports = function(service) {
 
             var column = service.column.find((k.charAt(0) === '[') ? JSON.parse(k) : k)
 
-            if (column.temporary) {
-              return service.dispose(column.key)
+            if (column.temporary && !column.dynamicReference) {
+              return service.clear(column.key)
             }
 
           }
@@ -103,10 +103,65 @@ module.exports = function(service) {
       })
   }
 
-  function makeFunction(obj) {
+  function scanForDynamicFilters(query) {
+    // Here we check to see if there are any relative references to the raw data
+    // being used in the filter. If so, we need to build those dimensions and keep
+    // them updated so the filters can be rebuilt if needed
+    // The supported keys right now are: $column, $data
+    var columns = []
+    walk(query.filter)
+    return columns
+
+    function walk(obj) {
+      _.forEach(obj, function(val, key) {
+        // find the data references, if any
+        var ref = findDataReferences(val, key)
+        ref && columns.push(ref)
+        // if it's a string
+        if (_.isString(val)) {
+          ref = findDataReferences(null, val)
+          ref && columns.push(ref)
+        }
+          // If it's another object, keep looking
+        if (_.isObject(val)) {
+          walk(val)
+        }
+      })
+    }
+  }
+
+  function findDataReferences(val, key) {
+    // look for the $data string as a value
+    if (key === '$data') {
+      return true
+    }
+
+    // look for the $column key and it's value as a string
+    if (key && key === '$column') {
+      if (_.isString(val)) {
+        return val
+      }
+      console.warn('The value for filter "$column" must be a valid column key', val)
+      return false
+    }
+  }
+
+  function makeFunction(obj, isAggregation) {
 
     var subGetters
-      // Detect strings and numbers
+
+    // Detect raw $data reference
+    if (_.isString(obj)) {
+      var dataRef = findDataReferences(null, obj)
+      if (dataRef) {
+        var column = service.column.find(dataRef)
+        var data = column.dimension.bottom(Infinity)
+        return function(d) {
+          return data
+        }
+      }
+    }
+
     if (_.isString(obj) || _.isNumber(obj) || _.isBoolean(obj)) {
       return function(d) {
         if (typeof(d) === 'undefined') {
@@ -120,7 +175,9 @@ module.exports = function(service) {
 
     // If an array, recurse into each item and return as a map
     if (_.isArray(obj)) {
-      subGetters = _.map(obj, makeFunction)
+      subGetters = _.map(obj, function(o){
+        return makeFunction(o, isAggregation)
+      })
       return function(d) {
         return subGetters.map(function(s) {
           return s(d)
@@ -133,12 +190,36 @@ module.exports = function(service) {
       subGetters = _.map(obj, function(val, key) {
 
         // Get the child
-        var getSub = makeFunction(val)
+        var getSub = makeFunction(val, isAggregation)
+
+        // Detect raw $column references
+        var dataRef = findDataReferences(val, key)
+        if (dataRef) {
+          var column = service.column.find(dataRef)
+          var data = column.dimension.bottom(Infinity)
+          return function(d) {
+            return data
+          }
+        }
 
         // If expression, pass the parentValue and the subGetter
         if (expressions[key]) {
           return function(d) {
             return expressions[key](d, getSub)
+          }
+        }
+
+        var aggregatorObj = aggregation.parseAggregatorParams(key)
+        if (aggregatorObj) {
+          // Make sure that any further operations are for aggregations
+          // and not filters
+          isAggregation = true
+          // here we pass true to makeFunction which denotes that
+          // an aggregatino chain has started and to stop using $AND
+          getSub = makeFunction(val, isAggregation)
+            // If it's an aggregation object, be sure to pass in the children, and then any additional params passed into the aggregation string
+          return function(d) {
+            return aggregatorObj.aggregator.apply(null, [getSub()].concat(aggregatorObj.params))
           }
         }
 
@@ -152,6 +233,18 @@ module.exports = function(service) {
 
       // All object expressions are basically AND's
       // Return AND with a map of the subGetters
+      if (isAggregation) {
+        if(subGetters.length === 1){
+          return function(d) {
+            return subGetters[0](d)
+          }
+        }
+        return function(d) {
+          return _.map(subGetters, function(getSub) {
+            return getSub(d)
+          })
+        }
+      }
       return function(d) {
         return expressions.$and(d, function(d) {
           return _.map(subGetters, function(getSub) {

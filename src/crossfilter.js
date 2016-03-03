@@ -1,6 +1,6 @@
 'use strict'
 
-var Promise = require('bluebird');
+var Promise = require('q');
 var crossfilter = require('crossfilter2')
 
 var _ = require('./lodash')

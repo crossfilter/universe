@@ -46,7 +46,7 @@ describe('universe filter', function() {
     })
   })
 
-  it('can filter based on a single column that is not a column def yet. Then recylce that column', function() {
+  it('can filter based on a single column that is not defined yet. Then recycle that column.', function() {
     var data
     return u.then(function(u) {
       return u.query({

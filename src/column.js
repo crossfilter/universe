@@ -1,6 +1,6 @@
 'use strict'
 
-var Promise = require("bluebird");
+var Promise = require("q");
 var _ = require('./lodash')
 
 module.exports = function(service) {
@@ -28,7 +28,6 @@ module.exports = function(service) {
 
     // Mapp all column creation, wait for all to settle, then return the instance
     return Promise.all(_.map(def, makeColumn))
-      .reflect()
       .then(function(res) {
         return service
       })
@@ -96,7 +95,10 @@ module.exports = function(service) {
         // as permanent. There is a slight chance it exists because
         // of a filter, and the user decides to make it permanent
         if (existing) {
-          column.temporary = false
+          existing.temporary = false
+          if(column.dynamicReference){
+            existing.dynamicReference = true
+          }
           console.info('Column has already been defined', arguments)
           return service
         }
@@ -111,6 +113,8 @@ module.exports = function(service) {
       })
       .then(function(dimension) {
         column.dimension = dimension
+        column.removeListeners = []
+        column.groupListeners = []
         service.columns.push(column)
         return service
       })

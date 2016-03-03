@@ -1,5 +1,7 @@
 'use strict'
 
+var moment = require('moment');
+
 module.exports = {
   // Getters
   $field: $field,

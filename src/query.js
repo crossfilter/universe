@@ -1,10 +1,11 @@
 'use strict'
 
-var Promise = require('bluebird');
+var Promise = require('q');
 var _ = require('./lodash')
 
 module.exports = function(service) {
   var reductiofy = require('./reductiofy')(service)
+  var filters = require('./filters')(service)
 
   return function find(query) {
 
@@ -26,6 +27,8 @@ module.exports = function(service) {
     // Find Existing Column
     var column = service.column.find(query.groupBy)
 
+    var group
+
     return Promise.try(function() {
         // Create Column if not found
         if (!column) {
@@ -35,8 +38,8 @@ module.exports = function(service) {
               array: !!query.array
             })
             .then(function(u) {
-              return _.find(u.columns, {
-                key: query.groupBy
+              return _.find(u.columns, function(c){
+                return c.key === query.groupBy
               })
             })
         }
@@ -47,16 +50,49 @@ module.exports = function(service) {
       })
       .then(function(c) {
         column = c
-        // Create the grouping on the columns dimension
-        // Using Promise Resolve allows support for crossfilter async
+          // Create the grouping on the columns dimension
+          // Using Promise Resolve allows support for crossfilter async
         return Promise.resolve(column.dimension.group())
       })
-      .then(function(group) {
-        // Create the reducer using reductio and the Universe Query Syntax
-        var reducer = reductiofy(query)
-          // Apply the reducer to the group
-        reducer(group)
+      .then(function(g) {
+        // Save the group while we create the reducer
+        group = g
+        return filters.scanForDynamicFilters(query)
+      })
+      .then(function(requiredColumns) {
+        // We need to scan the group for any filters that would require
+        // the group to be rebuilt when data is added or removed in any way.
+        if (requiredColumns.length) {
+          return Promise.all(_.map(requiredColumns, function(columnKey) {
+              service.column({
+                key: columnKey,
+                dynamicReference: group
+              })
+            }))
+            .then(function() {
+              return true
+            })
+        }
+        return false
+      })
+      .then(function(needsListener) {
+        // Here, we create a listener to recreate and apply the reducer to
+        // the group anytime data changes.
+        return applyReducer()
+        if (needsListener) {
+          column.groupListeners.push(applyReducer)
+        }
 
+        function applyReducer() {
+          // Create the reducer using reductio and the Universe Query Syntax
+          return reductiofy(query)
+            .then(function(reducer) {
+              // Apply the reducer to the group
+              return reducer(group)
+            })
+        }
+      })
+      .then(function() {
         return {
           // The Universe for continuous promise chaining
           universe: service,

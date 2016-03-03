@@ -18,9 +18,6 @@ gulp.task('scripts', function() {
       standalone: 'universe',
       debug: true
     })
-    .transform("babelify", {
-      presets: ["es2015", "react"]
-    })
     .bundle()
     .pipe(source('universe.js'))
     .pipe(gulp.dest('./'))

@@ -1,10 +1,7 @@
 'use strict'
 
 var _ = require('./lodash')
-
-module.exports = {
-  makeFunction: makeFunction,
-}
+var naturalSort = require('javascript-natural-sort');
 
 var aggregators = {
   // Collections
@@ -17,10 +14,23 @@ var aggregators = {
   $count: $count,
   $first: $first,
   $last: $last,
+  $get: $get,
+  $nth: $get, // nth is same as using a get
+  $nthLast: $nthLast,
+  $nthPct: $nthPct,
+  $map: $map,
 }
 
+
+module.exports = {
+  makeFunction: makeFunction,
+  aggregators: aggregators,
+  parseAggregatorParams: parseAggregatorParams,
+}
+// This is used to build aggregation stacks for sub-reductio
+// aggregations, or plucking values for use in filters from the data
 function makeFunction(obj) {
-  var stack = makeSubAggregationStack(obj).reverse()
+  var stack = makeSubAggregationFunction(obj).reverse()
 
   return function(d) {
     return stack.reduce(function(previous, current) {
@@ -29,7 +39,10 @@ function makeFunction(obj) {
   }
 }
 
-function makeSubAggregationStack(obj) {
+// A recursive function that walks the aggregation stack and returns
+// a function. The returned function, when called, will recursively invoke
+// with the properties from the previous stack in reverse order
+function makeSubAggregationFunction(obj) {
 
   var keyVal = _.isObject(obj) ? extractKeyVal(obj) : obj
 
@@ -42,7 +55,7 @@ function makeSubAggregationStack(obj) {
 
   // If an array, recurse into each item and return as a map
   if (_.isArray(obj)) {
-    var subStack = _.map(obj, makeSubAggregationStack)
+    var subStack = _.map(obj, makeSubAggregationFunction)
     return function(d) {
       return subStack.map(function(s) {
         return s(d)
@@ -53,7 +66,7 @@ function makeSubAggregationStack(obj) {
   // If object, find the aggregation, and recurse into the value
   if (keyVal.key) {
     if (aggregators[keyVal.key]) {
-      return [aggregators[keyVal.key], makeSubAggregationStack(keyVal.value)]
+      return [aggregators[keyVal.key], makeSubAggregationFunction(keyVal.value)]
     } else {
       console.error('Could not find aggregration method', keyVal)
     }
@@ -74,20 +87,38 @@ function extractKeyVal(obj) {
   return
 }
 
+function parseAggregatorParams(keyString){
+  var params = []
+  var p1 = keyString.indexOf('(')
+  var p2 = keyString.indexOf(')')
+  var key = p1 > -1 ? keyString.substring(0, p1) : keyString
+  if(!aggregators[key]){
+    return false
+  }
+  if(p1 > -1 && p2 > -1 && p2 > p1){
+    params = keyString.substring(p1 + 1, p2).split(',')
+  }
+
+  return {
+    aggregator: aggregators[key],
+    params: params
+  }
+}
 
 
 
-// Aggregators
+
+// Collection Aggregators
 
 function $sum(children) {
   return children.reduce(function(a, b) {
-    return a + b;
+    return a + b
   })
 }
 
 function $avg(children) {
   return children.reduce(function(a, b) {
-    return a + b;
+    return a + b
   }) / children.length
 }
 
@@ -105,13 +136,13 @@ function $count(children) {
 
 function $med(children) {
   children.sort(function(a, b) {
-    return a - b;
-  });
-  var half = Math.floor(children.length / 2);
+    return a - b
+  })
+  var half = Math.floor(children.length / 2)
   if (children.length % 2)
-    return children[half];
+    return children[half]
   else
-    return (children[half - 1] + children[half]) / 2.0;
+    return (children[half - 1] + children[half]) / 2.0
 }
 
 function $first(children) {
@@ -120,4 +151,29 @@ function $first(children) {
 
 function $last(children) {
   return children[children.length - 1]
+}
+
+function $get(children, n) {
+  return children[n]
+}
+
+function $nthLast(children, n) {
+  return children[children.length - n]
+}
+
+function $nthPct(children, n) {
+  return children[Math.round(children.length * (n / 100))]
+}
+
+function $map(children, n) {
+  return children.map(function(d) {
+    return d[n]
+  })
+}
+
+function $sort(children, n) {
+  // Note that this function does not support a parameter.
+  // If you want to sort on an object key, use $map first
+  // Be sure to copy the array as to not mutate the original
+  return Array.prototype.slice.call(children).sort(naturalSort)
 }

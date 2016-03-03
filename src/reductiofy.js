@@ -10,28 +10,26 @@ var aggregation = require('./aggregation')
 module.exports = function(service) {
   var filters = require('./filters')(service)
 
-  return function parse(query) {
+  return function reductiofy(query) {
     var reducer = reductio()
     var groupBy = query.groupBy
-    if (query.filter) {
-      makeFilter(reducer, query.filter)
-    }
     aggregateOrNest(reducer, query.select)
 
-    return reducer
-
-
-
-    function makeFilter(reducer, fil) {
-      var filterFunction = filters.makeFunction(fil)
+    if (query.filter) {
+      var filterFunction = filters.makeFunction(query.filter)
       if (filterFunction) {
         reducer.filter(filterFunction)
       }
     }
 
+    return Promise.resolve(reducer)
+
+
+    // This function recursively find the first level of reductio methods in
+    // each object and adds that reduction method to reductio
     function aggregateOrNest(reducer, selects) {
 
-      // Sort aggregations so that .value is very last
+      // Sort so nested values are calculated last by reductio's .value method
       var sortedSelectKeyValue = _.sortBy(
         _.map(selects, function(val, key) {
           return {
@@ -46,9 +44,11 @@ module.exports = function(service) {
           return 1
         })
 
-      return _.map(sortedSelectKeyValue, function(s) {
 
-        // Found Aggregation
+      // dive into each key/value
+      return _.forEach(sortedSelectKeyValue, function(s) {
+
+        // Found a Reductio Aggregation
         if (rAggregators.aggregators[s.key]) {
           // Build the valueAccessorFunction
           var accessor = makeValueAccessor(s.value)
@@ -57,22 +57,26 @@ module.exports = function(service) {
           return
         }
 
-        // Must be a nested object
+        // Found a top level key value that is not an aggregation or a
+        // nested object. This is unacceptable.
         if (!_.isObject(s.value)) {
           console.error('Nested selects must be an object', s.key)
           return
         }
 
-        // Recursively aggregateOrNest
+        // It's another nested object, so just repeat this process on it
         reducer = aggregateOrNest(reducer.value(s.key), s.value)
 
       })
     }
 
     function makeValueAccessor(obj) {
+      // If the object is a string or a number here, it is referencing
+      // a column property for a reductio aggregation, so just return it as a string
       if (typeof(obj) === 'string' || typeof(obj) === 'number') {
         return obj + ''
       }
+      // If it's an object, we need to build a custom aggregation function
       if (_.isObject(obj)) {
         return aggregation.makeFunction(obj)
       }
