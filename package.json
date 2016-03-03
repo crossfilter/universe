@@ -1,6 +1,6 @@
 {
   "name": "universe",
-  "version": "0.5.3",
+  "version": "0.0.1",
   "description": "Schemas and dimension/group management for Crossfilter",
   "main": "src/universe.js",
   "directories": {
