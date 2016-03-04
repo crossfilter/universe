@@ -99,7 +99,7 @@ module.exports = function(service) {
           if(column.dynamicReference){
             existing.dynamicReference = true
           }
-          console.info('Column has already been defined', arguments)
+          // console.info('Column has already been defined', arguments)
           return service
         }
 
@@ -109,13 +109,29 @@ module.exports = function(service) {
           column.array ? 'array' :
           getType(sample)
 
-        return dimension(column.key, column.type)
+        return dimension.make(column.key, column.type)
       })
-      .then(function(dimension) {
-        column.dimension = dimension
-        column.removeListeners = []
-        column.groupListeners = []
+      .then(function(dim) {
+        column.dimension = dim
+        column.removeListeners = [buildColumnKeys]
+        column.addListeners = [buildColumnKeys]
+
         service.columns.push(column)
+
+        return buildColumnKeys()
+
+        // Build the columnKeys
+        function buildColumnKeys(){
+          return Promise.try(function(){
+            return Promise.resolve(column.dimension.bottom(Infinity))
+          })
+          .then(function(rows){
+            var accessor = dimension.makeAccessor(column.key)
+            column.keyList = _.sort(_.uniq(_.flatten(_.map(rows, accessor))))
+          })
+        }
+      })
+      .then(function(){
         return service
       })
   }

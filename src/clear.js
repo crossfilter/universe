@@ -21,12 +21,17 @@ module.exports = function(service) {
           }
           if(c.key === d){
             if(c.dynamicReference){
-              // console.info('Attempted to clear a column that is required for another query!', c)
               return false
             }
             return true
           }
         })[0]
+
+        if(!column){
+          // console.info('Attempted to clear a column that is required for another query!', c)
+          return
+        }
+
         // Dispose the dimension
         var disposalActions = _.map(column.removeListeners, function(listener){
           return Promise.resolve(listener())

@@ -1,5 +1,7 @@
 'use strict'
 
+var naturalSort = require('javascript-natural-sort');
+
 module.exports = {
   assign: assign,
   find: find,
@@ -19,6 +21,10 @@ module.exports = {
   xor: xor,
   clone: clone,
   isEqual: isEqual,
+  replaceArray: replaceArray,
+  uniq: uniq,
+  flatten: flatten,
+  sort: sort,
 }
 
 
@@ -191,4 +197,35 @@ function isEqual(x, y) {
     return false;
   else
     return true;
+}
+
+function replaceArray(a, b) {
+  var al = a.length
+  var bl = b.length
+  if (al > bl) {
+    a.splice(bl, al - bl)
+  } else if (al < bl) {
+    a.push.apply(a, new Array(bl - al))
+  }
+  forEach(a, function(val, key) {
+    a[key] = b[key]
+  })
+  return a
+}
+
+function uniq(a) {
+  var seen = {};
+  return a.filter(function(item) {
+    return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+  });
+}
+
+function flatten(array) {
+  return array.reduce(function(a, b) {
+    return a.concat(b);
+  }, []);
+}
+
+function sort(a){
+  return a.sort(naturalSort)
 }

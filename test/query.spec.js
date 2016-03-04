@@ -172,19 +172,15 @@ describe('universe query', function() {
           $sum: 'total'
         },
         filter: {
-          $or: [
-            {
-              total: {
-                $gt: 50
-              }
-            },
-            {
-              quantity: {
-                $gt: 1
-              }
+          $or: [{
+            total: {
+              $gt: 50
             }
-          ]
-
+          }, {
+            quantity: {
+              $gt: 1
+            }
+          }]
         }
       })
     })
@@ -276,32 +272,78 @@ describe('universe query', function() {
     .then(function(res){
       return res.universe.clear('date')
     })
-    .catch(function(err){
-      expect(err).to.be.defined
-    })
-    .then(function(res){
-      expect(res).to.be.undefined
+    .then(function(u){
+      expect(u.columns.length).to.deep.equal(2)
     })
   })
 
+  it('can add new data to dynamic filters', function() {
+    var res
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: 'true',
+          $sum: 'total'
+        },
+        filter: {
+          date: {
+            $eq: {
+              '$get(date)': {
+                '$last': {
+                  $column: 'date'
+                }
+              }
+            }
+          }
+        }
+      })
+    })
+    .then(function(r){
+      res = r
+      console.log(res.universe.columns)
+      expect(res.data).to.deep.equal([
+        {"key": "cash","value": {"count": 0, sum: 0}},
+        {"key": "tab","value": {"count": 0, sum: 0}},
+        {"key": "visa","value": {"count": 1, sum: 200}}
+      ])
+      return res.universe.add([{
+        date: "2012-11-14T17:29:52Z",
+        quantity: 100,
+        total: 50000,
+        tip: 999,
+        type: "visa",
+        productIDs: ["004"]
+      }])
+    })
+    .then(function(r){
+      console.log(res.universe.columns)
+      expect(res.data).to.deep.equal([
+        {"key": "cash","value": {"count": 0, sum: 0}},
+        {"key": "tab","value": {"count": 0, sum: 0}},
+        {"key": "visa","value": {"count": 1, sum: 50000}},
+      ])
+    })
+  })
 
+  // TODO: This isn't possible because of something in reductio
   // it('supports nested aliases', function(){
-  //   u.query({
-  //     groupBy: 'type',
-  //     select: {
-  //       my: {
-  //         awesome: {
-  //           column: {
-  //             $count: true
+  //   return u.then(function(u){
+  //     return u.query({
+  //       groupBy: 'type',
+  //       select: {
+  //         my: {
+  //           awesome: {
+  //             column: {
+  //               $count: true
+  //             }
   //           }
   //         }
-  //       }
-  //     },
-  //     filter: {
-  //
-  //     }
+  //       },
+  //     })
   //   })
   //   .then(function(res){
+  //     console.log(res)
   //     expect(res.data).to.deep.equal([
   //       {"key": "cash","value": {"count": 2}},
   //       {"key": "tab","value": {"count": 8}},

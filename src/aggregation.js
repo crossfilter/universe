@@ -19,16 +19,17 @@ var aggregators = {
   $nthLast: $nthLast,
   $nthPct: $nthPct,
   $map: $map,
+  $sort: $sort,
 }
 
 
 module.exports = {
-  makeFunction: makeFunction,
-  aggregators: aggregators,
-  parseAggregatorParams: parseAggregatorParams,
-}
-// This is used to build aggregation stacks for sub-reductio
-// aggregations, or plucking values for use in filters from the data
+    makeFunction: makeFunction,
+    aggregators: aggregators,
+    parseAggregatorParams: parseAggregatorParams,
+  }
+  // This is used to build aggregation stacks for sub-reductio
+  // aggregations, or plucking values for use in filters from the data
 function makeFunction(obj) {
   var stack = makeSubAggregationFunction(obj).reverse()
 
@@ -87,15 +88,15 @@ function extractKeyVal(obj) {
   return
 }
 
-function parseAggregatorParams(keyString){
+function parseAggregatorParams(keyString) {
   var params = []
   var p1 = keyString.indexOf('(')
   var p2 = keyString.indexOf(')')
   var key = p1 > -1 ? keyString.substring(0, p1) : keyString
-  if(!aggregators[key]){
+  if (!aggregators[key]) {
     return false
   }
-  if(p1 > -1 && p2 > -1 && p2 > p1){
+  if (p1 > -1 && p2 > -1 && p2 > p1) {
     params = keyString.substring(p1 + 1, p2).split(',')
   }
 
@@ -172,8 +173,24 @@ function $map(children, n) {
 }
 
 function $sort(children, n) {
-  // Note that this function does not support a parameter.
-  // If you want to sort on an object key, use $map first
+  // Alphanumeric by property
+  if (_.isString(n)) {
+    children.sort(function sortByKey(a, b) {
+      if (a[n] < b[n])
+        return -1;
+      else if (a[n] > b[n])
+        return 1;
+      else
+        return 0;
+    });
+  }
+  // Numeric by property
+  if (_.isNumber(n)) {
+    children.sort(function sortByKey(a, b) {
+      return a[n] - b[n]
+    });
+  }
+  // Flat, natural sorting
   // Be sure to copy the array as to not mutate the original
   return Array.prototype.slice.call(children).sort(naturalSort)
 }

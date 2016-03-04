@@ -38,7 +38,7 @@ module.exports = function(service) {
               array: !!query.array
             })
             .then(function(u) {
-              return _.find(u.columns, function(c){
+              return _.find(u.columns, function(c) {
                 return c.key === query.groupBy
               })
             })
@@ -78,31 +78,41 @@ module.exports = function(service) {
       .then(function(needsListener) {
         // Here, we create a listener to recreate and apply the reducer to
         // the group anytime data changes.
-        return applyReducer()
-        if (needsListener) {
-          column.groupListeners.push(applyReducer)
-        }
 
-        function applyReducer() {
-          // Create the reducer using reductio and the Universe Query Syntax
-          return reductiofy(query)
-            .then(function(reducer) {
-              // Apply the reducer to the group
-              return reducer(group)
-            })
-        }
-      })
-      .then(function() {
-        return {
+        var queryRes = {
           // The Universe for continuous promise chaining
           universe: service,
-          // The valuables
-          data: group.all(),
-          // The bare metal
+          // The bare metalqueryRes.data
           crossfilter: service.cf,
           dimension: column.dimension,
           group: group,
         }
+
+        if (needsListener) {
+          column.addListeners.push(function(isPost) {
+            return applyReducer(queryRes, isPost)
+          })
+          column.removeListeners.push(function(isPost) {
+            return applyReducer(queryRes, isPost)
+          })
+        }
+
+        return applyReducer(queryRes)
+          .then(function() {
+            return queryRes
+          })
+
+        function applyReducer(queryRes, isPost) {
+          // Create the reducer using reductio and the Universe Query Syntax
+          return reductiofy(query)
+            .then(function(reducer) {
+              // Apply the reducer to the group
+              reducer(queryRes.group)
+              queryRes.data = queryRes.group.all()
+              queryRes.dynamicData = isPost
+            })
+        }
+
       })
   }
 }
