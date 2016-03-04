@@ -127,7 +127,7 @@ module.exports = function(service) {
           })
           .then(function(rows){
             var accessor = dimension.makeAccessor(column.key)
-            column.keyList = _.sort(_.uniq(_.flatten(_.map(rows, accessor))))
+            column.values = _.sort(_.uniq(_.flatten(_.map(rows, accessor))))
           })
         }
       })
