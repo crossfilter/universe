@@ -1,7 +1,7 @@
 # Universe
 [![Build Status](https://travis-ci.org/crossfilter/universe.svg?branch=master)](https://travis-ci.org/crossfilter/universe) [![Join the chat at https://gitter.im/crossfilter/universe](https://badges.gitter.im/crossfilter/universe.svg)](https://gitter.im/crossfilter/universe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-## Easy exploration of multivariate datasets at blazing speeds
+## The easiest and fastest way to explore your data
 Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indices, and countless lines of code to dicect your data.
 
 With Universe, you can be there in just a few lines of code. You've got better things to do than write intense map-reduce functions or learn the intricate inner-workings of [Crossfilter](https://github.com/crossfilter/crossfilter) ;)
