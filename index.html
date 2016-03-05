@@ -11,11 +11,8 @@
   </head>
   <body>
     <section class="page-header">
-      <a href="https://github.com/crossfilter" target="_blank">
-        <img class="logo" src="//avatars1.githubusercontent.com/u/12073349?v=3&s=200"/>
-      </a>
       <h1 class="project-name">Universe</h1>
-      <h2 class="project-tagline">Crossfilter Query Interface, Schemas, and Dimension/Group Management</h2>
+      <h2 class="project-tagline">The fastest way to query and explore multivariate datasets</h2>
       <a href="https://github.com/crossfilter/universe" class="btn">View on GitHub</a>
       <a href="https://github.com/crossfilter/universe/zipball/master" class="btn">Download .zip</a>
       <a href="https://github.com/crossfilter/universe/tarball/master" class="btn">Download .tar.gz</a>
@@ -25,101 +22,180 @@
       <h1>
 <a id="universe" class="anchor" href="#universe" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Universe</h1>
 
-<p><a href="https://gitter.im/crossfilter/universe?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/crossfilter/universe.svg" alt="Join the chat at https://gitter.im/crossfilter/universe"></a></p>
+<p><a href="https://travis-ci.org/crossfilter/universe"><img src="https://travis-ci.org/crossfilter/universe.svg?branch=master" alt="Build Status"></a> <a href="https://gitter.im/crossfilter/universe?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/crossfilter/universe.svg" alt="Join the chat at https://gitter.im/crossfilter/universe"></a></p>
 
 <h2>
-<a id="a-crossfilter-query-interface-for-everyone" class="anchor" href="#a-crossfilter-query-interface-for-everyone" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>A Crossfilter Query Interface for Everyone</h2>
+<a id="the-easiest-and-fastest-way-to-explore-your-data" class="anchor" href="#the-easiest-and-fastest-way-to-explore-your-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The easiest and fastest way to explore your data</h2>
 
-<p>Before Universe, a typical Crossfilter setup involved creating and keeping track of tons of dimensions and potentially hundreds of groups. These dimensions and groups then required intense map-reduce functions and an intimate knowledge with the inner-workings of Crossfilter to be productive.</p>
+<p>Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indexing, and countless lines of code to dissect your data.</p>
 
-<p><strong>Universe</strong> skips this mess and allows you to query your data using a simple <strong>JSON query syntax</strong> or a powerful <strong>SQL-based query language</strong></p>
+<p>With Universe, you can be there in just a few lines of code. You've got better things to do than write intense map-reduce functions or learn the intricate inner-workings of <a href="https://github.com/crossfilter/crossfilter">Crossfilter</a> ;)</p>
 
-<h3>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
+<h2>
+<a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
+
+<ul>
+<li>Simple, yet powerful query syntax</li>
+<li>Built on, and tightly integrated with  <a href="https://github.com/crossfilter/crossfilter">Crossfilter</a>, and <a href="https://github.com/crossfilter/reductio">Reductio</a> - the fastest multi-dimensional JS data frameworks available</li>
+<li>Real-time updates to query results as you filter</li>
+<li>Flexible filtering system</li>
+<li>Automatic and invisible management of data indexing and memory</li>
+</ul>
+
+<h2>
+<a id="demos" class="anchor" href="#demos" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Demos</h2>
+
+<ul>
+<li><a href="http://codepen.io/tannerlinsley/pen/oxjyvg?editors=0010">Basic Usage</a></li>
+</ul>
+
+<h2>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
 
 <p><strong>NPM</strong></p>
 
-<div class="highlight highlight-source-shell"><pre>npm install --save-dev crossfilter-universe</pre></div>
+<div class="highlight highlight-source-shell"><pre>npm install crossfilter/universe --save
+
+<span class="pl-c"># the "universe" npm module name is still under negotiation. Stay tuned.</span></pre></div>
 
 <p><strong>Download</strong> from the <a href="https://github.com/crossfilter/universe/releases">releases</a> page. Serve the universe.js or universe.min.js file in the top-level directory as part of your application.</p>
 
+<h2>
+<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
+
 <h3>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h3>
+<a id="create-a-new-universe-with-your-dataset" class="anchor" href="#create-a-new-universe-with-your-dataset" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create a new Universe with your dataset</h3>
 
-<p>Create a new universe by passing <code>universe</code> some data or a Crossfilter instance:</p>
+<p>Pass <code>universe</code> an array of objects or a Crossfilter instance:</p>
 
-<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> myUniverse <span class="pl-k">=</span> <span class="pl-en">universe</span>([
-    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:17:54Z<span class="pl-pds">"</span></span>,quantity<span class="pl-k">:</span> <span class="pl-c1">2</span>,total<span class="pl-k">:</span> <span class="pl-c1">190</span>,tip<span class="pl-k">:</span> <span class="pl-c1">100</span>,type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>,productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>001<span class="pl-pds">"</span></span>]},
-    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:20:19Z<span class="pl-pds">"</span></span>,quantity<span class="pl-k">:</span> <span class="pl-c1">2</span>,total<span class="pl-k">:</span> <span class="pl-c1">190</span>,tip<span class="pl-k">:</span> <span class="pl-c1">100</span>,type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>,productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>001<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>005<span class="pl-pds">"</span></span>]},
-    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:28:54Z<span class="pl-pds">"</span></span>,quantity<span class="pl-k">:</span> <span class="pl-c1">1</span>,total<span class="pl-k">:</span> <span class="pl-c1">300</span>,tip<span class="pl-k">:</span> <span class="pl-c1">200</span>,type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>visa<span class="pl-pds">"</span></span>,productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>004<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>005<span class="pl-pds">"</span></span>]},
+<div class="highlight highlight-source-js"><pre>
+<span class="pl-k">var</span> universe <span class="pl-k">=</span> <span class="pl-c1">require</span>(<span class="pl-s"><span class="pl-pds">'</span>universe<span class="pl-pds">'</span></span>)
+
+<span class="pl-k">var</span> myUniverse <span class="pl-k">=</span> <span class="pl-en">universe</span>([
+    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:17:54Z<span class="pl-pds">"</span></span>, quantity<span class="pl-k">:</span> <span class="pl-c1">2</span>, total<span class="pl-k">:</span> <span class="pl-c1">190</span>, tip<span class="pl-k">:</span> <span class="pl-c1">100</span>, type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>, productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>001<span class="pl-pds">"</span></span>]},
+    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:20:19Z<span class="pl-pds">"</span></span>, quantity<span class="pl-k">:</span> <span class="pl-c1">2</span>, total<span class="pl-k">:</span> <span class="pl-c1">190</span>, tip<span class="pl-k">:</span> <span class="pl-c1">100</span>, type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>, productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>001<span class="pl-pds">"</span></span>,  <span class="pl-s"><span class="pl-pds">"</span>005<span class="pl-pds">"</span></span>]},
+    {date<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>2011-11-14T16:28:54Z<span class="pl-pds">"</span></span>, quantity<span class="pl-k">:</span> <span class="pl-c1">1</span>, total<span class="pl-k">:</span> <span class="pl-c1">300</span>, tip<span class="pl-k">:</span> <span class="pl-c1">200</span>, type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>visa<span class="pl-pds">"</span></span>, productIDs<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">"</span>004<span class="pl-pds">"</span></span>, <span class="pl-s"><span class="pl-pds">"</span>005<span class="pl-pds">"</span></span>]},
     <span class="pl-k">...</span>
   ])
-
-<span class="pl-c">// Or</span>
-
-<span class="pl-k">var</span> myUniverse <span class="pl-k">=</span> <span class="pl-en">universe</span>(myCrossfilter)</pre></div>
-
-<p>Use <code>find</code> to query:</p>
-
-<div class="highlight highlight-source-js"><pre><span class="pl-k">var</span> typeQuery <span class="pl-k">=</span> <span class="pl-smi">myUniverse</span>.<span class="pl-c1">find</span>({
-    <span class="pl-c">// GroupBy the type key</span>
-    groupBy<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>
-    columns<span class="pl-k">:</span> {
-      <span class="pl-c">// Use a the built-in 'count' aggregation</span>
-      $count<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>
-      <span class="pl-c">// Create a custom 'quantity' column</span>
-      quantity<span class="pl-k">:</span> {
-        <span class="pl-c">// Limit 'the quantity' column to rows where quantity is greater than 50</span>
-        $filter<span class="pl-k">:</span> {
-          quantity<span class="pl-k">:</span> {
-            $gt<span class="pl-k">:</span> <span class="pl-c1">50</span>
-          }
-        },
-        <span class="pl-c">// Use the built-in 'sum' aggregation</span>
-        $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span>
-      },
-    },
+  .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+    <span class="pl-c">// And now you're ready to query! :)</span>
+    <span class="pl-k">return</span> myUniverse
   })</pre></div>
 
-<p>Results are accessed with a promise:</p>
+<h3>
+<a id="query-your-data" class="anchor" href="#query-your-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Query your data</h3>
 
-<div class="highlight highlight-source-js"><pre><span class="pl-smi">typeQuery</span>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">res</span>) {
-
-  <span class="pl-c">// Easily access the results</span>
-  <span class="pl-smi">res</span>.<span class="pl-c1">data</span> <span class="pl-k">===</span> [{
-    <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>cash<span class="pl-pds">"</span></span>,
-    <span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
-      <span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>,
-      <span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">3</span>
-    }
-  }, {
-    <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>,
-    <span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
-      <span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">8</span>,
-      <span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">16</span>
-    }
-  }, {
-    <span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>visa<span class="pl-pds">"</span></span>,
-    <span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {
-      <span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>,
-      <span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>
-    }
-  }]
-
-  <span class="pl-c">// Plot the data in DC.js using the dimension and group created for the query</span>
-  <span class="pl-smi">dc</span>.<span class="pl-en">pieChart</span>(<span class="pl-s"><span class="pl-pds">'</span>#chart<span class="pl-pds">'</span></span>)
-    .<span class="pl-en">dimension</span>(<span class="pl-smi">res</span>.<span class="pl-smi">dimension</span>)
-    .<span class="pl-en">group</span>(<span class="pl-smi">res</span>.<span class="pl-smi">group</span>);
-
-  <span class="pl-c">// Even access the crossfilter instance</span>
-  <span class="pl-k">var</span> size <span class="pl-k">=</span> <span class="pl-smi">res</span>.<span class="pl-smi">crossfilter</span>.<span class="pl-c1">size</span>()
+<div class="highlight highlight-source-js"><pre>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+  <span class="pl-smi">myUniverse</span>.<span class="pl-en">query</span>({
+    groupBy<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span> <span class="pl-c">// GroupBy the type key</span>
+    columns<span class="pl-k">:</span> {
+      $count<span class="pl-k">:</span> <span class="pl-c1">true</span>, <span class="pl-c">// Count the number of records</span>
+      quantity<span class="pl-k">:</span> { <span class="pl-c">// Create a custom 'quantity' column</span>
+        $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span> <span class="pl-c">// Sum the quantity column</span>
+      },
+    },
+    <span class="pl-c">// Limit selection to rows where quantity is greater than 50</span>
+    filter<span class="pl-k">:</span> {
+      quantity<span class="pl-k">:</span> {
+        $gt<span class="pl-k">:</span> <span class="pl-c1">50</span>
+      }
+    },
+  })
 })</pre></div>
 
-<p>Optionally pre-compile dimensions with column definitions</p>
+<h3>
+<a id="use-your-data" class="anchor" href="#use-your-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Use your data</h3>
 
-<div class="highlight highlight-source-js"><pre><span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>({
-  key<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>,
-  type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>string<span class="pl-pds">'</span></span>
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">res</span>) {
+  <span class="pl-c">// Use your data for tables, charts, data visualiztion, etc.</span>
+  <span class="pl-smi">res</span>.<span class="pl-c1">data</span> <span class="pl-k">===</span> [
+    {<span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>cash<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {<span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>,<span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> {<span class="pl-s"><span class="pl-pds">"</span>sum<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">3</span>}}},
+    {<span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>tab<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {<span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">8</span>,<span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> {<span class="pl-s"><span class="pl-pds">"</span>sum<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">16</span>}}},
+    {<span class="pl-s"><span class="pl-pds">"</span>key<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">"</span>visa<span class="pl-pds">"</span></span>,<span class="pl-s"><span class="pl-pds">"</span>value<span class="pl-pds">"</span></span><span class="pl-k">:</span> {<span class="pl-s"><span class="pl-pds">"</span>count<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>,<span class="pl-s"><span class="pl-pds">"</span>quantity<span class="pl-pds">"</span></span><span class="pl-k">:</span> {<span class="pl-s"><span class="pl-pds">"</span>sum<span class="pl-pds">"</span></span><span class="pl-k">:</span> <span class="pl-c1">2</span>}}}
+  ]
+
+  <span class="pl-c">// Or plost the data in DC.js using the underlying crossfilter dimension and group</span>
+  <span class="pl-smi">dc</span>.<span class="pl-en">pieChart</span>(<span class="pl-s"><span class="pl-pds">'</span>#chart<span class="pl-pds">'</span></span>)
+    .<span class="pl-en">dimension</span>(<span class="pl-smi">res</span>.<span class="pl-smi">dimension</span>)
+    .<span class="pl-en">group</span>(<span class="pl-smi">res</span>.<span class="pl-smi">group</span>)
+
+  <span class="pl-c">// Pass the query's universe instance to keep chaining</span>
+  <span class="pl-k">return</span> <span class="pl-smi">res</span>.<span class="pl-smi">universe</span>
+})</pre></div>
+
+<h3>
+<a id="explore-your-data" class="anchor" href="#explore-your-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Explore your data</h3>
+
+<p>As you filter your data on the universe level, every query's result is updated in real-time to reflect changes in aggregation</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-c">// Filter records where 'type' === 'visa'</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>) {
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">filter</span>(<span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>visa<span class="pl-pds">'</span></span>)
+})
+
+<span class="pl-c">// Filter records where 'type' === 'visa' or 'tab'</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>) {
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">filter</span>(<span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>, [<span class="pl-s"><span class="pl-pds">'</span>visa<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>tab<span class="pl-pds">'</span></span>])
+})
+
+<span class="pl-c">// Filter records where 'total' is between 50 and 100</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>) {
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">filter</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>, [<span class="pl-c1">50</span>, <span class="pl-c1">10</span>], <span class="pl-c1">true</span>)
+})
+
+<span class="pl-c">// Filter records using an expressive and JSON friendly query syntax</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>) {
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">filter</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>, {
+    $lt<span class="pl-k">:</span> { <span class="pl-c">// Filter to results where total is less than</span>
+      <span class="pl-s"><span class="pl-pds">'</span>$get(total)<span class="pl-pds">'</span></span><span class="pl-k">:</span> { <span class="pl-c">// the "total" property from</span>
+        <span class="pl-s"><span class="pl-pds">'</span>$nthLast(3)<span class="pl-pds">'</span></span><span class="pl-k">:</span> { <span class="pl-c">// the 3rd to the last row from</span>
+          $column<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>date<span class="pl-pds">'</span></span> <span class="pl-c">// the dataset sorted by the date column</span>
+        }
+      }
+    }
+  })
+})
+
+<span class="pl-c">// Or if you're feeling powerful, just write your own custom filter function</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">filter</span>({
+    <span class="pl-en">total</span><span class="pl-k">:</span> <span class="pl-k">function</span>(<span class="pl-smi">row</span>){
+      <span class="pl-k">return</span> (<span class="pl-smi">row</span>.<span class="pl-smi">quantity</span> <span class="pl-k">*</span> <span class="pl-smi">row</span>.<span class="pl-smi">sum</span>) <span class="pl-k">&gt;</span> <span class="pl-c1">50</span>
+    }
+  })
+})
+
+<span class="pl-c">// Clear the filters for the 'type' column</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">filter</span>(<span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>)
+})
+
+<span class="pl-c">// Clear all of the filters</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">filterAll</span>()
+})
+
+<span class="pl-c">// Remove a column index</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-c1">clear</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>)
+})
+
+<span class="pl-c">// Remove all columns</span>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-c1">clear</span>()
+})
+</pre></div>
+
+<p>Pro-Tip: You can also <strong>pre-compile</strong> column indices before querying. Otherwise, ad-hoc indices are created and managed automagically for you anyway.</p>
+
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>(<span class="pl-s"><span class="pl-pds">'</span>a<span class="pl-pds">'</span></span>)
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>([<span class="pl-s"><span class="pl-pds">'</span>a<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>b<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>c<span class="pl-pds">'</span></span>])
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>({
+    key<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>d<span class="pl-pds">'</span></span>,
+    type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>string<span class="pl-pds">'</span></span> <span class="pl-c">// override automatic type detection</span>
+  })
 })</pre></div>
 
       <footer class="site-footer">
