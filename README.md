@@ -22,6 +22,9 @@ npm install crossfilter/universe --save
 Pass `universe` an array of objects or a Crossfilter instance:
 
 ```javascript
+
+var universe = require('universe')
+
 var myUniverse = universe([
     {date: "2011-11-14T16:17:54Z", quantity: 2, total: 190, tip: 100, type: "tab", productIDs: ["001"]},
     {date: "2011-11-14T16:20:19Z", quantity: 2, total: 190, tip: 100, type: "tab", productIDs: ["001",  "005"]},
