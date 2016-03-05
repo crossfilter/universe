@@ -1,15 +1,14 @@
 # Universe
-[![Build Status](https://travis-ci.org/crossfilter/universe.svg?branch=master)](https://travis-ci.org/crossfilter/universe)
-[![Join the chat at https://gitter.im/crossfilter/universe](https://badges.gitter.im/crossfilter/universe.svg)](https://gitter.im/crossfilter/universe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![Build Status](https://travis-ci.org/crossfilter/universe.svg?branch=master)](https://travis-ci.org/crossfilter/universe) [![Join the chat at https://gitter.im/crossfilter/universe](https://badges.gitter.im/crossfilter/universe.svg)](https://gitter.im/crossfilter/universe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-## A Crossfilter Query Interface for Everyone
-Before Universe, a typical Crossfilter setup involved creating and keeping track of tons of dimensions and potentially hundreds of groups. These dimensions and groups then required intense map-reduce functions and an intimate knowledge with the inner-workings of Crossfilter to be productive.
+## Easy exploration of multivariate datasets at blazing speeds
+Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indices, and countless lines of code to dicect your data.
 
-**Universe** skips this mess and allows you to query your data using a simple **JSON query syntax** or **CFQL**, a powerful *SQL-based query language*
+With Universe, you can be there in just a few lines of code. You've got better things to do than write intense map-reduce functions or learn the intricate inner-workings of [Crossfilter](https://github.com/crossfilter/crossfilter) ;)
 
 ## Installation
-
 **NPM**
+
 ```shell
 npm install --save-dev crossfilter-universe
 ```
@@ -17,133 +16,162 @@ npm install --save-dev crossfilter-universe
 **Download** from the [releases](https://github.com/crossfilter/universe/releases) page. Serve the universe.js or universe.min.js file in the top-level directory as part of your application.
 
 ## Usage
-
-### Create a new Universe
+### Create a new Universe with your dataset
 Pass `universe` an array of objects or a Crossfilter instance:
 
 ```javascript
 var myUniverse = universe([
-    {date: "2011-11-14T16:17:54Z",quantity: 2,total: 190,tip: 100,type: "tab",productIDs: ["001"]},
-    {date: "2011-11-14T16:20:19Z",quantity: 2,total: 190,tip: 100,type: "tab",productIDs: ["001", "005"]},
-    {date: "2011-11-14T16:28:54Z",quantity: 1,total: 300,tip: 200,type: "visa",productIDs: ["004", "005"]},
+    {date: "2011-11-14T16:17:54Z", quantity: 2, total: 190, tip: 100, type: "tab", productIDs: ["001"]},
+    {date: "2011-11-14T16:20:19Z", quantity: 2, total: 190, tip: 100, type: "tab", productIDs: ["001",  "005"]},
+    {date: "2011-11-14T16:28:54Z", quantity: 1, total: 300, tip: 200, type: "visa", productIDs: ["004", "005"]},
     ...
   ])
-
-// Or
-
-var myUniverse = universe(myCrossfilter)
-```
-
-### Query your data
-Use `find` to query:
-
-```javascript
-var typeQuery = myUniverse.find({
-    // GroupBy the type key
-    groupBy: 'type'
-    columns: {
-      // Use a the built-in 'count' aggregation
-      $count: 'type'
-      // Create a custom 'quantity' column
-      quantity: {
-        // Limit 'the quantity' column to rows where quantity is greater than 50
-        $filter: {
-          quantity: {
-            $gt: 50
-          }
-        },
-        // Use the built-in 'sum' aggregation
-        $sum: 'quantity'
-      },
-    },
+  .then(function(myUniverse){
+    // Your data is now indexed and ready to query. This is pretty much instantaneous :)
+    return myUniverse
   })
 ```
 
-### Access Results
-
-Via `promises`
+### Query your data
 
 ```javascript
-typeQuery.then(function(res) {
 
-  // Easily access the results
+.then(function(myUniverse){
+  myUniverse.query({
+    groupBy: 'type' // GroupBy the type key
+    columns: {
+      $count: true, // Count the number of records
+      quantity: { // Create a custom 'quantity' column
+        $sum: 'quantity' // Sum the quantity column
+      },
+    },
+    // Limit selection to rows where quantity is greater than 50
+    filter: {
+      quantity: {
+        $gt: 50
+      }
+    },
+  })
+})
+```
+
+### Use your data
+
+```javascript
+.then(function(res) {
+  // Use your data for tables, charts, data visualiztion, etc.
   res.data === [{
     "key": "cash",
     "value": {
       "count": 2,
-      "quantity": 3
+      "quantity": {
+        "sum": 3
+      }
     }
   }, {
     "key": "tab",
     "value": {
       "count": 8,
-      "quantity": 16
+      "quantity": {
+        "sum": 16
+      }
     }
   }, {
     "key": "visa",
     "value": {
       "count": 2,
-      "quantity": 2
+      "quantity": {
+        "sum": 2
+      }
     }
   }]
 
-  // Plot the data in DC.js using the dimension and group created for the query
+  // Or plost the data in DC.js using the underlying crossfilter dimension and group
   dc.pieChart('#chart')
     .dimension(res.dimension)
-    .group(res.group);
+    .group(res.group)
 
-  // Even access the crossfilter instance
-  var size = res.crossfilter.size()
+  // Pass the query's universe instance to keep chaining
+  return res.universe
 })
 ```
 
 ### Explore your data
-Using `filters`
 
 ```javascript
 // Filter records where 'type' === 'visa'
-myUniverse.filter({
-  type: 'visa'
+.then(function(myUniverse) {
+  return myUniverse.filter('type', 'visa')
 })
 
 // Filter records where 'type' === 'visa' or 'tab'
-myUniverse.filter({
-  type: {
-    $or: ['visa', 'tab']
-  }
+.then(function(myUniverse) {
+  return myUniverse.filter('type', ['visa', 'tab'])
 })
 
-// Filter records where 'type' !== 'tab' or 'cash'
-myUniverse.filter({
-  type: {
-    $ne: 'tab'
-    $ne: 'cash'
-  }
+// Filter records where 'total' is between 50 and 100
+.then(function(myUniverse) {
+  return myUniverse.filter('total', [50, 10], true)
 })
 
-// Filter records where 'total' is between 25 and 75
-myUniverse.filter({
-  total: {
-    "$in": [25, 75]
-  }
+// Filter records using object query syntax
+.then(function(myUniverse) {
+  // Filter to results where total
+  return myUniverse.filter('total', {
+    // is less than
+    $lt: {
+      // the total property
+      '$get(total)': {
+        // from the 3rd to the last row of
+        '$nthLast(3)': {    
+          // all of the rows sorted by the date column
+          $column: 'date'
+        }
+      }
+    }
+  })
 })
 
-// A custom filter function
-myUniverse.filter({
-  total: function(d){
-    return d.quantity > 3
-  }
+// Or if you're feeling powerful, just write your own custom filter function
+.then(function(myUniverse){
+  return myUniverse.filter({
+    total: function(row){
+      return (row.quantity * row.sum) > 50
+    }
+  })
 })
 
-// Clear all filters
-myUniverse.filterAll()
+// Clear the filters for the 'type' column
+.then(function(myUniverse){
+  return myUniverse.filter('type')
+})
+
+// Clear all of the filters
+.then(function(myUniverse){
+  return myUniverse.filterAll()
+})
+
+// Remove a column index
+.then(function(myUniverse){
+  return myUniverse.clear('total')
+})
+
+// Remove all columns
+.then(function(myUniverse){
+  return myUniverse.clear()
+})
+
 ```
 
-**Pre-compile** dimensions with column definitions
+Pro-Tip: You can also **pre-compile** column indices before querying. Otherwise, ad-hoc indices are created and managed automagically for you anyway.
 
 ```javascript
-myUniverse.column({
-  key: 'type',
-  type: 'string'
+.then(function(myUniverse){
+  return myUniverse.column('a')
+  return myUniverse.column(['a', 'b', 'c'])
+  return myUniverse.column({
+    key: 'd',
+    type: 'string' // override automatic type detection
+  })
 })
 ```
