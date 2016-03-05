@@ -15,43 +15,80 @@ module.exports = function(service) {
     scanForDynamicFilters: scanForDynamicFilters
   }
 
-  function filter(d, f) {
-    f = _.isUndefined(f) ? false : f
-    var exists = service.column.find(d)
+  function filter(column, fil, isRange, replace) {
+    var exists = service.column.find(column)
 
+    // If the filters dimension doesn't exist yet, try and create it
     return Promise.try(function() {
-        // If the filters dimension doesn't exist yet, try and create it
         if (!exists) {
           return service.column({
-              key: d,
-              temporary: true
+              key: column,
+              temporary: true,
             })
             .then(function() {
               // It was able to be created, so retrieve and return it
-              return service.column.find(d)
+              return service.column.find(column)
             })
         }
         // It exists, so just return what we found
         return exists
       })
       .then(function(column) {
-        var newfilters = _.clone(service.filters, true)
+        // Clone a copy of the new filters
+        var newFilters = _.clone(service.filters, true)
           // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
         var filterKey = column.complex ? JSON.stringify(column.key) : column.key
-        newfilters[filterKey] = f
-        return applyFilters(newfilters)
-      })
+          // Build the filter object
+        newFilters[filterKey] = buildFilterObject(fil, isRange, replace)
 
+        return applyFilters(newFilters)
+      })
   }
 
-  function filterAll(f) {
-    service.filters = f || {}
+  function filterAll() {
+    return applyFilters({})
+  }
+
+
+  function buildFilterObject(fil, isRange, replace) {
+    if (_.isUndefined(fil)) {
+      return false
+    }
+    if (_.isFunction(fil)) {
+      return {
+        value: fil,
+        function: fil,
+        replace: true,
+        type: 'function',
+      }
+    }
+    if (_.isObject(fil)) {
+      return {
+        value: fil,
+        function: makeFunction(fil),
+        replace: true,
+        type: 'function'
+      }
+    }
+    if (_.isArray(fil)) {
+      return {
+        value: fil,
+        replace: isRange || replace,
+        type: isRange ? 'range' : 'inclusive',
+      }
+    }
+    return {
+      value: fil,
+      replace: replace,
+      type: 'exact',
+    }
   }
 
   function applyFilters(newFilters) {
-    var ds = _.map(newFilters, function(f, i) {
+    var ds = _.map(newFilters, function(fil, i) {
+      var existing = service.filters[i]
       // Filters are the same, so no change is needed on this column
-      if (service.filters[i] && _.isEqual(f, service.filters[i])) {
+      if (fil.replace && existing && _.isEqual(fil, existing)) {
         return Promise.resolve()
       }
       var column
@@ -62,45 +99,99 @@ module.exports = function(service) {
         // Retrieve the column normally
         column = service.column.find(i)
       }
-      // Make the filter function
-      var filterFunction
-        // Undefined and false will perform a filterAll and remove the filter
-      if (_.isUndefined(f) || f === false) {
-        filterFunction = false
-      } else {
-        filterFunction = makeFunction(f)
+
+
+      // Toggling a filter value is a bit different from replacing them
+      if (fil && existing && !fil.replace) {
+        fil = toggleFilters(fil, existing)
       }
-      // If filter function is falsey, tag the filter for removal
-      // and perform a filterAll on the dimension
-      if (!filterFunction) {
-        newFilters[i] = false
+
+
+
+      // If no filter, remove everything from the dimension
+      if (!fil) {
         return Promise.resolve(column.dimension.filterAll())
       }
-      // Filter the dimension using the filterFunction
-      return Promise.resolve(column.dimension.filter(filterFunction))
+      if (fil.type === 'exact') {
+        return Promise.resolve(column.dimension.filterExact(fil.value))
+      }
+      if (fil.type === 'range') {
+        return Promise.resolve(column.dimension.filterRange(fil.value))
+      }
+      if (fil.type === 'inclusive') {
+        return Promise.resolve(column.dimension.filterFunction(function(d) {
+          return fil.value.indexOf(d) > -1
+        }))
+      }
+      if (fil.type === 'function') {
+        return Promise.resolve(column.dimension.filterFunction(fil.function))
+      }
+      // By default if something craps up, just remove all filters
+      return Promise.resolve(column.dimension.filterAll())
     })
 
     return Promise.all(ds)
       .then(function() {
         // Save the new filters satate
         service.filters = newFilters
-          // Delete filter properties tagged for removal
-        return Promise.all(_.map(service.filters, function(v, k) {
-          if (!v) {
-            delete service.filters[k]
 
-            var column = service.column.find((k.charAt(0) === '[') ? JSON.parse(k) : k)
+        // Pluck and remove falsey filters from the mix
+        var tryRemoval = []
+        _.forEach(service.filters, function(val, key) {
+          if (!val) {
+            tryRemoval.push({
+              key: key,
+              val: val,
+            })
+            delete service.filters[key]
+          }
+        })
 
+        // If any of those filters are the last dependency for the column, then remove the column
+        return Promise.all(_.map(tryRemoval, function(v) {
+          var column = service.column.find((v.key.charAt(0) === '[') ? JSON.parse(v.key) : v.key)
             if (column.temporary && !column.dynamicReference) {
               return service.clear(column.key)
             }
-
-          }
         }))
       })
       .then(function() {
         return service
       })
+  }
+
+  function toggleFilters(fil, existing) {
+    // Exact from Inclusive
+    if (fil.type === 'exact' && existing.type === 'inclusive') {
+      fil.value = _.xor(fil.value, [existing.value])
+    }
+    // Inclusive from Exact
+    else if (fil.type === 'inclusive' && existing.type === 'exact') {
+      fil.value = _.xor(fil.value, [existing.value])
+    }
+    // Inclusive / Inclusive Merge
+    else if (fil.type === 'inclusive' && existing.type === 'inclusive') {
+      fil.value = _.xor(fil.value, existing.value)
+    }
+    // Exact / Exact
+    else if (fil.type === 'exact' && existing.type === 'exact') {
+      // If the values are the same, remove the filter entirely
+      if (fil.value === existing.value) {
+        return false
+      }
+      // They they are different, make an array
+      fil.value = [fil.value, existing.value]
+    }
+
+    // Set the new type based on the merged values
+    if (fil.value.length === 1) {
+      fil.type = 'exact'
+      fil.value = fil.value[0]
+    } else {
+      fil.type = 'inclusive'
+    }
+
+    return fil
   }
 
   function scanForDynamicFilters(query) {
@@ -117,12 +208,12 @@ module.exports = function(service) {
         // find the data references, if any
         var ref = findDataReferences(val, key)
         ref && columns.push(ref)
-        // if it's a string
+          // if it's a string
         if (_.isString(val)) {
           ref = findDataReferences(null, val)
           ref && columns.push(ref)
         }
-          // If it's another object, keep looking
+        // If it's another object, keep looking
         if (_.isObject(val)) {
           walk(val)
         }
@@ -175,7 +266,7 @@ module.exports = function(service) {
 
     // If an array, recurse into each item and return as a map
     if (_.isArray(obj)) {
-      subGetters = _.map(obj, function(o){
+      subGetters = _.map(obj, function(o) {
         return makeFunction(o, isAggregation)
       })
       return function(d) {
@@ -214,8 +305,8 @@ module.exports = function(service) {
           // Make sure that any further operations are for aggregations
           // and not filters
           isAggregation = true
-          // here we pass true to makeFunction which denotes that
-          // an aggregatino chain has started and to stop using $AND
+            // here we pass true to makeFunction which denotes that
+            // an aggregatino chain has started and to stop using $AND
           getSub = makeFunction(val, isAggregation)
             // If it's an aggregation object, be sure to pass in the children, and then any additional params passed into the aggregation string
           return function(d) {
@@ -234,7 +325,7 @@ module.exports = function(service) {
       // All object expressions are basically AND's
       // Return AND with a map of the subGetters
       if (isAggregation) {
-        if(subGetters.length === 1){
+        if (subGetters.length === 1) {
           return function(d) {
             return subGetters[0](d)
           }

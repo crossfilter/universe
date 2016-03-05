@@ -301,7 +301,6 @@ describe('universe query', function() {
     })
     .then(function(r){
       res = r
-      console.log(res.universe.columns)
       expect(res.data).to.deep.equal([
         {"key": "cash","value": {"count": 0, sum: 0}},
         {"key": "tab","value": {"count": 0, sum: 0}},
@@ -317,7 +316,6 @@ describe('universe query', function() {
       }])
     })
     .then(function(r){
-      console.log(res.universe.columns)
       expect(res.data).to.deep.equal([
         {"key": "cash","value": {"count": 0, sum: 0}},
         {"key": "tab","value": {"count": 0, sum: 0}},

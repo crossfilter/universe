@@ -9,8 +9,20 @@ module.exports = function(service) {
     // Clear a single or multiple column definitions
     if (def) {
       def = _.isArray(def) ? def : [def]
+    }
 
-      return Promise.all(_.map(def, function(d) {
+    if (!def) {
+      // Clear all of the column defenitions
+      return Promise.all(_.map(service.columns, disposeColumn))
+        .then(function() {
+          service.columns = []
+          return service
+        })
+
+    }
+
+
+    return Promise.all(_.map(def, function(d) {
         if (_.isObject(d)) {
           d = d.key
         }
@@ -19,39 +31,35 @@ module.exports = function(service) {
           if (_.isArray(d)) {
             return !_.xor(c.key, d).length
           }
-          if(c.key === d){
-            if(c.dynamicReference){
+          if (c.key === d) {
+            if (c.dynamicReference) {
               return false
             }
             return true
           }
         })[0]
 
-        if(!column){
+        if (!column) {
           // console.info('Attempted to clear a column that is required for another query!', c)
           return
         }
 
-        // Dispose the dimension
-        var disposalActions = _.map(column.removeListeners, function(listener){
-          return Promise.resolve(listener())
-        })
-        disposalActions.push(Promise.resolve(column.dimension.dispose()))
-        return Promise.all(disposalActions)
-      }))
-        .then(function(){
-          return service
-        })
-    }
-
-    // Clear all of the column defenitions
-    return Promise.all(_.map(service.columns, function(c) {
-        return Promise.resolve(c.dimension.dispose())
+        disposeColumn(column)
       }))
       .then(function() {
-        service.columns = []
         return service
       })
+
+    function disposeColumn(column) {
+      // Dispose the dimension
+      var disposalActions = _.map(column.removeListeners, function(listener) {
+        return Promise.resolve(listener())
+      })
+      var filterKey = column.complex ? JSON.stringify(column.key) : column.key
+      delete service.filters[filterKey]
+      disposalActions.push(Promise.resolve(column.dimension.dispose()))
+      return Promise.all(disposalActions)
+    }
 
   }
 }

@@ -46,7 +46,7 @@ describe('universe filter', function() {
     })
   })
 
-  it('can filter based on a single column that is not defined yet. Then recycle that column.', function() {
+  it('can filter based on a single column that is not defined yet, then recycle that column', function() {
     var data
     return u.then(function(u) {
       return u.query({
@@ -98,6 +98,108 @@ describe('universe filter', function() {
             {"key": [100, 190],"value": {"valueList": [190, 190],"max": 190}},
             {"key": [100, 200],"value": {"valueList": [200],"max": 200}},
             {"key": [200, 300],"value": {"valueList": [300],"max": 300}}
+          ])
+        })
+    })
+  })
+
+  it('can toggle filters using simple values', function() {
+    var data
+    return u.then(function(u) {
+      return u.query({
+          groupBy: 'tip',
+          select: {
+            $count: true
+          }
+        })
+        .then(function(res) {
+          data = res.data
+          return res.universe.filter('type', 'cash')
+        })
+        .then(function(u) {
+          expect(data).to.deep.equal([
+            { key: 0, value: { count: 2 } },
+            { key: 100, value: { count: 0 } },
+            { key: 200, value: { count: 0 } }
+          ])
+          return u
+        })
+        .then(function(u) {
+          return u.filter('type', 'cash')
+        })
+        .then(function(){
+          expect(data).to.deep.equal([
+            { key: 0, value: { count: 8 } },
+            { key: 100, value: { count: 3 } },
+            { key: 200, value: { count: 1 } }
+          ])
+        })
+    })
+  })
+
+  it('can toggle filters using an array as a range', function() {
+    var data
+    return u.then(function(u) {
+      return u.query({
+          groupBy: 'type',
+          select: {
+            $count: true
+          }
+        })
+        .then(function(res) {
+          data = res.data
+          return res.universe.filter('total', [85, 101], true)
+        })
+        .then(function(u) {
+          expect(data).to.deep.equal([
+            { key: 'cash', value: { count: 1 } },
+            { key: 'tab', value: { count: 6 } },
+            { key: 'visa', value: { count: 0 } }
+          ])
+          return u
+        })
+        .then(function(u) {
+          return u.filter('total', [85, 91], true)
+        })
+        .then(function(){
+          expect(data).to.deep.equal([
+            { key: 'cash', value: { count: 0 } },
+            { key: 'tab', value: { count: 6 } },
+            { key: 'visa', value: { count: 0 } }
+          ])
+        })
+    })
+  })
+
+  it('can toggle filters using an array as an include', function() {
+    var data
+    return u.then(function(u) {
+      return u.query({
+          groupBy: 'type',
+          select: {
+            $count: true
+          }
+        })
+        .then(function(res) {
+          data = res.data
+          return res.universe.filter('total', [90, 100])
+        })
+        .then(function(u) {
+          expect(data).to.deep.equal([
+            { key: 'cash', value: { count: 1 } },
+            { key: 'tab', value: { count: 6 } },
+            { key: 'visa', value: { count: 0 } }
+          ])
+          return u
+        })
+        .then(function(u) {
+          return u.filter('total', [90, 300, 200])
+        })
+        .then(function(){
+          expect(data).to.deep.equal([
+            { key: 'cash', value: { count: 1 } },
+            { key: 'tab', value: { count: 0 } },
+            { key: 'visa', value: { count: 2 } }
           ])
         })
     })

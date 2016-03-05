@@ -94,7 +94,7 @@ module.exports = function(service) {
         // If the column exists, let's at least make sure it's marked
         // as permanent. There is a slight chance it exists because
         // of a filter, and the user decides to make it permanent
-        if (existing) {
+        if (existing && !column.temporary) {
           existing.temporary = false
           if(column.dynamicReference){
             existing.dynamicReference = true
@@ -113,6 +113,7 @@ module.exports = function(service) {
       })
       .then(function(dim) {
         column.dimension = dim
+        column.filterCount = column.filterCount || 0
         column.removeListeners = [buildColumnKeys]
         column.addListeners = [buildColumnKeys]
 

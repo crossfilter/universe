@@ -7,6 +7,7 @@ var source = require('vinyl-source-stream');
 var streamify = require('gulp-streamify');
 var bump = require('gulp-bump');
 var mocha = require('gulp-mocha');
+var cover = require('gulp-coverage');
 
 var testFiles = [
   'universe.js',
@@ -56,9 +57,16 @@ gulp.task('test', function() {
   return gulp.src(testFiles, {
       read: false
     })
+    // .pipe(cover.instrument({
+    //   pattern: ['src/**/*.js'],
+    //   debugDirectory: 'debug'
+    // }))
     .pipe(mocha({
       reporter: 'nyan'
-    }));
+    }))
+    // .pipe(cover.gather())
+    // .pipe(cover.format())
+    // .pipe(gulp.dest('coverage'));
 });
 
 // Watch Files For Changes
