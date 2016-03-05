@@ -2,9 +2,20 @@
 [![Build Status](https://travis-ci.org/crossfilter/universe.svg?branch=master)](https://travis-ci.org/crossfilter/universe) [![Join the chat at https://gitter.im/crossfilter/universe](https://badges.gitter.im/crossfilter/universe.svg)](https://gitter.im/crossfilter/universe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## The easiest and fastest way to explore your data
-Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indices, and countless lines of code to dicect your data.
+Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indices, and countless lines of code to dissect your data.
 
 With Universe, you can be there in just a few lines of code. You've got better things to do than write intense map-reduce functions or learn the intricate inner-workings of [Crossfilter](https://github.com/crossfilter/crossfilter) ;)
+
+## Features
+- Simple, yet powerful query syntax
+- Built on, and tightly integrated with  [Crossfilter](https://github.com/crossfilter/crossfilter), and [Reductio](https://github.com/crossfilter/reductio) - the fastest multi-dimensional JS data frameworks available
+- Real-time updates to query results as you filter
+- Flexible filtering system
+- Automatic and invisible management of data indexing and memory
+
+## Demos
+
+- [Basic Usage](http://codepen.io/tannerlinsley/pen/oxjyvg?editors=0010)
 
 ## Installation
 **NPM**
@@ -32,7 +43,7 @@ var myUniverse = universe([
     ...
   ])
   .then(function(myUniverse){
-    // Your data is now indexed and ready to query. This is pretty much instantaneous :)
+    // And now you're ready to query! :)
     return myUniverse
   })
 ```
@@ -65,31 +76,11 @@ var myUniverse = universe([
 ```javascript
 .then(function(res) {
   // Use your data for tables, charts, data visualiztion, etc.
-  res.data === [{
-    "key": "cash",
-    "value": {
-      "count": 2,
-      "quantity": {
-        "sum": 3
-      }
-    }
-  }, {
-    "key": "tab",
-    "value": {
-      "count": 8,
-      "quantity": {
-        "sum": 16
-      }
-    }
-  }, {
-    "key": "visa",
-    "value": {
-      "count": 2,
-      "quantity": {
-        "sum": 2
-      }
-    }
-  }]
+  res.data === [
+    {"key": "cash","value": {"count": 2,"quantity": {"sum": 3}}},
+    {"key": "tab","value": {"count": 8,"quantity": {"sum": 16}}},
+    {"key": "visa","value": {"count": 2,"quantity": {"sum": 2}}}
+  ]
 
   // Or plost the data in DC.js using the underlying crossfilter dimension and group
   dc.pieChart('#chart')
@@ -102,6 +93,8 @@ var myUniverse = universe([
 ```
 
 ### Explore your data
+
+As you filter your data on the universe level, every query's result is updated in real-time to reflect changes in aggregation
 
 ```javascript
 // Filter records where 'type' === 'visa'
