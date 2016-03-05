@@ -112,18 +112,13 @@ As you filter your data on the universe level, every query's result is updated i
   return myUniverse.filter('total', [50, 10], true)
 })
 
-// Filter records using object query syntax
+// Filter records using an expressive and JSON friendly query syntax
 .then(function(myUniverse) {
-  // Filter to results where total
   return myUniverse.filter('total', {
-    // is less than
-    $lt: {
-      // the total property
-      '$get(total)': {
-        // from the 3rd to the last row of
-        '$nthLast(3)': {    
-          // all of the rows sorted by the date column
-          $column: 'date'
+    $lt: { // Filter to results where total is less than
+      '$get(total)': { // the "total" property from
+        '$nthLast(3)': { // the 3rd to the last row from
+          $column: 'date' // the dataset sorted by the date column
         }
       }
     }
