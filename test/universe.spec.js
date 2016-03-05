@@ -35,4 +35,29 @@ describe('universe', function() {
     }).not.to.throw()
   })
 
+  it('can create generated columns using an accessor function', function() {
+    return universe(data, {
+        generatedColumns: {
+          totalAndTip: function(d) {
+            return d.total + d.tip
+          }
+        }
+      })
+      .then(function(myUniverse) {
+        return myUniverse.query({
+          groupBy: 'totalAndTip'
+        })
+      })
+      .then(function(res){
+        expect(res.data).to.deep.equal([
+          { key: 90, value: { count: 6 } },
+          { key: 100, value: { count: 1 } },
+          { key: 200, value: { count: 1 } },
+          { key: 290, value: { count: 2 } },
+          { key: 300, value: { count: 1 } },
+          { key: 500, value: { count: 1 } }
+        ])
+      })
+  })
+
 });

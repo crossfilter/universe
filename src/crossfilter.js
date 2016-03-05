@@ -9,6 +9,7 @@ module.exports = function(service) {
 
   return {
     build: build,
+    generateColumns: generateColumns,
     add: add,
     remove: remove,
   }
@@ -24,7 +25,20 @@ module.exports = function(service) {
     return Promise.resolve(c)
   }
 
+  function generateColumns(data){
+    if(!service.options.generatedColumns){
+      return data
+    }
+    return _.map(data, function(d, i){
+      _.forEach(service.options.generatedColumns, function(val, key){
+        d[key] = val(d)
+      })
+      return d
+    })
+  }
+
   function add(data) {
+    data = generateColumns(data)
     return Promise.try(function() {
         return Promise.resolve(service.cf.add(data))
       })

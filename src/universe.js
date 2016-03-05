@@ -5,14 +5,17 @@ var _ = require('./lodash')
 
 module.exports = universe
 
-function universe(data) {
+function universe(data, options) {
 
   var service = {
+    options: _.assign({}, options),
     columns: [],
     filters: {},
   }
 
   var cf = require('./crossfilter')(service)
+
+  data = cf.generateColumns(data)
 
   return cf.build(data)
     .then(function(data) {
