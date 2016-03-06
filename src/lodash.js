@@ -226,12 +226,16 @@ function uniq(a) {
   });
 }
 
-function flatten(array) {
-  return array.reduce(function(a, b) {
-    return a.concat(b);
-  }, []);
+function flatten(aa) {
+  var flattened = [];
+  for (var i = 0; i < aa.length; ++i) {
+    var current = aa[i];
+    for (var j = 0; j < current.length; ++j)
+      flattened.push(current[j]);
+  }
+  return flattened
 }
 
-function sort(a){
+function sort(a) {
   return a.sort(naturalSort)
 }
