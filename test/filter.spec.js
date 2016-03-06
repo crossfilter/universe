@@ -117,35 +117,40 @@ describe('universe filter', function() {
           return res.universe.filter('type', 'cash')
         })
         .then(function(u) {
+          expect(u.filters.type.value).to.deep.equal('cash')
           expect(data).to.deep.equal([
             { key: 0, value: { count: 2 } },
             { key: 100, value: { count: 0 } },
             { key: 200, value: { count: 0 } }
           ])
-          return u
-        })
-        .then(function(u) {
           return u.filter('type', 'visa')
         })
         .then(function(u){
+          expect(u.filters.type.value).to.deep.equal(['visa','cash'])
           expect(data).to.deep.equal([
             { key: 0, value: { count: 2 } },
             { key: 100, value: { count: 1 } },
             { key: 200, value: { count: 1 } }
           ])
-          return u
-        })
-        .then(function(u) {
-          return u.filter('type', 'cash')
+          return u.filter('type', 'tab')
         })
         .then(function(u){
-          console.log(u.filters)
+          expect(u.filters.type.value).to.deep.equal(['tab', 'visa', 'cash'])
           expect(data).to.deep.equal([
             { key: 0, value: { count: 8 } },
             { key: 100, value: { count: 3 } },
             { key: 200, value: { count: 1 } }
           ])
-          return u
+          return u.filter('type', 'visa')
+        })
+        .then(function(u){
+          expect(u.filters.type.value).to.deep.equal(['tab','cash'])
+          expect(data).to.deep.equal([
+            { key: 0, value: { count: 8 } },
+            { key: 100, value: { count: 2 } },
+            { key: 200, value: { count: 0 } }
+          ])
+          return u.filter('type')
         })
     })
   })
@@ -208,9 +213,9 @@ describe('universe filter', function() {
         .then(function(u) {
           return u.filter('total', [90, 300, 200])
         })
-        .then(function(){
+        .then(function(u){
           expect(data).to.deep.equal([
-            { key: 'cash', value: { count: 1 } },
+            { key: 'cash', value: { count: 2 } },
             { key: 'tab', value: { count: 0 } },
             { key: 'visa', value: { count: 2 } }
           ])

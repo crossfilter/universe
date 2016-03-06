@@ -161,13 +161,19 @@ function pick(a, b) {
 }
 
 function xor(a, b) {
-  var diff = []
+
+  var unique = []
   forEach(a, function(aa) {
-    if (b.indexOf(aa) < 0) {
-      return diff.push(aa)
+    if (b.indexOf(aa) === -1) {
+      return unique.push(aa)
     }
   })
-  return diff
+  forEach(b, function(bb) {
+    if (a.indexOf(bb) === -1) {
+      return unique.push(bb)
+    }
+  })
+  return unique
 }
 
 function clone(a) {

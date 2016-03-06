@@ -163,7 +163,7 @@ module.exports = function(service) {
   function toggleFilters(fil, existing) {
     // Exact from Inclusive
     if (fil.type === 'exact' && existing.type === 'inclusive') {
-      fil.value = _.xor(fil.value, [existing.value])
+      fil.value = _.xor([fil.value], existing.value)
     }
     // Inclusive from Exact
     else if (fil.type === 'inclusive' && existing.type === 'exact') {
