@@ -289,7 +289,6 @@ module.exports = function(service) {
         if (dataRef) {
           var column = service.column.find(dataRef)
           var data = column.values
-          console.log(data)
           return function(d) {
             return data
           }

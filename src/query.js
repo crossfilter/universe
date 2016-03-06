@@ -87,6 +87,8 @@ module.exports = function(service) {
           crossfilter: service.cf,
           dimension: column.dimension,
           group: group,
+          // Reductio reducer instance
+          reducer: null,
         }
 
         var stopListeningForData
@@ -94,6 +96,7 @@ module.exports = function(service) {
           stopListeningForData = service.onDataChange(function applyReducerOnDataChange(isPost) {
             return applyReducer(queryRes, isPost)
           })
+          column.removeListeners.push(stopListeningForData)
         }
 
         return applyReducer(queryRes)
@@ -105,11 +108,13 @@ module.exports = function(service) {
           // Create the reducer using reductio and the Universe Query Syntax
           return reductiofy(query)
             .then(function(reducer) {
+              queryRes.reducer = reducer
               // Apply the reducer to the group
-              reducer(queryRes.group)
-              queryRes.data = queryRes.group.all()
-              console.log(queryRes.data)
-              // queryRes.dynamicData = isPost
+              queryRes.reducer(queryRes.group)
+              return Promise.resolve(queryRes.group.all())
+            })
+            .then(function(all){
+              queryRes.data = all
             })
         }
 

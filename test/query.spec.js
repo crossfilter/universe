@@ -315,7 +315,7 @@ describe('universe query', function() {
     })
   })
 
-  // TODO: This isn't possible because of something in reductio
+  // TODO: This isn't completely possible yet, reductio will need to support aliases for all aggregations first.  As of this commit, it is only available on `count`
   // it('supports nested aliases', function(){
   //   return u.then(function(u){
   //     return u.query({
