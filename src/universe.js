@@ -1,5 +1,7 @@
 'use strict'
 
+require('./q.serial')
+
 var Promise = require('q')
 var _ = require('./lodash')
 
@@ -11,6 +13,7 @@ function universe(data, options) {
     options: _.assign({}, options),
     columns: [],
     filters: {},
+    dataListeners: [],
   }
 
   var cf = require('./crossfilter')(service)
@@ -27,6 +30,14 @@ function universe(data, options) {
         query: require('./query')(service),
         filter: require('./filters')(service).filter,
         clear: require('./clear')(service),
+        onDataChange: onDataChange
       })
     })
+
+  function onDataChange(cb){
+    service.dataListeners.push(cb)
+    return function(){
+      service.dataListeners.splice(service.dataListeners.indexOf(cb), 1)
+    }
+  }
 }

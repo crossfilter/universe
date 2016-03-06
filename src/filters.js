@@ -209,11 +209,11 @@ module.exports = function(service) {
       _.forEach(obj, function(val, key) {
         // find the data references, if any
         var ref = findDataReferences(val, key)
-        ref && columns.push(ref)
+        if(ref) columns.push(ref)
           // if it's a string
         if (_.isString(val)) {
           ref = findDataReferences(null, val)
-          ref && columns.push(ref)
+          if(ref) columns.push(ref)
         }
         // If it's another object, keep looking
         if (_.isObject(val)) {
@@ -247,8 +247,7 @@ module.exports = function(service) {
     if (_.isString(obj)) {
       var dataRef = findDataReferences(null, obj)
       if (dataRef) {
-        var column = service.column.find(dataRef)
-        var data = column.dimension.bottom(Infinity)
+        var data = service.cf.all()
         return function(d) {
           return data
         }
@@ -289,7 +288,8 @@ module.exports = function(service) {
         var dataRef = findDataReferences(val, key)
         if (dataRef) {
           var column = service.column.find(dataRef)
-          var data = column.dimension.bottom(Infinity)
+          var data = column.values
+          console.log(data)
           return function(d) {
             return data
           }

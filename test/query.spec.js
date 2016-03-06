@@ -194,31 +194,24 @@ describe('universe query', function() {
   })
 
   it('can filter using $column data', function() {
-    return u.then(function(u){
+    return u.then(function(u) {
       return u.query({
-        groupBy: 'type',
-        select: {
-          $count: 'true',
-        },
-        filter: {
-          date: {
-            $lt: {
-              '$get(date)': {
-                '$nth(2)': {
-                  $column: 'date'
-                }
+          groupBy: 'tip',
+          filter: {
+            type: {
+              $last: {
+                $column: 'type'
               }
             }
           }
-        }
-      })
-    })
-    .then(function(res){
-      expect(res.data).to.deep.equal([
-        {"key": "cash","value": {"count": 0}},
-        {"key": "tab","value": {"count": 2}},
-        {"key": "visa","value": {"count": 0}}
-      ])
+        })
+        .then(function(u) {
+          expect(u.data).to.deep.equal([
+            { key: 0, value: { count: 8 } },
+            { key: 100, value: { count: 3 } },
+            { key: 200, value: { count: 1 } }
+          ])
+        })
     })
   })
 
@@ -289,10 +282,8 @@ describe('universe query', function() {
         filter: {
           date: {
             $eq: {
-              '$get(date)': {
-                '$last': {
-                  $column: 'date'
-                }
+              '$last': {
+                $column: 'date'
               }
             }
           }

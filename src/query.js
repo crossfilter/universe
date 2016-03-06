@@ -64,7 +64,7 @@ module.exports = function(service) {
         // the group to be rebuilt when data is added or removed in any way.
         if (requiredColumns.length) {
           return Promise.all(_.map(requiredColumns, function(columnKey) {
-              service.column({
+              return service.column({
                 key: columnKey,
                 dynamicReference: group
               })
@@ -76,7 +76,8 @@ module.exports = function(service) {
         return false
       })
       .then(function(needsListener) {
-        // Here, we create a listener to recreate and apply the reducer to
+        // Here, we create a listener to recreate and apply the reducer
+        // (with updated reference data) to
         // the group anytime data changes.
 
         var queryRes = {
@@ -88,11 +89,9 @@ module.exports = function(service) {
           group: group,
         }
 
+        var stopListeningForData
         if (needsListener) {
-          column.addListeners.push(function(isPost) {
-            return applyReducer(queryRes, isPost)
-          })
-          column.removeListeners.push(function(isPost) {
+          stopListeningForData = service.onDataChange(function applyReducerOnDataChange(isPost) {
             return applyReducer(queryRes, isPost)
           })
         }
@@ -109,7 +108,8 @@ module.exports = function(service) {
               // Apply the reducer to the group
               reducer(queryRes.group)
               queryRes.data = queryRes.group.all()
-              queryRes.dynamicData = isPost
+              console.log(queryRes.data)
+              // queryRes.dynamicData = isPost
             })
         }
 

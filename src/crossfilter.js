@@ -25,12 +25,12 @@ module.exports = function(service) {
     return Promise.resolve(c)
   }
 
-  function generateColumns(data){
-    if(!service.options.generatedColumns){
+  function generateColumns(data) {
+    if (!service.options.generatedColumns) {
       return data
     }
-    return _.map(data, function(d, i){
-      _.forEach(service.options.generatedColumns, function(val, key){
+    return _.map(data, function(d, i) {
+      _.forEach(service.options.generatedColumns, function(val, key) {
         d[key] = val(d)
       })
       return d
@@ -43,13 +43,11 @@ module.exports = function(service) {
         return Promise.resolve(service.cf.add(data))
       })
       .then(function() {
-        var ds = []
-        _.forEach(service.columns, function(column) {
-          _.forEach(column.addListeners, function(listener) {
-            ds.push(listener())
-          })
-        })
-        return Promise.all(ds)
+        return Promise.serial(_.map(service.dataListeners, function(listener) {
+          return function() {
+            return listener(true)
+          }
+        }))
       })
       .then(function() {
         return service

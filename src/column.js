@@ -15,10 +15,8 @@ module.exports = function(service) {
   function column(def) {
 
     // Support groupAll dimension
-    if (def === true || _.isUndefined(def)) {
-      def = {
-        key: true
-      }
+    if (_.isUndefined(def)) {
+      def = true
     }
 
     // Always deal in bulk.  Like Costco!
@@ -33,9 +31,9 @@ module.exports = function(service) {
       })
   }
 
-  function findColumn(d){
-    return _.find(service.columns, function(c){
-      if(_.isArray(d)){
+  function findColumn(d) {
+    return _.find(service.columns, function(c) {
+      if (_.isArray(d)) {
         return !_.xor(c.key, d).length
       }
       return c.key === d
@@ -96,11 +94,11 @@ module.exports = function(service) {
         // of a filter, and the user decides to make it permanent
         if (existing && !column.temporary) {
           existing.temporary = false
-          if(column.dynamicReference){
+          if (column.dynamicReference) {
             existing.dynamicReference = true
           }
           // console.info('Column has already been defined', arguments)
-          return service
+          return false
         }
 
         column.type =
@@ -112,27 +110,36 @@ module.exports = function(service) {
         return dimension.make(column.key, column.type)
       })
       .then(function(dim) {
+        if (!dim) {
+          return Promise.resolve()
+        }
         column.dimension = dim
         column.filterCount = column.filterCount || 0
-        column.removeListeners = [buildColumnKeys]
-        column.addListeners = [buildColumnKeys]
+        var stopListeningForData = service.onDataChange(buildColumnKeys)
+        column.removeListeners = [stopListeningForData]
 
         service.columns.push(column)
 
         return buildColumnKeys()
 
         // Build the columnKeys
-        function buildColumnKeys(){
-          return Promise.try(function(){
-            return Promise.resolve(column.dimension.bottom(Infinity))
-          })
-          .then(function(rows){
-            var accessor = dimension.makeAccessor(column.key)
-            column.values = _.sort(_.uniq(_.flatten(_.map(rows, accessor))))
-          })
+        function buildColumnKeys(onAdd) {
+          if (column.key === true) {
+            return Promise.resolve()
+          }
+          return Promise.resolve(column.dimension.bottom(Infinity))
+            .then(function(rows) {
+              var accessor = dimension.makeAccessor(column.key)
+              if(column.type === 'array'){
+                column.values = _.sort(_.uniq(_.flatten(_.map(rows, accessor))))
+              }
+              else{
+                column.values = _.sort(_.uniq(_.map(rows, accessor)))
+              }
+            })
         }
       })
-      .then(function(){
+      .then(function() {
         return service
       })
   }
