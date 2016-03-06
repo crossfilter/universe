@@ -125,14 +125,27 @@ describe('universe filter', function() {
           return u
         })
         .then(function(u) {
+          return u.filter('type', 'visa')
+        })
+        .then(function(u){
+          expect(data).to.deep.equal([
+            { key: 0, value: { count: 2 } },
+            { key: 100, value: { count: 1 } },
+            { key: 200, value: { count: 1 } }
+          ])
+          return u
+        })
+        .then(function(u) {
           return u.filter('type', 'cash')
         })
-        .then(function(){
+        .then(function(u){
+          console.log(u.filters)
           expect(data).to.deep.equal([
             { key: 0, value: { count: 8 } },
             { key: 100, value: { count: 3 } },
             { key: 200, value: { count: 1 } }
           ])
+          return u
         })
     })
   })

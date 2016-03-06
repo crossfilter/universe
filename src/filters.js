@@ -103,7 +103,7 @@ module.exports = function(service) {
 
       // Toggling a filter value is a bit different from replacing them
       if (fil && existing && !fil.replace) {
-        fil = toggleFilters(fil, existing)
+        newFilters[i] = fil = toggleFilters(fil, existing)
       }
 
 
@@ -184,7 +184,9 @@ module.exports = function(service) {
     }
 
     // Set the new type based on the merged values
-    if (fil.value.length === 1) {
+    if (!fil.value.length) {
+      fil = false
+    } else if (fil.value.length === 1) {
       fil.type = 'exact'
       fil.value = fil.value[0]
     } else {
