@@ -22,12 +22,14 @@
       <h1>
 <a id="universe" class="anchor" href="#universe" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Universe</h1>
 
-<p><a href="https://travis-ci.org/crossfilter/universe"><img src="https://travis-ci.org/crossfilter/universe.svg?branch=master" alt="Build Status"></a> <a href="https://gitter.im/crossfilter/universe?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/crossfilter/universe.svg" alt="Join the chat at https://gitter.im/crossfilter/universe"></a></p>
+<p><a href="https://gitter.im/crossfilter/universe?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/crossfilter/universe.svg" alt="Join the chat at https://gitter.im/crossfilter/universe"></a></p>
+
+<p><a href="https://travis-ci.org/crossfilter/universe"><img src="https://travis-ci.org/crossfilter/universe.svg?branch=master" alt="Build Status"></a> <a href="https://codeclimate.com/github/crossfilter/universe"><img src="https://codeclimate.com/github/crossfilter/universe/badges/gpa.svg" alt="Code Climate"></a></p>
 
 <h2>
 <a id="the-easiest-and-fastest-way-to-explore-your-data" class="anchor" href="#the-easiest-and-fastest-way-to-explore-your-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The easiest and fastest way to explore your data</h2>
 
-<p>Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indexing, and countless lines of code to dissect your data.</p>
+<p>Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indxing, and countless lines of code to dissect your data.</p>
 
 <p>With Universe, you can be there in just a few lines of code. You've got better things to do than write intense map-reduce functions or learn the intricate inner-workings of <a href="https://github.com/crossfilter/crossfilter">Crossfilter</a> ;)</p>
 
@@ -46,11 +48,34 @@
 <a id="demos" class="anchor" href="#demos" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Demos</h2>
 
 <ul>
-<li><a href="http://codepen.io/tannerlinsley/pen/oxjyvg?editors=0010">Basic Usage</a></li>
+<li>
+<a href="http://codepen.io/tannerlinsley/pen/oxjyvg?editors=0010">Basic Usage</a> (Codepen)</li>
 </ul>
 
 <h2>
-<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h2>
+<a id="api" class="anchor" href="#api" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a><a href="#api">API</a>
+</h2>
+
+<ul>
+<li>
+<a href="#api-universe">universe()</a>
+
+<ul>
+<li><a href="#api-query">.query()</a></li>
+<li><a href="#api-filter">.filter()</a></li>
+<li><a href="#api-column">.column()</a></li>
+<li><a href="#api-clear">.clear()</a></li>
+<li><a href="#api-add">.add()</a></li>
+<li><a href="#api-remove">.remove()</a></li>
+</ul>
+</li>
+</ul>
+
+<h2>
+<a id="getting-started" class="anchor" href="#getting-started" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Getting Started</h2>
+
+<h3>
+<a id="installation" class="anchor" href="#installation" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Installation</h3>
 
 <p><strong>NPM</strong></p>
 
@@ -60,11 +85,8 @@
 
 <p><strong>Download</strong> from the <a href="https://github.com/crossfilter/universe/releases">releases</a> page. Serve the universe.js or universe.min.js file in the top-level directory as part of your application.</p>
 
-<h2>
-<a id="usage" class="anchor" href="#usage" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Usage</h2>
-
 <h3>
-<a id="create-a-new-universe-with-your-dataset" class="anchor" href="#create-a-new-universe-with-your-dataset" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create a new Universe with your dataset</h3>
+<a id="create-a-new-universe" class="anchor" href="#create-a-new-universe" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Create a new Universe</h3>
 
 <p>Pass <code>universe</code> an array of objects or a Crossfilter instance:</p>
 
@@ -174,8 +196,12 @@
 <span class="pl-c">// Clear all of the filters</span>
 .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
   <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">filterAll</span>()
-})
+})</pre></div>
 
+<h3>
+<a id="clean-up" class="anchor" href="#clean-up" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Clean Up</h3>
+
+<div class="highlight highlight-source-js"><pre>
 <span class="pl-c">// Remove a column index</span>
 .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
   <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-c1">clear</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>)
@@ -187,6 +213,9 @@
 })
 </pre></div>
 
+<h3>
+<a id="pre-compile-columns" class="anchor" href="#pre-compile-columns" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pre-compile Columns</h3>
+
 <p>Pro-Tip: You can also <strong>pre-compile</strong> column indices before querying. Otherwise, ad-hoc indices are created and managed automagically for you anyway.</p>
 
 <div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
@@ -197,6 +226,278 @@
     type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>string<span class="pl-pds">'</span></span> <span class="pl-c">// override automatic type detection</span>
   })
 })</pre></div>
+
+<h2 id="api">
+<a id="api-" class="anchor" href="#api-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>API <a href="#api">#</a>
+</h2>
+
+<h3 id="api-universe">
+<a id="universe-data--config--" class="anchor" href="#universe-data--config--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>universe( [data] , {config} ) <a href="#api-universe">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Creates a new universe instance</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>[data]</code> - An array of objects</li>
+<li>
+<code>{config}</code> - Optional configurations for this Universe instance
+
+<ul>
+<li>
+<code>{generatedColumns}</code> - An object of keys and their respective accessor functions used to dynamically generate columns.</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p>Returns a <code>promise</code> that is resolved with the <strong>universe instance</strong></p></li>
+<li>
+<p><a href="Create%20a%20new%20Universe">Example</a></p>
+
+<ul>
+<li>Generated Columns Example
+<code>javascript
+universe([
+  {day: '1', price: 30, quantity: 3},
+  {day: '2', price: 40, quantity: 5}
+], {
+  generatedColumns: {
+    total: function(row){return row.price * row.quantity}
+  }
+})
+  .then(function(myUniverse){
+    // data[0].total === 90
+    // data[1].total === 200
+  })
+</code>
+</li>
+</ul>
+</li>
+</ul>
+
+<h3 id="api-query">
+<a id="query-queryobject--" class="anchor" href="#query-queryobject--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.query( {queryObject} ) <a href="#api-query">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Creates a new query from a universe instance</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>queryObject</code>:
+
+<ul>
+<li>
+<code>groupBy</code> - Exactly what it sounds like.  It groups the records by this column key</li>
+<li>
+<code>select</code> - An object of column aggregations and/or column names
+
+<ul>
+<li>
+<code>$aggregation</code> - Aggregations are prefixed with a <code>$</code>
+</li>
+<li>
+<code>columnName</code> - Creates a nested column with the name provided</li>
+</ul>
+</li>
+<li>
+<code>filter</code> - A filter object that is applied to the query (similar to a <code>where</code> clause in mySQL)</li>
+</ul>
+</li>
+</ul>
+</li>
+<li>
+<p>Returns</p>
+
+<ul>
+<li>
+<code>promise</code>, resolved with a <strong>query results object</strong>
+
+<ul>
+<li>
+<code>data</code> - The result of the query</li>
+<li>
+<code>group</code> - The crossfilter/reductio group used to build the query</li>
+<li>
+<code>dimension</code> - The crossfilter dimension used to build the query</li>
+<li>
+<code>crossfilter</code> - The crossfilter that runs this universe</li>
+<li>
+<code>universe</code> - The current instance of the universe.  Return this to keep chaining via promises</li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#Explore%20your%20data">Example</a></p></li>
+</ul>
+
+<h3 id="api-filter">
+<a id="filter-columnkey-filterobject-isarray-replace--" class="anchor" href="#filter-columnkey-filterobject-isarray-replace--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.filter( columnKey, filterObject, isArray, replace ) <a href="#api-filter">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Filters everything in the universe to only include rows that match certain conditions.  Queries automatically and instantaneously update their values and aggregations.</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>columnKey</code> - The object property to filter on,</li>
+</ul>
+</li>
+<li>
+<p>Returns</p>
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li><strong>universe instance</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#Query%20your%20data">Example</a></p></li>
+</ul>
+
+<h3 id="api-column">
+<a id="column-columnkeycolumnobject--" class="anchor" href="#column-columnkeycolumnobject--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.column( columnKey/columnObject ) <a href="#api-column">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Use to optionally pre-index a column. Accepts a string or number corresponding to the key or index of the column you would like to define.</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>columnKey</code> - the column property or array index you would like to pre-compile eg.</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>  .<span class="pl-en">column</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>)</pre></div>
+
+<ul>
+<li>
+<code>columnObject</code> allows you to override the column type, otherwise it is calculated automatically:</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>    .<span class="pl-en">column</span>({
+      key<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>,
+      type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>number<span class="pl-pds">'</span></span>
+    })</pre></div>
+</li>
+<li>
+<p>Returns</p>
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li><strong>universe instance</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#Pre-compile%20Columns">Example</a></p></li>
+</ul>
+
+<h3 id="api-clear">
+<a id="clear-columnkeycolumnobjectcolumnkeyscolumnobjects--" class="anchor" href="#clear-columnkeycolumnobjectcolumnkeyscolumnobjects--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.clear( columnKey/columnObject/[columnKeys/columnObjects] ) <a href="#api-clear">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Clears individual or all column defenitions and indexes</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>columnKey</code> - the column property or array of columns you would like to clear eg.</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>  <span class="pl-c">// Single Key</span>
+  .<span class="pl-c1">clear</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>)
+  <span class="pl-c">// Complex Key</span>
+  .<span class="pl-c1">clear</span>({key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>complex<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>key<span class="pl-pds">'</span></span>]})
+  <span class="pl-c">// Multiple Single Keys</span>
+  .<span class="pl-c1">clear</span>([<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span>])
+  <span class="pl-c">// Multiple Complex Keys</span>
+  .<span class="pl-c1">clear</span>([{key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>complex<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>key<span class="pl-pds">'</span></span>]}, {key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>another<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>one<span class="pl-pds">'</span></span>]}])</pre></div>
+</li>
+<li>
+<p>Returns</p>
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li><strong>universe instance</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><p><a href="#Clean%20Up">Example</a></p></li>
+</ul>
+
+<h3 id="api-add">
+<a id="add-data--" class="anchor" href="#add-data--" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.add( [data] ) <a href="#api-add">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Adds additional data to a universe instance. This data will be indexed, aggregated and queries/filters immediately updated when added.</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>[data]</code> - An new array of objects similar to the original dataset</li>
+</ul>
+</li>
+<li>Returns
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li><strong>universe instance</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/crossfilter/universe">Universe</a> is maintained by <a href="https://github.com/crossfilter">crossfilter</a>.</span>
