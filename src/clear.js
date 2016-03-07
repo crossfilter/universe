@@ -51,13 +51,18 @@ module.exports = function(service) {
       })
 
     function disposeColumn(column) {
-      // Dispose the dimension
-      var disposalActions = _.map(column.removeListeners, function(listener) {
-        return Promise.resolve(listener())
-      })
+      var disposalActions = []
+        // Dispose the dimension
+      if (column.removeListeners) {
+        disposalActions = _.map(column.removeListeners, function(listener) {
+          return Promise.resolve(listener())
+        })
+      }
       var filterKey = column.complex ? JSON.stringify(column.key) : column.key
       delete service.filters[filterKey]
-      disposalActions.push(Promise.resolve(column.dimension.dispose()))
+      if(column.dimension){
+        disposalActions.push(Promise.resolve(column.dimension.dispose()))
+      }
       return Promise.all(disposalActions)
     }
 
