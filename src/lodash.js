@@ -242,11 +242,21 @@ function flatten(aa) {
   return flattened
 }
 
-function sort(a) {
-  return a.sort(naturalSort)
+function sort(arr) {
+  for (var i = 1; i < arr.length; i++) {
+    var tmp = arr[i],
+      j = i;
+    while (arr[j - 1] > tmp) {
+      arr[j] = arr[j - 1];
+      --j;
+    }
+    arr[j] = tmp;
+  }
+
+  return arr;
 }
 
-function keys(aa){
+function keys(aa) {
   var keys = []
   for (var key in aa) {
     if (aa.hasOwnProperty(key)) {
