@@ -221,9 +221,14 @@ function replaceArray(a, b) {
 }
 
 function uniq(a) {
-  var seen = {};
+  var seen = new Set();
   return a.filter(function(item) {
-    return seen.hasOwnProperty(item) ? false : (seen[item] = true);
+    var allow = false;
+    if (!seen.has(item)) {
+      seen.add(item);
+      allow = true;
+    }
+    return allow;
   });
 }
 
