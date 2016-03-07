@@ -25,6 +25,7 @@ module.exports = {
   uniq: uniq,
   flatten: flatten,
   sort: sort,
+  keys: keys,
 }
 
 
@@ -155,7 +156,7 @@ function isUndefined(a) {
 function pick(a, b) {
   var c = {}
   forEach(b, function(bb) {
-    if (a[bb]) c[bb] = a[bb]
+    if (typeof(a[bb]) !== 'undefined') c[bb] = a[bb]
   })
   return c
 }
@@ -238,4 +239,14 @@ function flatten(aa) {
 
 function sort(a) {
   return a.sort(naturalSort)
+}
+
+function keys(aa){
+  var keys = []
+  for (var key in aa) {
+    if (aa.hasOwnProperty(key)) {
+      keys.push(aa[key])
+    }
+  }
+  return keys
 }

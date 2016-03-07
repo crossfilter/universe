@@ -74,7 +74,7 @@ module.exports = function(service) {
         // Complex column Keys
         if (_.isArray(column.key)) {
           column.complex = true
-          sample = _.map(_.pick(all[0], column.key))
+          sample = _.keys(_.pick(all[0], column.key))
           if (sample.length !== column.key.length) {
             throw new Error('Column key does not exist in data!', column.key)
           }
