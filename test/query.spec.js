@@ -62,6 +62,12 @@ describe('universe query', function() {
         select: {}
       })
     })
+    .then(function(res){
+      return res.universe.query({
+        groupBy: ['productIDs', 'date'],
+        select: {}
+      })
+    })
   })
 
   it('Defaults to counting each record', function(){

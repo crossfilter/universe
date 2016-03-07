@@ -1,6 +1,6 @@
 {
   "name": "universe",
-  "version": "0.3.9",
+  "version": "0.3.10",
   "description": "The fastest way to query and explore multivariate datasets",
   "main": "src/universe.js",
   "directories": {

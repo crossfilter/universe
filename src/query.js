@@ -37,10 +37,8 @@ module.exports = function(service) {
               type: !_.isUndefined(query.type) ? query.type : null,
               array: !!query.array
             })
-            .then(function(u) {
-              return _.find(u.columns, function(c) {
-                return c.key === query.groupBy
-              })
+            .then(function() {
+              return service.column.find(query.groupBy)
             })
         }
         // If the column exists, let's at least make sure it's marked
