@@ -63,8 +63,23 @@ module.exports = function(service) {
       key: d,
     }
 
-    // Get a sample of the column
-    return Promise.try(function() {
+    var existing = findColumn(column.key)
+
+    if (existing) {
+      existing = existing
+      existing.temporary = false
+      if (existing.dynamicReference) {
+        existing.dynamicReference = false
+      }
+      return existing.promise
+        .then(function() {
+          return service
+        })
+    }
+
+    service.columns.push(column)
+
+    column.promise = Promise.try(function() {
         return Promise.resolve(service.cf.all())
       })
       .then(function(all) {
@@ -74,7 +89,7 @@ module.exports = function(service) {
         // Complex column Keys
         if (_.isArray(column.key)) {
           column.complex = true
-          sample = _.keys(_.pick(all[0], column.key))
+          sample = _.map(_.pick(all[0], column.key))
           if (sample.length !== column.key.length) {
             throw new Error('Column key does not exist in data!', column.key)
           }
@@ -87,19 +102,9 @@ module.exports = function(service) {
           throw new Error('Column key does not exist in data!', column.key)
         }
 
-        var existing = findColumn(column.key)
-
         // If the column exists, let's at least make sure it's marked
         // as permanent. There is a slight chance it exists because
         // of a filter, and the user decides to make it permanent
-        if (existing && !column.temporary) {
-          existing.temporary = false
-          if (column.dynamicReference) {
-            existing.dynamicReference = true
-          }
-          // console.info('Column has already been defined', arguments)
-          return false
-        }
 
         column.type =
           column.key === true ? 'all' :
@@ -110,15 +115,10 @@ module.exports = function(service) {
         return dimension.make(column.key, column.type)
       })
       .then(function(dim) {
-        if (!dim) {
-          return Promise.resolve()
-        }
         column.dimension = dim
-        column.filterCount = column.filterCount || 0
+        column.filterCount = 0
         var stopListeningForData = service.onDataChange(buildColumnKeys)
         column.removeListeners = [stopListeningForData]
-
-        service.columns.push(column)
 
         return buildColumnKeys()
 
@@ -130,15 +130,16 @@ module.exports = function(service) {
           return Promise.resolve(column.dimension.bottom(Infinity))
             .then(function(rows) {
               var accessor = dimension.makeAccessor(column.key)
-              if(column.type === 'array'){
-                column.values = _.uniq(_.flatten(_.map(rows, accessor)))
-              }
-              else{
-                column.values = _.uniq(_.map(rows, accessor))
+              if (column.type === 'array') {
+                column.values = _.sort(_.uniq(_.flatten(_.map(rows, accessor))))
+              } else {
+                column.values = _.sort(_.uniq(_.map(rows, accessor)))
               }
             })
         }
       })
+
+    return column.promise
       .then(function() {
         return service
       })

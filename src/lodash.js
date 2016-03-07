@@ -229,7 +229,7 @@ function uniq(a) {
       allow = true;
     }
     return allow;
-  });
+  })
 }
 
 function flatten(aa) {

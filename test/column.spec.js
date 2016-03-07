@@ -70,5 +70,70 @@ describe('universe column', function() {
       })
   })
 
+  it('can try to create the same column multiple times, but still only create one', function() {
+    var now = Date.now()
+    var diff1
+    var diff2
+    return u.then(function(u) {
+        return Promise.all([
+          u.column({
+            key: ['type', 'total']
+          }),
+        ])
+        .then(function(){
+          return u
+        })
+      })
+      .then(function(u) {
+        diff1 = Date.now() - now
+        return u
+      })
+      .then(function(u) {
+        now = Date.now()
+        return Promise.all([
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          }),
+          u.column({
+            key: ['type', 'total']
+          })
+        ])
+      })
+      .then(function() {
+        var diff2 = Date.now() - now
+        expect((diff2 - diff1) < 10).to.equal(true)
+      })
+  })
+
 
 })
