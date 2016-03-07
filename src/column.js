@@ -131,9 +131,9 @@ module.exports = function(service) {
             .then(function(rows) {
               var accessor = dimension.makeAccessor(column.key)
               if (column.type === 'array') {
-                column.values = _.sort(_.uniq(_.flatten(_.map(rows, accessor))))
+                column.values = _.uniq(_.flatten(_.map(rows, accessor)))
               } else {
-                column.values = _.sort(_.uniq(_.map(rows, accessor)))
+                column.values = _.uniq(_.map(rows, accessor))
               }
             })
         }

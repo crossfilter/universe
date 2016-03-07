@@ -222,4 +222,30 @@ describe('universe filter', function() {
         })
     })
   })
+
+  it('can forcefully replace filters', function() {
+    var data
+    return u.then(function(u) {
+      return u.query({
+          groupBy: 'tip',
+          select: {
+            $count: true
+          }
+        })
+        .then(function(res) {
+          data = res.data
+          return res.universe.filter('type', 'cash')
+        })
+        .then(function(u) {
+          expect(u.filters.type.value).to.deep.equal('cash')
+          return u
+        })
+        .then(function(u) {
+          return u.filter('type', ['tab', 'visa'], false, true)
+        })
+        .then(function(u){
+          expect(u.filters.type.value).to.deep.equal(['tab', 'visa'])
+        })
+    })
+  })
 })

@@ -22,6 +22,8 @@ module.exports = {
   // Array Expressions
   $in: $in,
   $nin: $nin,
+  $contains: $contains,
+  $excludes: $excludes,
   $size: $size,
 }
 
@@ -101,6 +103,14 @@ function $in(d, child) {
 
 function $nin(d, child) {
   return d.indexOf(child()) === -1
+}
+
+function $contains(d, child) {
+  return child().indexOf(d) > -1
+}
+
+function $excludes(d, child) {
+  return child().indexOf(d) === -1
 }
 
 function $size(d, child) {
