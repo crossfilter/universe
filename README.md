@@ -34,9 +34,7 @@ With Universe, you can be there in just a few lines of code. You've got better t
 **NPM**
 
 ```shell
-npm install crossfilter-universe --save
-
-# the "universe" npm module name is still under negotiation. Stay tuned.
+npm install universe --save
 ```
 
 **Download** from the [releases](https://github.com/crossfilter/universe/releases) page. Serve the universe.js or universe.min.js file in the top-level directory as part of your application.

@@ -1,6 +1,6 @@
 {
-  "name": "crossfilter-universe",
-  "version": "0.4.1",
+  "name": "universe",
+  "version": "0.4.2",
   "description": "The fastest way to query and explore multivariate datasets",
   "main": "src/universe.js",
   "directories": {
