@@ -89,7 +89,7 @@ module.exports = function(service) {
         // Complex column Keys
         if (_.isArray(column.key)) {
           column.complex = true
-          sample = _.map(_.pick(all[0], column.key))
+          sample = _.values(_.pick(all[0], column.key))
           if (sample.length !== column.key.length) {
             throw new Error('Column key does not exist in data!', column.key)
           }
@@ -130,7 +130,10 @@ module.exports = function(service) {
           return Promise.resolve(column.dimension.bottom(Infinity))
             .then(function(rows) {
               var accessor = dimension.makeAccessor(column.key)
-              if (column.type === 'array') {
+              if (column.type === 'complex') {
+                column.values = _.uniq(_.flatten(_.map(rows, accessor)))
+              }
+              else if (column.type === 'array') {
                 column.values = _.uniq(_.flatten(_.map(rows, accessor)))
               } else {
                 column.values = _.uniq(_.map(rows, accessor))

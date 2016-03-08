@@ -25,7 +25,7 @@ module.exports = {
   uniq: uniq,
   flatten: flatten,
   sort: sort,
-  keys: keys,
+  values: values,
 }
 
 
@@ -110,7 +110,7 @@ function map(a, b) {
     m = []
     for (key in a) {
       if (a.hasOwnProperty(key)) {
-        m.push(a[key][b])
+        m.push(a[key])
       }
     }
     return m
@@ -256,12 +256,12 @@ function sort(arr) {
   return arr;
 }
 
-function keys(aa) {
-  var keys = []
-  for (var key in aa) {
-    if (aa.hasOwnProperty(key)) {
-      keys.push(aa[key])
+function values(a) {
+  var values = []
+  for (var key in a) {
+    if (a.hasOwnProperty(key)) {
+      values.push(a[key])
     }
   }
-  return keys
+  return values
 }
