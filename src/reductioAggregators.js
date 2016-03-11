@@ -66,7 +66,7 @@ function $valueList(reducer, value) {
 }
 
 function $dataList(reducer, value) {
-  return reducer.dataList(value)
+  return reducer.dataList(true)
 }
 
 // TODO histograms

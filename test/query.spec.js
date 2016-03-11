@@ -346,7 +346,7 @@ describe('universe query', function() {
       return u.query({
         groupBy: 'type',
         select: {
-          $dataList: 'total',
+          $dataList: true,
         }
       })
     })
