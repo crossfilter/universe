@@ -22,6 +22,8 @@ module.exports = {
     $med: $med,
     $sumSq: $sumSq,
     $std: $std,
+    $valueList: $valueList,
+    $dataList: $dataList,
   }
 }
 
@@ -57,6 +59,14 @@ function $sumSq(reducer, value) {
 
 function $std(reducer, value) {
   return reducer.std(value)
+}
+
+function $valueList(reducer, value) {
+  return reducer.valueList(value)
+}
+
+function $dataList(reducer, value) {
+  return reducer.dataList(value)
 }
 
 // TODO histograms
