@@ -45,14 +45,24 @@ function makeFunction(obj) {
 // with the properties from the previous stack in reverse order
 function makeSubAggregationFunction(obj) {
 
-  var keyVal = _.isObject(obj) ? extractKeyVal(obj) : obj
+  console.log(obj)
+  obj = _.isObject(obj) ? extractKeyVal(obj) : obj
 
-  // Detect strings, the end of the line
+  // Detect strings
   if (_.isString(obj)) {
-    return function(d) {
-      return d[obj]
+    // If begins with a $, then we need to parse it as string syntax and
+    // replace the obj with the aggregator key and remaining string
+    // This will now be handled down at the object conditional
+    if (['$', '('].indexOf(obj.charAt(0)) > -1) {
+      obj = parseAggregatorString(obj)
+    } else {
+      // If it's a plain old string, then just return a simple accessor function
+      return function(d) {
+        return d[obj]
+      }
     }
   }
+
 
   // If an array, recurse into each item and return as a map
   if (_.isArray(obj)) {
@@ -65,11 +75,11 @@ function makeSubAggregationFunction(obj) {
   }
 
   // If object, find the aggregation, and recurse into the value
-  if (keyVal.key) {
-    if (aggregators[keyVal.key]) {
-      return [aggregators[keyVal.key], makeSubAggregationFunction(keyVal.value)]
+  if (obj.key) {
+    if (aggregators[obj.key]) {
+      return [aggregators[obj.key], makeSubAggregationFunction(obj.value)]
     } else {
-      console.error('Could not find aggregration method', keyVal)
+      console.error('Could not find aggregration method', obj)
     }
   }
 
@@ -105,6 +115,25 @@ function parseAggregatorParams(keyString) {
     params: params
   }
 }
+
+function parseAggregatorString(keyString) {
+  var p1 = keyString.indexOf('(')
+  if(p1 === 0){
+    return keyString.substring(1, keyString.length -1).split(',')
+  }
+  var key = p1 > -1 ? keyString.substring(0, p1) : keyString
+  if (!aggregators[key]) {
+    return false
+  }
+  return {
+    key: key,
+    value: keyString.substring(p1, keyString.length)
+  }
+}
+
+
+
+
 
 
 

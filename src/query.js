@@ -7,7 +7,7 @@ module.exports = function(service) {
   var reductiofy = require('./reductiofy')(service)
   var filters = require('./filters')(service)
 
-  return function find(query) {
+  return function query(query) {
 
     // Default query
     if (typeof(query) === 'undefined') {
@@ -50,6 +50,7 @@ module.exports = function(service) {
         column = c
           // Create the grouping on the columns dimension
           // Using Promise Resolve allows support for crossfilter async
+          // TODO check if query already exists, and use the same base query // if possible
         return Promise.resolve(column.dimension.group())
       })
       .then(function(g) {
@@ -103,7 +104,8 @@ module.exports = function(service) {
           })
 
         function applyReducer(queryRes, isPost) {
-          // Create the reducer using reductio and the Universe Query Syntax
+          // Create the reducer using reductio and the Universe
+          // Query Syntax
           return reductiofy(query)
             .then(function(reducer) {
               queryRes.reducer = reducer

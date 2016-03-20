@@ -44,7 +44,6 @@ module.exports = function(service) {
           return 1
         })
 
-
       // dive into each key/value
       return _.forEach(sortedSelectKeyValue, function(s) {
 
@@ -70,15 +69,23 @@ module.exports = function(service) {
       })
     }
 
-    function makeValueAccessor(obj) {
-      // If the object is a string or a number here, it is referencing
-      // a column property for a reductio aggregation, so just return it as a string
-      if (typeof(obj) === 'string' || typeof(obj) === 'number') {
-        return obj + ''
+    function makeValueAccessor(value) {
+
+      if (typeof(value) === 'string') {
+        // If the value is a string and starts with $, then we need to build a custom value accessor function
+        if(value.charAt(0) === '$'){
+          return aggregation.makeFunction(value)
+        }
+        // Must be a column key. Reductio will use it as the accessor
+        return value + ''
       }
-      // If it's an object, we need to build a custom aggregation function
-      if (_.isObject(obj)) {
-        return aggregation.makeFunction(obj)
+      // Must be a column index. Reductio will use it as the accessor
+      if (typeof(value) === 'number') {
+        return value + ''
+      }
+      // If it's an object, we need to build a custom value accessor function
+      if (_.isObject(value)) {
+        return aggregation.makeFunction(value)
       }
     }
   }
