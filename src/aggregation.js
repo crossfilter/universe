@@ -24,19 +24,32 @@ var aggregators = {
 
 
 module.exports = {
-    makeFunction: makeFunction,
+    makeValueAccessor: makeValueAccessor,
     aggregators: aggregators,
+    extractKeyValOrArray: extractKeyValOrArray,
     parseAggregatorParams: parseAggregatorParams,
   }
   // This is used to build aggregation stacks for sub-reductio
   // aggregations, or plucking values for use in filters from the data
-function makeFunction(obj) {
-  var stack = makeSubAggregationFunction(obj).reverse()
+function makeValueAccessor(obj) {
+  if (typeof(obj) === 'string') {
+    // Must be a column key. Return an identity accessor
+    return obj
+  }
+  // Must be a column index. Return an identity accessor
+  if (typeof(obj) === 'number') {
+    return obj
+  }
+  // If it's an object, we need to build a custom value accessor function
+  if (_.isObject(obj)) {
+    return make()
+  }
 
-  return function(d) {
-    return stack.reduce(function(previous, current) {
-      return current(previous)
-    }, d)
+  function make(){
+    var stack = makeSubAggregationFunction(obj)
+    return function topStack(d){
+      return stack(d)
+    }
   }
 }
 
@@ -45,19 +58,29 @@ function makeFunction(obj) {
 // with the properties from the previous stack in reverse order
 function makeSubAggregationFunction(obj) {
 
-  var keyVal = _.isObject(obj) ? extractKeyVal(obj) : obj
+  // If its an object, either unwrap all of the properties as an
+  // array of keyValues, or unwrap the first keyValue set as an object
+  obj = _.isObject(obj) ? extractKeyValOrArray(obj) : obj
 
-  // Detect strings, the end of the line
+  // Detect strings
   if (_.isString(obj)) {
-    return function(d) {
-      return d[obj]
+    // If begins with a $, then we need to convert it over to a regular query object and analyze it again
+    if (['$', '('].indexOf(obj.charAt(0)) > -1) {
+      return makeSubAggregationFunction(convertAggregatorString(obj))
+    } else {
+      // If normal string, then just return a an itentity accessor
+      return function identity(d) {
+        return d[obj]
+      }
     }
   }
+
 
   // If an array, recurse into each item and return as a map
   if (_.isArray(obj)) {
     var subStack = _.map(obj, makeSubAggregationFunction)
-    return function(d) {
+    console.log('subStack', subStack)
+    return function getSubStack(d) {
       return subStack.map(function(s) {
         return s(d)
       })
@@ -65,27 +88,35 @@ function makeSubAggregationFunction(obj) {
   }
 
   // If object, find the aggregation, and recurse into the value
-  if (keyVal.key) {
-    if (aggregators[keyVal.key]) {
-      return [aggregators[keyVal.key], makeSubAggregationFunction(keyVal.value)]
+  if (obj.key) {
+    if (aggregators[obj.key]) {
+      var subAggregationFunction = makeSubAggregationFunction(obj.value)
+      return function getAggregation(d){
+        return aggregators[obj.key](subAggregationFunction(d))
+      }
     } else {
-      console.error('Could not find aggregration method', keyVal)
+      console.error('Could not find aggregration method', obj)
     }
   }
 
   return []
 }
 
-function extractKeyVal(obj) {
+function extractKeyValOrArray(obj) {
+  var keyVal
+  var values = []
   for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
-      return {
+      keyVal = {
         key: key,
         value: obj[key]
       }
+      var subObj = {}
+      subObj[key] = obj[key]
+      values.push(subObj)
     }
   }
-  return
+  return values.length > 1 ? values : keyVal
 }
 
 function parseAggregatorParams(keyString) {
@@ -105,6 +136,25 @@ function parseAggregatorParams(keyString) {
     params: params
   }
 }
+
+function parseAggregatorString(keyString) {
+  var p1 = keyString.indexOf('(')
+  if(p1 === 0){
+    return keyString.substring(1, keyString.length -1).split(',')
+  }
+  var key = p1 > -1 ? keyString.substring(0, p1) : keyString
+  if (!aggregators[key]) {
+    return false
+  }
+  return {
+    key: key,
+    value: keyString.substring(p1, keyString.length)
+  }
+}
+
+
+
+
 
 
 

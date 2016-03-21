@@ -44,14 +44,13 @@ module.exports = function(service) {
           return 1
         })
 
-
       // dive into each key/value
       return _.forEach(sortedSelectKeyValue, function(s) {
 
         // Found a Reductio Aggregation
         if (rAggregators.aggregators[s.key]) {
           // Build the valueAccessorFunction
-          var accessor = makeValueAccessor(s.value)
+          var accessor = aggregation.makeValueAccessor(s.value)
             // Add the reducer with the ValueAccessorFunction to the reducer
           reducer = rAggregators.aggregators[s.key](reducer, accessor)
           return
@@ -68,18 +67,6 @@ module.exports = function(service) {
         reducer = aggregateOrNest(reducer.value(s.key), s.value)
 
       })
-    }
-
-    function makeValueAccessor(obj) {
-      // If the object is a string or a number here, it is referencing
-      // a column property for a reductio aggregation, so just return it as a string
-      if (typeof(obj) === 'string' || typeof(obj) === 'number') {
-        return obj + ''
-      }
-      // If it's an object, we need to build a custom aggregation function
-      if (_.isObject(obj)) {
-        return aggregation.makeFunction(obj)
-      }
     }
   }
 }

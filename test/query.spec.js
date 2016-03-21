@@ -126,7 +126,7 @@ describe('universe query', function() {
     })
   })
 
-  it('supports column aggregations', function(){
+  it('supports column aggregations with arrays', function(){
     return u.then(function(u){
       return u.query({
         select: {
@@ -150,6 +150,37 @@ describe('universe query', function() {
         {"key": 9,"value": {"sum": 90}},
         {"key": 10,"value": {"sum": 200}},
         {"key": 11,"value": {"sum": 300}}
+      ])
+    })
+  })
+
+  it('supports column aggregations with objects', function(){
+    return u.then(function(u){
+      return u.query({
+        select: {
+          $sum: {
+            $sum: {
+              $max: ['tip', 'total'],
+              $min: ['quantity', 'total']
+            }
+          },
+        }
+      })
+    })
+    .then(function(res){
+      expect(res.data).to.deep.equal([
+        {key: 0, value: {sum: 192 }},
+        {key: 1, value: {sum: 192 }},
+        {key: 2, value: {sum: 301 }},
+        {key: 3, value: {sum: 92 }},
+        {key: 4, value: {sum: 92 }},
+        {key: 5, value: {sum: 92 }},
+        {key: 6, value: {sum: 101 }},
+        {key: 7, value: {sum: 92 }},
+        {key: 8, value: {sum: 92 }},
+        {key: 9, value: {sum: 92 }},
+        {key: 10, value: {sum: 202 }},
+        {key: 11, value: {sum: 201 }}
       ])
     })
   })
