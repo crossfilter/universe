@@ -50,7 +50,7 @@ module.exports = function(service) {
         // Found a Reductio Aggregation
         if (rAggregators.aggregators[s.key]) {
           // Build the valueAccessorFunction
-          var accessor = makeValueAccessor(s.value)
+          var accessor = aggregation.makeValueAccessor(s.value)
             // Add the reducer with the ValueAccessorFunction to the reducer
           reducer = rAggregators.aggregators[s.key](reducer, accessor)
           return
@@ -67,26 +67,6 @@ module.exports = function(service) {
         reducer = aggregateOrNest(reducer.value(s.key), s.value)
 
       })
-    }
-
-    function makeValueAccessor(value) {
-
-      if (typeof(value) === 'string') {
-        // If the value is a string and starts with $, then we need to build a custom value accessor function
-        if(value.charAt(0) === '$'){
-          return aggregation.makeFunction(value)
-        }
-        // Must be a column key. Reductio will use it as the accessor
-        return value + ''
-      }
-      // Must be a column index. Reductio will use it as the accessor
-      if (typeof(value) === 'number') {
-        return value + ''
-      }
-      // If it's an object, we need to build a custom value accessor function
-      if (_.isObject(value)) {
-        return aggregation.makeFunction(value)
-      }
     }
   }
 }
