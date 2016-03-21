@@ -50,9 +50,10 @@ function makeSubAggregationFunction(obj) {
 
   // Detect strings
   if (_.isString(obj)) {
-    // If begins with a $, then we need to parse it as string syntax and
-    // replace the obj with the aggregator key and remaining string
-    // This will now be handled down at the object conditional
+    // If the value is a string and starts with $, then we need to build a custom value accessor function
+    if (obj.charAt(0) === '$') {
+      return make()
+    }
     if (['$', '('].indexOf(obj.charAt(0)) > -1) {
       obj = parseAggregatorString(obj)
     } else {
@@ -116,12 +117,22 @@ function parseAggregatorParams(keyString) {
   }
 }
 
-function parseAggregatorString(keyString) {
-  var p1 = keyString.indexOf('(')
-  if(p1 === 0){
-    return keyString.substring(1, keyString.length -1).split(',')
-  }
-  var key = p1 > -1 ? keyString.substring(0, p1) : keyString
+function convertAggregatorString(keyString) {
+  var obj = {}
+
+  // 1. unwrap top parentheses
+  // 2. detect arrays
+
+  // parentheses
+  var outerParens = /\((.+)\)/g
+  var innerParens = /\(([^\(\)]+)\)/g
+    // comma not in ()
+  var freeComma = /(?:\([^\(\)]*\))|(,)/g
+
+  keyString = unwrapParensAndCommas(keyString)
+
+  console.log('END', keyString)
+
   if (!aggregators[key]) {
     return false
   }
