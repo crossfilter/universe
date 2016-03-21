@@ -29,7 +29,8 @@ With Universe, you can be there in just a few lines of code. You've got better t
   - [.add()](#api-add)
   - [.remove()](#api-remove)
 
-## [Pro Tips](#pro-tips)
+
+- [Pro Tips](#pro-tips)
 
 ## Getting Started
 ### Installation
