@@ -29,6 +29,8 @@ With Universe, you can be there in just a few lines of code. You've got better t
   - [.add()](#api-add)
   - [.remove()](#api-remove)
 
+## [Pro Tips](#pro-tips)
+
 ## Getting Started
 ### Installation
 **NPM**
@@ -171,21 +173,6 @@ As you filter your data on the universe level, every query's result is updated i
 
 ```
 
-### Pre-compile Columns
-
-Pro-Tip: You can also **pre-compile** column indices before querying. Otherwise, ad-hoc indices are created and managed automagically for you anyway.
-
-```javascript
-.then(function(myUniverse){
-  return myUniverse.column('a')
-  return myUniverse.column(['a', 'b', 'c'])
-  return myUniverse.column({
-    key: 'd',
-    type: 'string' // override automatic type detection
-  })
-})
-```
-
 <h2 id="api">API <a href="#api">#</a></h2>
 
 <h3 id="api-universe">universe( [data] , {config} ) <a href="#api-universe">#</a></h3>
@@ -301,3 +288,62 @@ Pro-Tip: You can also **pre-compile** column indices before querying. Otherwise,
 - Returns
   - `promise` resolved with
     - **universe instance**
+
+
+<h2 id="pro-tips">Pro Tips <a href="#pro-tips">#</a></h2>
+
+#### No Arrays Necessary
+Don’t want to use arrays in your aggregations? No problem, because this:
+
+```javascript
+u.query({
+        select: {
+          $sum: {
+            $sum: [
+              {$max: ['tip', 'total’]},
+              {$min: ['quantity', 'total’]}
+            ]
+          },
+        }
+      })
+```
+… is now easier written like this:
+
+```javascript
+u.query({
+        select: {
+          $sum: {
+            $sum: {
+              $max: ['tip', 'total'],
+              $min: ['quantity', 'total']
+            }
+          },
+        }
+      })
+```
+
+#### No Objects Necessary, either!
+What’s that? Don’t like the verbosity of objects or arrays? Use the new string syntax!
+
+```javascript
+universe.query({
+        select: {
+          $sum: '$sum($max(tip,total), $min(quantity,total))'
+        }
+      })
+```
+
+#### Pre-compile Columns
+
+Pro-Tip: You can also **pre-compile** column indices before querying. Otherwise, ad-hoc indices are created and managed automagically for you anyway.
+
+```javascript
+.then(function(myUniverse){
+  return myUniverse.column('a')
+  return myUniverse.column(['a', 'b', 'c'])
+  return myUniverse.column({
+    key: 'd',
+    type: 'string' // override automatic type detection
+  })
+})
+```
