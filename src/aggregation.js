@@ -24,19 +24,32 @@ var aggregators = {
 
 
 module.exports = {
-    makeFunction: makeFunction,
+    makeValueAccessor: makeValueAccessor,
     aggregators: aggregators,
+    extractKeyValOrArray: extractKeyValOrArray,
     parseAggregatorParams: parseAggregatorParams,
   }
   // This is used to build aggregation stacks for sub-reductio
   // aggregations, or plucking values for use in filters from the data
-function makeFunction(obj) {
-  var stack = makeSubAggregationFunction(obj).reverse()
+function makeValueAccessor(obj) {
+  if (typeof(obj) === 'string') {
+    // Must be a column key. Return an identity accessor
+    return obj
+  }
+  // Must be a column index. Return an identity accessor
+  if (typeof(obj) === 'number') {
+    return obj
+  }
+  // If it's an object, we need to build a custom value accessor function
+  if (_.isObject(obj)) {
+    return make()
+  }
 
-  return function(d) {
-    return stack.reduce(function(previous, current) {
-      return current(previous)
-    }, d)
+  function make(){
+    var stack = makeSubAggregationFunction(obj)
+    return function topStack(d){
+      return stack(d)
+    }
   }
 }
 
@@ -45,19 +58,18 @@ function makeFunction(obj) {
 // with the properties from the previous stack in reverse order
 function makeSubAggregationFunction(obj) {
 
-  console.log(obj)
-  obj = _.isObject(obj) ? extractKeyVal(obj) : obj
+  // If its an object, either unwrap all of the properties as an
+  // array of keyValues, or unwrap the first keyValue set as an object
+  obj = _.isObject(obj) ? extractKeyValOrArray(obj) : obj
 
   // Detect strings
   if (_.isString(obj)) {
-    // If begins with a $, then we need to parse it as string syntax and
-    // replace the obj with the aggregator key and remaining string
-    // This will now be handled down at the object conditional
+    // If begins with a $, then we need to convert it over to a regular query object and analyze it again
     if (['$', '('].indexOf(obj.charAt(0)) > -1) {
-      obj = parseAggregatorString(obj)
+      return makeSubAggregationFunction(convertAggregatorString(obj))
     } else {
-      // If it's a plain old string, then just return a simple accessor function
-      return function(d) {
+      // If normal string, then just return a an itentity accessor
+      return function identity(d) {
         return d[obj]
       }
     }
@@ -67,7 +79,8 @@ function makeSubAggregationFunction(obj) {
   // If an array, recurse into each item and return as a map
   if (_.isArray(obj)) {
     var subStack = _.map(obj, makeSubAggregationFunction)
-    return function(d) {
+    console.log('subStack', subStack)
+    return function getSubStack(d) {
       return subStack.map(function(s) {
         return s(d)
       })
@@ -77,7 +90,10 @@ function makeSubAggregationFunction(obj) {
   // If object, find the aggregation, and recurse into the value
   if (obj.key) {
     if (aggregators[obj.key]) {
-      return [aggregators[obj.key], makeSubAggregationFunction(obj.value)]
+      var subAggregationFunction = makeSubAggregationFunction(obj.value)
+      return function getAggregation(d){
+        return aggregators[obj.key](subAggregationFunction(d))
+      }
     } else {
       console.error('Could not find aggregration method', obj)
     }
@@ -86,16 +102,21 @@ function makeSubAggregationFunction(obj) {
   return []
 }
 
-function extractKeyVal(obj) {
+function extractKeyValOrArray(obj) {
+  var keyVal
+  var values = []
   for (var key in obj) {
     if (obj.hasOwnProperty(key)) {
-      return {
+      keyVal = {
         key: key,
         value: obj[key]
       }
+      var subObj = {}
+      subObj[key] = obj[key]
+      values.push(subObj)
     }
   }
-  return
+  return values.length > 1 ? values : keyVal
 }
 
 function parseAggregatorParams(keyString) {
