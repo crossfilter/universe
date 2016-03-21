@@ -77,6 +77,8 @@ module.exports = function(service) {
         })
     }
 
+    // for storing info about queries and post aggregations
+    column.queries = [];
     service.columns.push(column)
 
     column.promise = Promise.try(function() {
