@@ -33,8 +33,12 @@ module.exports = {
   // aggregations, or plucking values for use in filters from the data
 function makeValueAccessor(obj) {
   if (typeof(obj) === 'string') {
-    // Must be a column key. Return an identity accessor
-    return obj
+    if (isStringSyntax(obj)) {
+      obj = convertAggregatorString(obj)
+    } else {
+      // Must be a column key. Return an identity accessor
+      return obj
+    }
   }
   // Must be a column index. Return an identity accessor
   if (typeof(obj) === 'number') {
@@ -45,9 +49,9 @@ function makeValueAccessor(obj) {
     return make()
   }
 
-  function make(){
+  function make() {
     var stack = makeSubAggregationFunction(obj)
-    return function topStack(d){
+    return function topStack(d) {
       return stack(d)
     }
   }
@@ -65,7 +69,7 @@ function makeSubAggregationFunction(obj) {
   // Detect strings
   if (_.isString(obj)) {
     // If begins with a $, then we need to convert it over to a regular query object and analyze it again
-    if (['$', '('].indexOf(obj.charAt(0)) > -1) {
+    if (isStringSyntax(obj)) {
       return makeSubAggregationFunction(convertAggregatorString(obj))
     } else {
       // If normal string, then just return a an itentity accessor
@@ -79,7 +83,6 @@ function makeSubAggregationFunction(obj) {
   // If an array, recurse into each item and return as a map
   if (_.isArray(obj)) {
     var subStack = _.map(obj, makeSubAggregationFunction)
-    console.log('subStack', subStack)
     return function getSubStack(d) {
       return subStack.map(function(s) {
         return s(d)
@@ -91,7 +94,7 @@ function makeSubAggregationFunction(obj) {
   if (obj.key) {
     if (aggregators[obj.key]) {
       var subAggregationFunction = makeSubAggregationFunction(obj.value)
-      return function getAggregation(d){
+      return function getAggregation(d) {
         return aggregators[obj.key](subAggregationFunction(d))
       }
     } else {
@@ -118,6 +121,11 @@ function extractKeyValOrArray(obj) {
   }
   return values.length > 1 ? values : keyVal
 }
+
+function isStringSyntax(str) {
+  return ['$', '('].indexOf(str.charAt(0)) > -1
+}
+
 
 function parseAggregatorParams(keyString) {
   var params = []
@@ -147,18 +155,27 @@ function convertAggregatorString(keyString) {
   var outerParens = /\((.+)\)/g
   var innerParens = /\(([^\(\)]+)\)/g
     // comma not in ()
-  var freeComma = /(?:\([^\(\)]*\))|(,)/g
+  var hasComma = /(?:\([^\(\)]*\))|(,)/g
 
-  keyString = unwrapParensAndCommas(keyString)
+  return JSON.parse('{' + unwrapParensAndCommas(keyString) + '}')
 
-  console.log('END', keyString)
-
-  if (!aggregators[key]) {
-    return false
-  }
-  return {
-    key: key,
-    value: keyString.substring(p1, keyString.length)
+  function unwrapParensAndCommas(str) {
+    str = str.replace(' ', '')
+    return '"' + str.replace(outerParens, function(p, pr) {
+      if (hasComma.test(pr)) {
+        if (pr.charAt(0) === '$') {
+          return '":{"' + pr.replace(hasComma, function(p2, pr2) {
+            if (p2 === ',') {
+              return ',"'
+            }
+            return unwrapParensAndCommas(p2).trim()
+          }) + '}'
+        }
+        return ':["' + pr.replace(hasComma, function(p2, pr2) {
+          return '","'
+        }) + '"]'
+      }
+    })
   }
 }
 
