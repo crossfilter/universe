@@ -87,7 +87,10 @@ module.exports = function(service) {
           group: group,
           // Reductio reducer instance
           reducer: null,
-        }
+          // original query passed in to query method
+          original: query
+        };
+        column.queries.push(queryRes);
 
         var stopListeningForData
         if (needsListener) {
