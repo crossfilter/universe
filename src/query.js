@@ -89,8 +89,10 @@ module.exports = function(service) {
           // Reductio reducer instance
           reducer: null,
           // original query passed in to query method
-          original: query
+          original: query,
         };
+
+        addQueryMethods(queryRes)
         column.queries.push(queryRes);
 
         var stopListeningForData
@@ -112,13 +114,37 @@ module.exports = function(service) {
           return reductiofy(query)
             .then(function(reducer) {
               queryRes.reducer = reducer
-              // Apply the reducer to the group
+                // Apply the reducer to the group
               queryRes.reducer(queryRes.group)
               return Promise.resolve(queryRes.group.all())
             })
-            .then(function(all){
+            .then(function(all) {
               queryRes.data = all
             })
+        }
+
+        function addQueryMethods(q) {
+          _.assign(q, {
+            clear: clearQuery,
+          })
+
+          function clearQuery() {
+            _.forEach(q.removeListners, function(l) {
+              l()
+            })
+            return Promise.try(function() {
+                return q.group.dispose()
+              })
+              .then(function() {
+                column.queries.splice(column.queries.indexOf(q), 1)
+                if (!column.queries.length) {
+                  return service.clear(column.key)
+                }
+              })
+              .then(function(){
+                return service
+              })
+          }
         }
 
       })

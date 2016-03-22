@@ -468,4 +468,23 @@ describe('universe query', function() {
   //     ])
   //   })
   // })
+
+  it('can dispose of a query manually', function() {
+    var res
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: true
+        }
+      })
+    })
+    .then(function(res){
+      expect(res.universe.columns.length).to.equal(1)
+      return res.clear()
+    })
+    .then(function(res){
+      expect(res.columns.length).to.equal(0)
+    })
+  })
 })
