@@ -25,7 +25,7 @@ module.exports = function(service) {
     }
 
 
-    var query = {
+    query = {
       // The Universe for continuous promise chaining
       universe: service,
       // Parent column
@@ -42,7 +42,7 @@ module.exports = function(service) {
       postAggregations: [],
       // Original query passed in to query method
       original: queryObj,
-      hash: queryHash,
+      hash: queryHash
     }
 
     // Default queryObj
@@ -156,7 +156,7 @@ module.exports = function(service) {
 
     function addQueryMethods(q) {
       _.assign(q, postAggregation.getMethods(q), {
-        clear: clearQuery,
+        clear: clearQuery
       })
 
       function clearQuery() {
