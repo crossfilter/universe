@@ -9,8 +9,6 @@ module.exports = function(service) {
   var postAggregation = require('./postAggregation')(service)
 
   return function doQuery(queryObj) {
-
-    var query
     var queryHash = JSON.stringify(queryObj)
 
     // Attempt to reuse an exact copy of this query that is present elsewhere
@@ -25,21 +23,7 @@ module.exports = function(service) {
     }
 
 
-    query = {
-      // The Universe for continuous promise chaining
-      universe: service,
-      // Parent column
-      column: null,
-      // Crossfilter instances
-      crossfilter: service.cf,
-      dimension: null,
-      group: null,
-      // Reductio reducer instance
-      reducer: null,
-      // Listeners
-      removeListeners: [],
-      // Post aggregations
-      postAggregations: [],
+    var query = {
       // Original query passed in to query method
       original: queryObj,
       hash: queryHash
@@ -59,7 +43,7 @@ module.exports = function(service) {
     query.original.groupBy = query.original.groupBy || true
 
     // Attach the query api to the query object
-    addQueryMethods(query)
+    query = newQueryObj(query)
 
     return createColumn(query)
       .then(makeCrossfilterGroup)
@@ -127,7 +111,7 @@ module.exports = function(service) {
       // apply a one time listener for filtering. This is what allows
       // us to post aggregate and change the data on each filter
       var stopFilterListen = service.onFilter(function() {
-        return postAggregate(query, true)
+        return postAggregate(query)
       })
       query.removeListeners.push(stopFilterListen)
 
@@ -160,24 +144,51 @@ module.exports = function(service) {
         })
     }
 
-    function postAggregate(query, fromFilter) {
+    function postAggregate(query) {
       return Promise.all(_.map(query.postAggregations, function(post) {
-          return post(fromFilter)
+          return post()
         }))
         .then(function() {
           return query
         })
     }
 
-    function addQueryMethods(q) {
+    function newQueryObj(q, parent) {
+      if(!parent){
+        parent = q
+        q = {}
+      }
       _.assign(q, {
-        postAggregations: q.postAggregations || [],
+        // The Universe for continuous promise chaining
+        universe: service,
+        // Crossfilter instance
+        crossfilter: service.cf,
 
+        // parent Information
+        parent: parent,
+        column: parent.column,
+        dimension: parent.dimension,
+        group: parent.group,
+        reducer: parent.reducer,
+        original: parent.original,
+        hash: parent.hash,
+
+        // It's own removeListeners
+        removeListeners: [],
+
+        // It's own postAggregations
+        postAggregations: [],
+
+        // It's own post-aggregation api
         clear: clearQuery,
         post: post,
-        // sortByKey: sortByKey,
+        sortByKey: sortByKey,
 
       })
+
+      return q
+
+
 
       function clearQuery() {
         _.forEach(q.removeListners, function(l) {
@@ -199,39 +210,40 @@ module.exports = function(service) {
 
       function post(cb) {
         var sub = {}
-        addQueryMethods(sub)
+        newQueryObj(sub, q)
         q.postAggregations.push(function(fromFilter) {
           _post(sub, fromFilter)
         })
         return _post(sub)
 
-        function _post(sub, onFilter) {
+        function _post(sub) {
           sub.data = _.clone(q.data)
           return Promise.resolve(cb(sub))
             .then(function(s) {
               _.assign(sub, s)
-              return postAggregate(sub, onFilter)
+              return postAggregate(sub)
             })
         }
       }
 
-      // function sortByKey(desc) {
-      //   var sub = {}
-      //   addQueryMethods(sub)
-      //   q.postAggregations.push(_sortByKey)
-      //   _sortByKey()
-      //   return Promise.resolve(sub)
-      //
-      //   function _sortByKey() {
-      //     console.log('hello')
-      //     sub.data = _.sortBy(q.data.slice(), function(a) {
-      //       return a.key
-      //     })
-      //     if (desc) {
-      //       sub.data.reverse()
-      //     }
-      //   }
-      // }
+      function sortByKey(desc) {
+        var sub = {}
+        newQueryObj(sub, q)
+        q.postAggregations.push(function(fromFilter) {
+          _sortByKey(sub, fromFilter)
+        })
+        return _sortByKey(sub)
+
+        function _sortByKey(sub) {
+          sub.data = _.sortBy(_.clone(q.data), function(d){
+            return d.key
+          })
+          if(desc){
+            sub.data.reverse()
+          }
+          return postAggregate(sub)
+        }
+      }
 
     }
   }

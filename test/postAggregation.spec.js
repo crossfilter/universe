@@ -86,35 +86,34 @@ describe('universe postAggregation', function() {
       })
   })
 
-  // it('can sortBy query result keys', function() {
-  //   return u.then(function(u) {
-  //       return u.query({
-  //         groupBy: 'type'
-  //       })
-  //     })
-  //     .then(function(res) {
-  //       return res.sortByKey(true)
-  //     })
-  //     .then(function(res) {
-  //       expect(res.data[0].key).to.equal('visa')
-  //       return res.sortByKey()
-  //     })
-  //     .then(function(res) {
-  //       expect(res.data[0].key).to.equal('cash')
-  //       return res.sortByKey()
-  //     })
-  //     .then(function(res) {
-  //       return u.then(function(u) {
-  //           return u.filter('type', 'cash')
-  //         })
-  //         .then(function(u){
-  //           return res
-  //         })
-  //     })
-  //     .then(function(res) {
-  //       console.log(res.data)
-  //       expect(res.data[0].key).to.equal('visa')
-  //     })
-  // })
+  it('can sortByKey ascending and descending', function() {
+    return u.then(function(u) {
+        return u.query({
+          groupBy: 'type'
+        })
+      })
+      .then(function(res) {
+        return res.sortByKey(true)
+      })
+      .then(function(res) {
+        expect(res.data[0].key).to.equal('visa')
+        return res.sortByKey()
+      })
+      .then(function(res) {
+        expect(res.data[0].key).to.equal('cash')
+        return res.sortByKey(true)
+      })
+      .then(function(res) {
+        return u.then(function(u) {
+            return u.filter('total', 100)
+          })
+          .then(function(u){
+            return res
+          })
+      })
+      .then(function(res) {
+        expect(res.data[0].key).to.equal('visa')
+      })
+  })
 
 })
