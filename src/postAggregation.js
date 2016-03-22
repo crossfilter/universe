@@ -14,7 +14,7 @@ module.exports = function(service) {
     }
 
     function sortBy(){
-      
+      return query
     }
   }
 }

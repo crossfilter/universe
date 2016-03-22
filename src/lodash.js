@@ -123,10 +123,10 @@ function map(a, b) {
 function sortBy(a, b) {
   if (isFunction(b)) {
     return a.sort(function(aa, bb) {
-      if (aa.value > bb.value) {
+      if (b(aa) > b(bb)) {
         return 1;
       }
-      if (aa.value < bb.value) {
+      if (b(aa) < b(bb)) {
         return -1;
       }
       // a must be equal to b

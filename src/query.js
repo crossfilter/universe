@@ -127,7 +127,7 @@ module.exports = function(service) {
       // apply a one time listener for filtering. This is what allows
       // us to post aggregate and change the data on each filter
       var stopFilterListen = service.onFilter(function() {
-        return postAggregate(query)
+        return postAggregate(query, true)
       })
       query.removeListeners.push(stopFilterListen)
 
@@ -160,20 +160,23 @@ module.exports = function(service) {
         })
     }
 
-    function postAggregate(query) {
-      // Here we slice/copy the data so we can post aggregate
-      // and not skrew up crossfilter or reductio's innards
-      return Promise.all(query.postAggregations, function(post) {
-          return post.run(query)
-        })
+    function postAggregate(query, fromFilter) {
+      return Promise.all(_.map(query.postAggregations, function(post) {
+          return post(fromFilter)
+        }))
         .then(function() {
           return query
         })
     }
 
     function addQueryMethods(q) {
-      _.assign(q, postAggregation.getMethods(q), {
-        clear: clearQuery
+      _.assign(q, {
+        postAggregations: q.postAggregations || [],
+
+        clear: clearQuery,
+        post: post,
+        // sortByKey: sortByKey,
+
       })
 
       function clearQuery() {
@@ -193,6 +196,42 @@ module.exports = function(service) {
             return service
           })
       }
+
+      function post(cb) {
+        var sub = {}
+        addQueryMethods(sub)
+        q.postAggregations.push(function(fromFilter) {
+          _post(sub, fromFilter)
+        })
+        return _post(sub)
+
+        function _post(sub, onFilter) {
+          sub.data = _.clone(q.data)
+          return Promise.resolve(cb(sub))
+            .then(function(s) {
+              _.assign(sub, s)
+              return postAggregate(sub, onFilter)
+            })
+        }
+      }
+
+      // function sortByKey(desc) {
+      //   var sub = {}
+      //   addQueryMethods(sub)
+      //   q.postAggregations.push(_sortByKey)
+      //   _sortByKey()
+      //   return Promise.resolve(sub)
+      //
+      //   function _sortByKey() {
+      //     console.log('hello')
+      //     sub.data = _.sortBy(q.data.slice(), function(a) {
+      //       return a.key
+      //     })
+      //     if (desc) {
+      //       sub.data.reverse()
+      //     }
+      //   }
+      // }
 
     }
   }

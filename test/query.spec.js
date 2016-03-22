@@ -226,158 +226,6 @@ describe('universe query', function() {
     })
   })
 
-  it('supports filtering', function() {
-    return u.then(function(u){
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: 'true',
-          $sum: 'total'
-        },
-        filter: {
-          $or: [{
-            total: {
-              $gt: 50
-            }
-          }, {
-            quantity: {
-              $gt: 1
-            }
-          }]
-        }
-      })
-    })
-    .then(function(res){
-      expect(res.data).to.deep.equal([
-        {"key": "cash","value": {"count": 2,"sum": 300}},
-        {"key": "tab","value": {"count": 8,"sum": 920}},
-        {"key": "visa","value": {"count": 2,"sum": 500}}
-      ])
-    })
-  })
-
-  it('can filter using $column data', function() {
-    return u.then(function(u) {
-      return u.query({
-          groupBy: 'tip',
-          filter: {
-            type: {
-              $last: {
-                $column: 'type'
-              }
-            }
-          }
-        })
-        .then(function(u) {
-          expect(u.data).to.deep.equal([
-            { key: 0, value: { count: 8 } },
-            { key: 100, value: { count: 3 } },
-            { key: 200, value: { count: 1 } }
-          ])
-        })
-    })
-  })
-
-  it('can filter using all $data', function() {
-    return u.then(function(u){
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: 'true',
-        },
-        filter: {
-          date: {
-            $gt: {
-              '$get(date)': {
-                '$nthPct(50)': '$data'
-              }
-            }
-          }
-        }
-      })
-    })
-    .then(function(res){
-      expect(res.data).to.deep.equal([
-        {"key": "cash","value": {"count": 1}},
-        {"key": "tab","value": {"count": 3}},
-        {"key": "visa","value": {"count": 1}}
-      ])
-    })
-  })
-
-  it('can not remove colum that is used in dynamic filter', function() {
-    return u.then(function(u){
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: 'true',
-        },
-        filter: {
-          date: {
-            $gt: {
-              '$get(date)': {
-                '$nth(2)': {
-                  $column: 'date'
-                }
-              }
-            }
-          }
-        }
-      })
-    })
-    .then(function(res){
-      return res.universe.clear('date')
-    })
-    .then(function(u){
-      expect(u.columns.length).to.deep.equal(2)
-    })
-  })
-
-  it('can add new data to dynamic filters', function() {
-    var res
-    return u.then(function(u){
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: 'true',
-          $sum: 'total'
-        },
-        filter: {
-          date: {
-            $eq: {
-              '$last': {
-                $column: 'date'
-              }
-            }
-          }
-        }
-      })
-    })
-    .then(function(r){
-      res = r
-      expect(res.data).to.deep.equal([
-        {"key": "cash","value": {"count": 0, sum: 0}},
-        {"key": "tab","value": {"count": 0, sum: 0}},
-        {"key": "visa","value": {"count": 1, sum: 200}}
-      ])
-      return res.universe.add([{
-        date: "2012-11-14T17:29:52Z",
-        quantity: 100,
-        total: 50000,
-        tip: 999,
-        type: "visa",
-        productIDs: ["004"]
-      }])
-    })
-    .then(function(r){
-      expect(res.data).to.deep.equal([
-        {"key": "cash","value": {"count": 0, sum: 0}},
-        {"key": "tab","value": {"count": 0, sum: 0}},
-        {"key": "visa","value": {"count": 1, sum: 50000}},
-      ])
-    })
-  })
-
   it('can query using the valueList aggregation', function() {
     var res
     return u.then(function(u){
@@ -393,7 +241,7 @@ describe('universe query', function() {
       expect(res.data).to.deep.equal([
         { key: 'cash', value: { valueList: [100, 200] } },
         { key: 'tab', value: { valueList: [90, 90, 90, 90, 90, 90, 190, 190] } },
-        { key: 'visa', value: { valueList: [200, 300, 50000] } } ])
+        { key: 'visa', value: { valueList: [200, 300] } } ])
     })
   })
 
@@ -436,8 +284,7 @@ describe('universe query', function() {
         "value": {
           "dataList": [
             {"date": "2011-11-14T16:28:54Z","quantity": 1,"total": 300, "tip": 200,"type": "visa","productIDs": ["004", "005"]},
-            {"date": "2011-11-14T17:29:52Z","quantity": 1,"total": 200, "tip": 100,"type": "visa","productIDs": ["004"]},
-            {"date": "2012-11-14T17:29:52Z","quantity": 100,"total": 50000, "tip": 999,"type": "visa","productIDs": ["004"]}
+            {"date": "2011-11-14T17:29:52Z","quantity": 1,"total": 200, "tip": 100,"type": "visa","productIDs": ["004"]}
           ]}
       }])
     })
