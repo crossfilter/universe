@@ -127,8 +127,7 @@ module.exports = function(service) {
       // apply a one time listener for filtering. This is what allows
       // us to post aggregate and change the data on each filter
       var stopFilterListen = service.onFilter(function() {
-        return attachData(query)
-          .then(postAggregate)
+        return postAggregate(query)
       })
       query.removeListeners.push(stopFilterListen)
 
@@ -156,7 +155,7 @@ module.exports = function(service) {
     function attachData(query) {
       return Promise.resolve(query.group.all())
         .then(function(data) {
-          query.rawData = data
+          query.data = data
           return query
         })
     }
@@ -164,8 +163,12 @@ module.exports = function(service) {
     function postAggregate(query) {
       // Here we slice/copy the data so we can post aggregate
       // and not skrew up crossfilter or reductio's innards
-      query.data = query.rawData.slice()
-      return query
+      return Promise.all(query.postAggregations, function(post) {
+          return post.run(query)
+        })
+        .then(function() {
+          return query
+        })
     }
 
     function addQueryMethods(q) {
