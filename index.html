@@ -29,7 +29,7 @@
 <h2>
 <a id="the-easiest-and-fastest-way-to-explore-your-data" class="anchor" href="#the-easiest-and-fastest-way-to-explore-your-data" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>The easiest and fastest way to explore your data</h2>
 
-<p>Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indxing, and countless lines of code to dissect your data.</p>
+<p>Before Universe, exploring and filtering large datasets in javascript meant constant data looping, complicated indexing, and countless lines of code to dissect your data.</p>
 
 <p>With Universe, you can be there in just a few lines of code. You've got better things to do than write intense map-reduce functions or learn the intricate inner-workings of <a href="https://github.com/crossfilter/crossfilter">Crossfilter</a> ;)</p>
 
@@ -58,7 +58,7 @@
 
 <ul>
 <li>
-<a href="#api-universe">universe()</a>
+<p><a href="#api-universe">universe()</a></p>
 
 <ul>
 <li><a href="#api-query">.query()</a></li>
@@ -69,6 +69,7 @@
 <li><a href="#api-remove">.remove()</a></li>
 </ul>
 </li>
+<li><p><a href="#pro-tips">Pro Tips</a></p></li>
 </ul>
 
 <h2>
@@ -79,9 +80,7 @@
 
 <p><strong>NPM</strong></p>
 
-<div class="highlight highlight-source-shell"><pre>npm install crossfilter/universe --save
-
-<span class="pl-c"># the "universe" npm module name is still under negotiation. Stay tuned.</span></pre></div>
+<div class="highlight highlight-source-shell"><pre>npm install universe --save</pre></div>
 
 <p><strong>Download</strong> from the <a href="https://github.com/crossfilter/universe/releases">releases</a> page. Serve the universe.js or universe.min.js file in the top-level directory as part of your application.</p>
 
@@ -212,20 +211,6 @@
   <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-c1">clear</span>()
 })
 </pre></div>
-
-<h3>
-<a id="pre-compile-columns" class="anchor" href="#pre-compile-columns" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pre-compile Columns</h3>
-
-<p>Pro-Tip: You can also <strong>pre-compile</strong> column indices before querying. Otherwise, ad-hoc indices are created and managed automagically for you anyway.</p>
-
-<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
-  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>(<span class="pl-s"><span class="pl-pds">'</span>a<span class="pl-pds">'</span></span>)
-  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>([<span class="pl-s"><span class="pl-pds">'</span>a<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>b<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>c<span class="pl-pds">'</span></span>])
-  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>({
-    key<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>d<span class="pl-pds">'</span></span>,
-    type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>string<span class="pl-pds">'</span></span> <span class="pl-c">// override automatic type detection</span>
-  })
-})</pre></div>
 
 <h2 id="api">
 <a id="api-" class="anchor" href="#api-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>API <a href="#api">#</a>
@@ -498,6 +483,64 @@ universe([
 </ul>
 </li>
 </ul>
+
+<h2 id="pro-tips">
+<a id="pro-tips-" class="anchor" href="#pro-tips-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pro Tips <a href="#pro-tips">#</a>
+</h2>
+
+<h4>
+<a id="no-arrays-necessary" class="anchor" href="#no-arrays-necessary" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>No Arrays Necessary</h4>
+
+<p>Don’t want to use arrays in your aggregations? No problem, because this:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">u</span>.<span class="pl-en">query</span>({
+        select<span class="pl-k">:</span> {
+          $sum<span class="pl-k">:</span> {
+            $sum<span class="pl-k">:</span> [
+              {$max<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-ii">total’]},</span></span>
+<span class="pl-s">              {$min: [<span class="pl-pds">'</span></span>quantity<span class="pl-s"><span class="pl-pds">'</span>, <span class="pl-pds">'</span></span>total’]}
+            ]
+          },
+        }
+      })</pre></div>
+
+<p>… is now easier written like this:</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">u</span>.<span class="pl-en">query</span>({
+        select<span class="pl-k">:</span> {
+          $sum<span class="pl-k">:</span> {
+            $sum<span class="pl-k">:</span> {
+              $max<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>],
+              $min<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>]
+            }
+          },
+        }
+      })</pre></div>
+
+<h4>
+<a id="no-objects-necessary-either" class="anchor" href="#no-objects-necessary-either" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>No Objects Necessary, either!</h4>
+
+<p>What’s that? Don’t like the verbosity of objects or arrays? Use the new string syntax!</p>
+
+<div class="highlight highlight-source-js"><pre><span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
+        select<span class="pl-k">:</span> {
+          $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>$sum($max(tip,total), $min(quantity,total))<span class="pl-pds">'</span></span>
+        }
+      })</pre></div>
+
+<h4>
+<a id="pre-compile-columns" class="anchor" href="#pre-compile-columns" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pre-compile Columns</h4>
+
+<p>Pro-Tip: You can also <strong>pre-compile</strong> column indices before querying. Otherwise, ad-hoc indices are created and managed automagically for you anyway.</p>
+
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>(<span class="pl-s"><span class="pl-pds">'</span>a<span class="pl-pds">'</span></span>)
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>([<span class="pl-s"><span class="pl-pds">'</span>a<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>b<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>c<span class="pl-pds">'</span></span>])
+  <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-en">column</span>({
+    key<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>d<span class="pl-pds">'</span></span>,
+    type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>string<span class="pl-pds">'</span></span> <span class="pl-c">// override automatic type detection</span>
+  })
+})</pre></div>
 
       <footer class="site-footer">
         <span class="site-footer-owner"><a href="https://github.com/crossfilter/universe">Universe</a> is maintained by <a href="https://github.com/crossfilter">crossfilter</a>.</span>
