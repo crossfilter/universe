@@ -6,6 +6,7 @@ var _ = require('./lodash')
 module.exports = function(service) {
   var reductiofy = require('./reductiofy')(service)
   var filters = require('./filters')(service)
+  var postAggregation = require('./postAggregation')(service)
 
   return function query(query) {
 
@@ -125,7 +126,7 @@ module.exports = function(service) {
         }
 
         function addQueryMethods(q) {
-          _.assign(q, {
+          _.assign(q, postAggregation.getMethods(q), {
             clear: clearQuery,
           })
 
