@@ -87,7 +87,7 @@ module.exports = function(service) {
   function applyFilters(newFilters) {
     var ds = _.map(newFilters, function(fil, i) {
       var existing = service.filters[i]
-      // Filters are the same, so no change is needed on this column
+        // Filters are the same, so no change is needed on this column
       if (fil.replace && existing && _.isEqual(fil, existing)) {
         return Promise.resolve()
       }
@@ -150,9 +150,15 @@ module.exports = function(service) {
         // If any of those filters are the last dependency for the column, then remove the column
         return Promise.all(_.map(tryRemoval, function(v) {
           var column = service.column.find((v.key.charAt(0) === '[') ? JSON.parse(v.key) : v.key)
-            if (column.temporary && !column.dynamicReference) {
-              return service.clear(column.key)
-            }
+          if (column.temporary && !column.dynamicReference) {
+            return service.clear(column.key)
+          }
+        }))
+      })
+      .then(function() {
+        // Call the filterListeners and wait for their return
+        return Promise.all(_.map(service.filterListeners, function(listener) {
+          return listener()
         }))
       })
       .then(function() {
@@ -209,11 +215,11 @@ module.exports = function(service) {
       _.forEach(obj, function(val, key) {
         // find the data references, if any
         var ref = findDataReferences(val, key)
-        if(ref) columns.push(ref)
+        if (ref) columns.push(ref)
           // if it's a string
         if (_.isString(val)) {
           ref = findDataReferences(null, val)
-          if(ref) columns.push(ref)
+          if (ref) columns.push(ref)
         }
         // If it's another object, keep looking
         if (_.isObject(val)) {
