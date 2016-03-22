@@ -15,6 +15,12 @@ With Universe, you can be there in just a few lines of code. You've got better t
 - Flexible filtering system
 - Automatic and invisible management of data indexing and memory
 
+## Coming Very Soon
+- Post Aggregation
+- Query Joins
+- Query Macros
+- Sub Queries
+
 ## Demos
 
 - [Basic Usage](http://codepen.io/tannerlinsley/pen/oxjyvg?editors=0010) (Codepen)
