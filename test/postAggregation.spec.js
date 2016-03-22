@@ -19,9 +19,10 @@ describe('universe postAggregation', function() {
     })
   })
 
-  it('can do general post aggregations', function() {
+  it('can do chained general post aggregations', function() {
     var before
     var after
+    var after2
     return u.then(function(u) {
         return u.query({
           groupBy: 'type'
@@ -47,19 +48,26 @@ describe('universe postAggregation', function() {
           { key: 'tab', value: { count: 8 }},
           { key: 'visa_test', value: { count: 2 }}
         ])
+        return res.post(function(q){
+          q.data[0].value.count += 10
+          q.data[2].key += '_test'
+          return q
+        })
+          .then(function(res){
+            after2 = res
+            expect(after.data).to.deep.equal([
+              { key: 'cash', value: { count: 12 }},
+              { key: 'tab', value: { count: 8 }},
+              { key: 'visa_test', value: { count: 2 }}
+            ])
+          })
+      })
+      .then(function(){
         return u.then(function(u){
           return u.filter('total', '100')
         })
-        .then(function(){
-          expect(before.data).to.deep.equal([
-            { key: 'cash', value: { count: 1 }},
-            { key: 'tab', value: { count: 0 }},
-            { key: 'visa', value: { count: 0 }}
-          ])
-          return res
-        })
       })
-      .then(function(res){
+      .then(function(){
         expect(before.data).to.deep.equal([
           { key: 'cash', value: { count: 1 }},
           { key: 'tab', value: { count: 0 }},
@@ -70,12 +78,11 @@ describe('universe postAggregation', function() {
           { key: 'tab', value: { count: 0 }},
           { key: 'visa_test', value: { count: 0 }}
         ])
-        expect(res.data).to.deep.equal([
-          { key: 'cash', value: { count: 11 }},
+        expect(after2.data).to.deep.equal([
+          { key: 'cash', value: { count: 21 }},
           { key: 'tab', value: { count: 0 }},
-          { key: 'visa_test', value: { count: 0 }}
+          { key: 'visa_test_test', value: { count: 0 }}
         ])
-        console.log(res.data)
       })
   })
 
