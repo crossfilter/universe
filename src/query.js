@@ -88,6 +88,7 @@ module.exports = function(service) {
           group: group,
           // Reductio reducer instance
           reducer: null,
+          removeListeners: [],
           // original query passed in to query method
           original: query,
         };
@@ -141,7 +142,7 @@ module.exports = function(service) {
                   return service.clear(column.key)
                 }
               })
-              .then(function(){
+              .then(function() {
                 return service
               })
           }
