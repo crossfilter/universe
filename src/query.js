@@ -79,6 +79,9 @@ module.exports = function(service) {
           var column = service.column.find(query.original.groupBy)
           query.column = column
           column.queries.push(query)
+          column.removeListeners.push(function() {
+            return query.clear()
+          })
           return query
         })
     }
@@ -109,10 +112,10 @@ module.exports = function(service) {
             // Here, we create a listener to recreate and apply the reducer
             // (with updated reference data) to
             // the group anytime data changes
-            var stopListeningForData = service.onDataChange(function applyReducerOnDataChange() {
+            var stopDataListen = service.onDataChange(function() {
               return applyQuery(query)
             })
-            query.column.removeListeners.push(stopListeningForData)
+            query.removeListeners.push(stopDataListen)
             return query
           })
       }
@@ -120,11 +123,19 @@ module.exports = function(service) {
     }
 
     function applyQuery(query) {
-      // Create the reducer using reductio and the Universe
-      // Query Syntax
+
+      // apply a one time listener for filtering. This is what allows
+      // us to post aggregate and change the data on each filter
+      var stopFilterListen = service.onFilter(function() {
+        return attachData(query)
+          .then(postAggregate)
+      })
+      query.removeListeners.push(stopFilterListen)
+
       return buildReducer(query)
         .then(applyReducer)
         .then(attachData)
+        .then(postAggregate)
     }
 
     function buildReducer(query) {
@@ -145,12 +156,15 @@ module.exports = function(service) {
     function attachData(query) {
       return Promise.resolve(query.group.all())
         .then(function(data) {
-          query.data = data
+          query.rawData = data
           return query
         })
     }
 
-    function applyPostAggregations(query) {
+    function postAggregate(query) {
+      // Here we slice/copy the data so we can post aggregate
+      // and not skrew up crossfilter or reductio's innards
+      query.data = query.rawData.slice()
       return query
     }
 
