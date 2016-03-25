@@ -63,5 +63,6 @@ module.exports = function(service) {
 
 
 
+function cloneIfLocked(parent) {
   return parent.locked ? _.clone(parent.data) : parent.data
 }
