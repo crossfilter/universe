@@ -8,10 +8,8 @@
   },
   "dependencies": {
     "crossfilter2": "2.0.0-alpha.04",
-    "javascript-natural-sort": "^0.7.1",
-    "moment": "^2.11.2",
     "q": "^1.4.1",
-    "reductio": "^0.5.2"
+    "reductio": "0.5.3"
   },
   "devDependencies": {
     "browserify": "^13.0.0",

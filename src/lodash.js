@@ -1,7 +1,5 @@
 'use strict'
 
-var naturalSort = require('javascript-natural-sort');
-
 module.exports = {
   assign: assign,
   find: find,
