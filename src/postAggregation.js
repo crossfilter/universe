@@ -14,12 +14,12 @@ module.exports = function(service) {
   }
 
   function post(query, parent, cb) {
-    query.data = parent.locked ? _.clone(parent.data) : parent.data
+    query.data = cloneIfLocked(parent)
     return Promise.resolve(cb(query, parent))
   }
 
   function sortByKey(query, parent, desc) {
-    query.data = parent.locked ? _.clone(parent.data) : parent.data
+    query.data = cloneIfLocked(parent)
     query.data = _.sortBy(query.data, function(d) {
       return d.key
     })
@@ -30,7 +30,7 @@ module.exports = function(service) {
 
   // Limit results to n, or from start to end
   function limit(query, parent, start, end) {
-    query.data = parent.locked ? _.clone(parent.data) : parent.data
+    query.data = cloneIfLocked(parent)
     if (_.isUndefined(end)) {
       end = start || 0
       start = 0
@@ -43,7 +43,7 @@ module.exports = function(service) {
 
   // Squash results to n, or from start to end
   function squash(query, parent, start, end, aggObj, label) {
-    query.data = parent.locked ? _.clone(parent.data) : parent.data
+    query.data = cloneIfLocked(parent)
     start = start || 0
     end = end || query.data.length
     var toSquash = query.data.splice(start, end - start)
@@ -61,4 +61,7 @@ module.exports = function(service) {
     query.data.splice(start, 0, squashed)
   }
 
+
+
+  return parent.locked ? _.clone(parent.data) : parent.data
 }
