@@ -146,6 +146,11 @@ module.exports = function(service) {
     }
 
     function postAggregate(query) {
+      if(query.postAggregations.length > 1){
+        // If the query is used by 2+ post aggregations, we need to lock
+        // it against getting mutated by the post-aggregations
+        query.locked = true
+      }
       return Promise.all(_.map(query.postAggregations, function(post) {
           return post()
         }))
