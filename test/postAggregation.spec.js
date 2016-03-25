@@ -146,5 +146,114 @@ describe('universe postAggregation', function() {
       })
   })
 
+  it('can find change based on index for multiple values', function() {
+    return u.then(function(u) {
+        return u.query({
+          groupBy: 'total',
+          select: {
+            $count: true,
+            $sum: 'total',
+          }
+        })
+      })
+      .then(function(res) {
+        return res.change(2, 4, {
+          count: true,
+          sum: true
+        })
+      })
+      .then(function(res) {
+        expect(res.data).to.deep.equal({
+          key: [190, 300],
+          value: {
+            countChange: -1,
+            sumChange: -80,
+          }
+        })
+      })
+  })
+
+  it('can create a changeMap', function() {
+    return u.then(function(u) {
+        return u.query({
+          groupBy: 'total',
+          select: {
+            $count: true,
+            $sum: 'total',
+          }
+        })
+      })
+      .then(function(res) {
+        return res.changeMap({
+          count: true,
+          sum: true,
+        })
+      })
+      .then(function(res) {
+        expect(res.data).to.deep.equal([
+          { key: 90,
+            value: {
+              count: 6,
+              sum: 540,
+              countChange: 0,
+              countChangeFromStart: 0,
+              countChangeFromEnd: 5,
+              sumChange: 0,
+              sumChangeFromStart: 0,
+              sumChangeFromEnd: 240
+            }
+          },
+          { key: 100,
+            value: {
+              count: 1,
+              sum: 100,
+              countChange: -5,
+              countChangeFromStart: -5,
+              countChangeFromEnd: 0,
+              sumChange: -440,
+              sumChangeFromStart: -440,
+              sumChangeFromEnd: -200
+            }
+          },
+          { key: 190,
+            value: {
+              count: 2,
+              sum: 380,
+              countChange: 1,
+              countChangeFromStart: -4,
+              countChangeFromEnd: 1,
+              sumChange: 280,
+              sumChangeFromStart: -160,
+              sumChangeFromEnd: 80
+            }
+          },
+          { key: 200,
+            value: {
+              count: 2,
+              sum: 400,
+              countChange: 0,
+              countChangeFromStart: -4,
+              countChangeFromEnd: 1,
+              sumChange: 20,
+              sumChangeFromStart: -140,
+              sumChangeFromEnd: 100
+            }
+          },
+          { key: 300,
+            value: {
+              count: 1,
+              sum: 300,
+              countChange: -1,
+              countChangeFromStart: -5,
+              countChangeFromEnd: 0,
+              sumChange: -100,
+              sumChangeFromStart: -240,
+              sumChangeFromEnd: 0
+            }
+          }
+        ])
+      })
+  })
+
 
 })

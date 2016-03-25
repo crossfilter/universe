@@ -11,6 +11,8 @@ module.exports = function(service) {
     sortByKey: sortByKey,
     limit: limit,
     squash: squash,
+    change: change,
+    changeMap: changeMap,
   }
 
   function post(query, parent, cb) {
@@ -51,9 +53,9 @@ module.exports = function(service) {
       key: label || 'Other',
       value: {}
     }
-    _.recurseObject(aggObj, function(val, key, path){
+    _.recurseObject(aggObj, function(val, key, path) {
       var items = []
-      _.forEach(toSquash, function(record){
+      _.forEach(toSquash, function(record) {
         items.push(_.get(record.value, path))
       })
       _.set(squashed.value, path, aggregation.aggregators[val](items))
@@ -61,6 +63,52 @@ module.exports = function(service) {
     query.data.splice(start, 0, squashed)
   }
 
+  function change(query, parent, start, end, aggObj) {
+    query.data = cloneIfLocked(parent)
+    start = start || 0
+    end = end || query.data.length
+    var obj = {
+      key: [query.data[start].key, query.data[end].key],
+      value: {}
+    }
+    _.recurseObject(aggObj, function(val, key, path) {
+      var changePath = _.clone(path)
+      changePath.pop()
+      changePath.push(key + 'Change')
+      _.set(obj.value, changePath, _.get(query.data[end].value, path) - _.get(query.data[start].value, path))
+    })
+    query.data = obj
+  }
+
+  function changeMap(query, parent, aggObj) {
+    query.data = cloneIfLocked(parent)
+    _.recurseObject(aggObj, function(val, key, path) {
+
+      var changePath = _.clone(path)
+      var fromStartPath = _.clone(path)
+      var fromEndPath = _.clone(path)
+
+      changePath.pop()
+      fromStartPath.pop()
+      fromEndPath.pop()
+
+      changePath.push(key + 'Change')
+      fromStartPath.push(key + 'ChangeFromStart')
+      fromEndPath.push(key + 'ChangeFromEnd')
+
+      var start = _.get(query.data[0].value, path)
+      var end = _.get(query.data[query.data.length - 1].value, path)
+
+      _.forEach(query.data, function(record, i) {
+        var previous = query.data[i - 1] || query.data[0]
+        _.set(query.data[i].value, changePath, _.get(record.value, path) - (previous ? _.get(previous.value, path) : 0))
+        _.set(query.data[i].value, fromStartPath, _.get(record.value, path) - start)
+        _.set(query.data[i].value, fromEndPath, _.get(record.value, path) - end)
+      })
+    })
+  }
+
+}
 
 
 function cloneIfLocked(parent) {

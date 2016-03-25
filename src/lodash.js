@@ -294,22 +294,20 @@ function values(a) {
 }
 
 function recurseObject(obj, cb) {
-  // This function handles arrays and objects
   _recurseObject(obj, [])
   return obj
-
   function _recurseObject(obj, path) {
     for (var k in obj) {
-      path.push(k)
+      var newPath = clone(path)
+      newPath.push(k)
       if (typeof obj[k] == "object" && obj[k] !== null) {
-        _recurseObject(obj[k], path)
+        _recurseObject(obj[k], newPath)
       } else {
         if (!obj.hasOwnProperty(k)) {
           continue
         }
-        cb(obj[k], k, path)
+        cb(obj[k], k, newPath)
       }
-      // do something...
     }
   }
 }
