@@ -30,6 +30,7 @@ describe('universe postAggregation', function() {
       })
       .then(function(res) {
         before = res
+        before.lock()
         expect(before.data).to.deep.equal([
           { key: 'cash', value: { count: 2 }},
           { key: 'tab', value: { count: 8 }},
@@ -38,11 +39,11 @@ describe('universe postAggregation', function() {
         return res.post(function(q){
           q.data[0].value.count += 10
           q.data[2].key += '_test'
-          return q
         })
       })
       .then(function(res){
         after = res
+        after.lock()
         expect(after.data).to.deep.equal([
           { key: 'cash', value: { count: 12 }},
           { key: 'tab', value: { count: 8 }},
@@ -51,15 +52,10 @@ describe('universe postAggregation', function() {
         return res.post(function(q){
           q.data[0].value.count += 10
           q.data[2].key += '_test'
-          return q
         })
           .then(function(res){
             after2 = res
-            expect(after.data).to.deep.equal([
-              { key: 'cash', value: { count: 12 }},
-              { key: 'tab', value: { count: 8 }},
-              { key: 'visa_test', value: { count: 2 }}
-            ])
+            after2.lock()
           })
       })
       .then(function(){
@@ -115,5 +111,40 @@ describe('universe postAggregation', function() {
         expect(res.data[0].key).to.equal('visa')
       })
   })
+
+  it('can limit', function() {
+    return u.then(function(u) {
+        return u.query({
+          groupBy: 'total',
+        })
+      })
+      .then(function(res) {
+        return res.limit(2, null)
+      })
+      .then(function(res) {
+        expect(res.data[0].key).to.equal(190)
+      })
+  })
+
+  it('can squash', function() {
+    return u.then(function(u) {
+        return u.query({
+          groupBy: 'total',
+          select: {
+            $sum: 'total'
+          }
+        })
+      })
+      .then(function(res) {
+        return res.squash(2, 4, {
+          sum: '$sum'
+        }, 'SQUASHED!!!')
+      })
+      .then(function(res) {
+        expect(res.data[2].key).to.equal('SQUASHED!!!')
+        expect(res.data[2].value.sum).to.equal(780)
+      })
+  })
+
 
 })

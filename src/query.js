@@ -7,6 +7,7 @@ module.exports = function(service) {
   var reductiofy = require('./reductiofy')(service)
   var filters = require('./filters')(service)
   var postAggregation = require('./postAggregation')(service)
+  var postAggregationMethods = _.keys(postAggregation)
 
   return function doQuery(queryObj) {
     var queryHash = JSON.stringify(queryObj)
@@ -154,10 +155,14 @@ module.exports = function(service) {
     }
 
     function newQueryObj(q, parent) {
-      if(!parent){
+      var locked = false
+      if (!parent) {
         parent = q
         q = {}
+        locked = true
       }
+
+      // Assign the regular query properties
       _.assign(q, {
         // The Universe for continuous promise chaining
         universe: service,
@@ -179,16 +184,31 @@ module.exports = function(service) {
         // It's own postAggregations
         postAggregations: [],
 
-        // It's own post-aggregation api
+        // Data method
+        locked: locked,
+        lock: lock,
+        unlock: unlock,
+        // Disposal method
         clear: clearQuery,
-        post: post,
-        sortByKey: sortByKey,
+      })
 
+      _.forEach(postAggregationMethods, function(method) {
+        q[method] = postAggregateMethodWrap(postAggregation[method])
       })
 
       return q
 
+      function lock(set){
+        if(!_.isUndefined(set)){
+          q.locked = !!set
+          return
+        }
+        q.locked = true
+      }
 
+      function unlock(){
+        q.locked = false
+      }
 
       function clearQuery() {
         _.forEach(q.removeListners, function(l) {
@@ -208,40 +228,27 @@ module.exports = function(service) {
           })
       }
 
-      function post(cb) {
-        var sub = {}
-        newQueryObj(sub, q)
-        q.postAggregations.push(function(fromFilter) {
-          _post(sub, fromFilter)
-        })
-        return _post(sub)
+      function postAggregateMethodWrap(postMethod) {
+        return function() {
+          var args = Array.prototype.slice.call(arguments);
+          var sub = {}
+          newQueryObj(sub, q)
+          args.unshift(sub, q)
 
-        function _post(sub) {
-          sub.data = _.clone(q.data)
-          return Promise.resolve(cb(sub))
-            .then(function(s) {
-              _.assign(sub, s)
-              return postAggregate(sub)
-            })
-        }
-      }
-
-      function sortByKey(desc) {
-        var sub = {}
-        newQueryObj(sub, q)
-        q.postAggregations.push(function(fromFilter) {
-          _sortByKey(sub, fromFilter)
-        })
-        return _sortByKey(sub)
-
-        function _sortByKey(sub) {
-          sub.data = _.sortBy(_.clone(q.data), function(d){
-            return d.key
+          q.postAggregations.push(function() {
+            Promise.resolve(postMethod.apply(null, args))
+              .then(postAggregateChildren)
           })
-          if(desc){
-            sub.data.reverse()
+
+          return Promise.resolve(postMethod.apply(null, args))
+            .then(postAggregateChildren)
+
+          function postAggregateChildren() {
+            return postAggregate(sub)
+              .then(function(){
+                return sub
+              })
           }
-          return postAggregate(sub)
         }
       }
 
