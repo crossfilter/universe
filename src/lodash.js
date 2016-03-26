@@ -1,7 +1,5 @@
 'use strict'
 
-var naturalSort = require('javascript-natural-sort');
-
 module.exports = {
   assign: assign,
   find: find,
@@ -13,7 +11,9 @@ module.exports = {
   isNumber: isNumber,
   isFunction: isFunction,
   get: get,
+  set: set,
   map: map,
+  keys: keys,
   sortBy: sortBy,
   forEach: forEach,
   isUndefined: isUndefined,
@@ -26,6 +26,7 @@ module.exports = {
   flatten: flatten,
   sort: sort,
   values: values,
+  recurseObject: recurseObject,
 }
 
 
@@ -81,14 +82,34 @@ function isFunction(a) {
 }
 
 function get(a, b) {
-  return b.
-  replace('[', '.').replace(']', '').
-  split('.').
-  reduce(
-    function(obj, property) {
-      return obj[property];
-    }, a
-  )
+  if (isArray(b)) {
+    b = b.join('.')
+  }
+  return b
+    .replace('[', '.').replace(']', '')
+    .split('.')
+    .reduce(
+      function(obj, property) {
+        return obj[property];
+      }, a
+    )
+}
+
+function set(obj, prop, value) {
+  if (typeof prop === "string") {
+    prop = prop
+      .replace('[', '.').replace(']', '')
+      .split(".")
+  }
+  if (prop.length > 1) {
+    var e = prop.shift()
+    assign(obj[e] =
+      Object.prototype.toString.call(obj[e]) === "[object Object]" ? obj[e] : {},
+      prop,
+      value)
+  } else {
+    obj[prop[0]] = value
+  }
 }
 
 function map(a, b) {
@@ -120,13 +141,17 @@ function map(a, b) {
   })
 }
 
+function keys(obj) {
+  return Object.keys(obj)
+}
+
 function sortBy(a, b) {
   if (isFunction(b)) {
     return a.sort(function(aa, bb) {
-      if (aa.value > bb.value) {
+      if (b(aa) > b(bb)) {
         return 1;
       }
-      if (aa.value < bb.value) {
+      if (b(aa) < b(bb)) {
         return -1;
       }
       // a must be equal to b
@@ -264,4 +289,23 @@ function values(a) {
     }
   }
   return values
+}
+
+function recurseObject(obj, cb) {
+  _recurseObject(obj, [])
+  return obj
+  function _recurseObject(obj, path) {
+    for (var k in obj) {
+      var newPath = clone(path)
+      newPath.push(k)
+      if (typeof obj[k] == "object" && obj[k] !== null) {
+        _recurseObject(obj[k], newPath)
+      } else {
+        if (!obj.hasOwnProperty(k)) {
+          continue
+        }
+        cb(obj[k], k, newPath)
+      }
+    }
+  }
 }

@@ -14,6 +14,7 @@ function universe(data, options) {
     columns: [],
     filters: {},
     dataListeners: [],
+    filterListeners: [],
   }
 
   var cf = require('./crossfilter')(service)
@@ -30,7 +31,8 @@ function universe(data, options) {
         query: require('./query')(service),
         filter: require('./filters')(service).filter,
         clear: require('./clear')(service),
-        onDataChange: onDataChange
+        onDataChange: onDataChange,
+        onFilter: onFilter,
       })
     })
 
@@ -38,6 +40,13 @@ function universe(data, options) {
     service.dataListeners.push(cb)
     return function(){
       service.dataListeners.splice(service.dataListeners.indexOf(cb), 1)
+    }
+  }
+
+  function onFilter(cb){
+    service.filterListeners.push(cb)
+    return function(){
+      service.filterListeners.splice(service.filterListeners.indexOf(cb), 1)
     }
   }
 }

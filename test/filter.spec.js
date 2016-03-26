@@ -27,6 +27,36 @@ describe('universe filter', function() {
     })
   })
 
+  it('can filter', function() {
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: 'true',
+          $sum: 'total'
+        },
+        filter: {
+          $or: [{
+            total: {
+              $gt: 50
+            }
+          }, {
+            quantity: {
+              $gt: 1
+            }
+          }]
+        }
+      })
+    })
+    .then(function(res){
+      expect(res.data).to.deep.equal([
+        {"key": "cash","value": {"count": 2,"sum": 300}},
+        {"key": "tab","value": {"count": 8,"sum": 920}},
+        {"key": "visa","value": {"count": 2,"sum": 500}}
+      ])
+    })
+  })
+
   it('can not filter on a non-existent column', function() {
     return u.then(function(u) {
       return u.query({
@@ -100,6 +130,83 @@ describe('universe filter', function() {
             {"key": [200, 300],"value": {"valueList": [300],"max": 300}}
           ])
         })
+    })
+  })
+
+  it('can filter using $column data', function() {
+    return u.then(function(u) {
+      return u.query({
+          groupBy: 'tip',
+          filter: {
+            type: {
+              $last: {
+                $column: 'type'
+              }
+            }
+          }
+        })
+        .then(function(u) {
+          expect(u.data).to.deep.equal([
+            { key: 0, value: { count: 8 } },
+            { key: 100, value: { count: 3 } },
+            { key: 200, value: { count: 1 } }
+          ])
+        })
+    })
+  })
+
+  it('can filter using all $data', function() {
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: 'true',
+        },
+        filter: {
+          date: {
+            $gt: {
+              '$get(date)': {
+                '$nthPct(50)': '$data'
+              }
+            }
+          }
+        }
+      })
+    })
+    .then(function(res){
+      expect(res.data).to.deep.equal([
+        {"key": "cash","value": {"count": 1}},
+        {"key": "tab","value": {"count": 3}},
+        {"key": "visa","value": {"count": 1}}
+      ])
+    })
+  })
+
+  it('can not remove colum that is used in dynamic filter', function() {
+    return u.then(function(u){
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: 'true',
+        },
+        filter: {
+          date: {
+            $gt: {
+              '$get(date)': {
+                '$nth(2)': {
+                  $column: 'date'
+                }
+              }
+            }
+          }
+        }
+      })
+    })
+    .then(function(res){
+      return res.universe.clear('date')
+    })
+    .then(function(u){
+      expect(u.columns.length).to.deep.equal(2)
     })
   })
 

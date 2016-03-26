@@ -1,7 +1,6 @@
 'use strict'
 
 var _ = require('./lodash')
-var naturalSort = require('javascript-natural-sort');
 
 var aggregators = {
   // Collections
@@ -19,7 +18,6 @@ var aggregators = {
   $nthLast: $nthLast,
   $nthPct: $nthPct,
   $map: $map,
-  $sort: $sort,
 }
 
 
@@ -247,27 +245,4 @@ function $map(children, n) {
   return children.map(function(d) {
     return d[n]
   })
-}
-
-function $sort(children, n) {
-  // Alphanumeric by property
-  if (_.isString(n)) {
-    children.sort(function sortByKey(a, b) {
-      if (a[n] < b[n])
-        return -1;
-      else if (a[n] > b[n])
-        return 1;
-      else
-        return 0;
-    });
-  }
-  // Numeric by property
-  if (_.isNumber(n)) {
-    children.sort(function sortByKey(a, b) {
-      return a[n] - b[n]
-    });
-  }
-  // Flat, natural sorting
-  // Be sure to copy the array as to not mutate the original
-  return Array.prototype.slice.call(children).sort(naturalSort)
 }
