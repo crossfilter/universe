@@ -14,15 +14,15 @@ With Universe, you can be there in just a few lines of code. You've got better t
 - Real-time updates to query results as you filter
 - Flexible filtering system
 - Automatic and invisible management of data indexing and memory
-
-## Coming Very Soon
 - Post Aggregation
+
+## Features in the Pipeline
 - Query Joins
 - Query Macros
 - Sub Queries
+- To help contribute, join us at  [![Join the chat at https://gitter.im/crossfilter/universe](https://badges.gitter.im/crossfilter/universe.svg)](https://gitter.im/crossfilter/universe?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Demos
-
 - [Basic Usage](http://codepen.io/tannerlinsley/pen/oxjyvg?editors=0010) (Codepen)
 
 ## [API](#api)
@@ -36,6 +36,8 @@ With Universe, you can be there in just a few lines of code. You've got better t
   - [.remove()](#api-remove)
 
 
+- [Post Aggregation](#post-aggregation)
+  - [.post()](#post-aggregation-post)
 - [Pro Tips](#pro-tips)
 
 ## Getting Started
@@ -68,7 +70,6 @@ var myUniverse = universe([
 ```
 
 ### Query your data
-
 ```javascript
 
 .then(function(myUniverse){
@@ -87,6 +88,17 @@ var myUniverse = universe([
       }
     },
   })
+
+  // Optionally post-aggregate your data
+  // Reduce all results after 5 to a single result using sums
+  myUniverse.squash(5, null, {
+    count: '$sum',
+    quantity: {
+      sum: '$sum'
+    }
+  })
+
+  // See Post-Aggregations for more information
 })
 ```
 
@@ -177,8 +189,19 @@ As you filter your data on the universe level, every query's result is updated i
 .then(function(myUniverse){
   return myUniverse.clear()
 })
-
 ```
+
+
+
+
+
+
+
+
+
+
+
+
 
 <h2 id="api">API <a href="#api">#</a></h2>
 
@@ -249,14 +272,18 @@ As you filter your data on the universe level, every query's result is updated i
 - Parameters
   - `columnKey` - the column property or array index you would like to pre-compile eg.
   ```javascript
-    .column('total')
+    .then(function(universe){
+      return universe.column('total')
+    })
   ```
   - `columnObject` allows you to override the column type, otherwise it is calculated automatically:
   ```javascript
-      .column({
+    .then(function(universe){
+      return universe.column({
         key: 'total',
         type: 'number'
       })
+    })
     ```
 - Returns
   - `promise` resolved with
@@ -271,14 +298,16 @@ As you filter your data on the universe level, every query's result is updated i
 - Parameters
   - `columnKey` - the column property or array of columns you would like to clear eg.
   ```javascript
-    // Single Key
-    .clear('total')
-    // Complex Key
-    .clear({key: ['complex', 'key']})
-    // Multiple Single Keys
-    .clear(['total', 'quantity'])
-    // Multiple Complex Keys
-    .clear([{key: ['complex', 'key']}, {key: ['another', 'one']}])
+    .then(function(universe){
+      // Single Key
+      return universe.clear('total')
+      // Complex Key
+      return universe.clear({key: ['complex', 'key']})
+      // Multiple Single Keys
+      return universe.clear(['total', 'quantity'])
+      // Multiple Complex Keys
+      return universe.clear([{key: ['complex', 'key']}, {key: ['another', 'one']}])
+    })
   ```
 - Returns
   - `promise` resolved with
@@ -297,47 +326,302 @@ As you filter your data on the universe level, every query's result is updated i
     - **universe instance**
 
 
+
+
+
+
+
+
+
+
+
+
+
+<h2 id="post-aggregation">Post Aggregation <a href="#post-aggregation">#</a></h2>
+
+Post aggregation methods can be run on query results to further modify your data.  Just like queries, the results magically and instantly respond to filtering.
+- Each post aggregation is very powerful, but not all post aggregations can be chained together.
+
+### Locking a query
+A majority of the time, you're probably only interested in the end result of a query chain. For this reason, Post Aggregations default to mutating the data of their direct parent (unless the parent is the original query), thereby avoiding unnecessary copying of data.
+On the other hand, if you plan on accessing data at any point in the middle of a query chain, you will need to `lock()` that query's results. This ensure's it won't be overwritten or mutated by any further post aggregation.
+
+*Note:* Running more than 1 post aggregation on a query will automatically lock the parent query.
+
+```javascript
+
+.then(function(universe){
+  return universe.query({
+    groupBy: 'tag'
+  })
+})
+.then(function(query){
+  query.lock()
+  var all = query.data
+  return query.limit(5)
+})
+.then(function(query){
+  var only5 = query.data
+
+  all.length === 10
+  only5.length === 5
+})
+```
+Without locking the above query before using `.limit(5)`, the `all` data array would have been mutated by `.limit(5)`
+
+<h3 id="post-aggregation-sortByKey">.sortByKey(descending) <a href="#post-aggregation-sortByKey">#</a></h3>
+
+- Description
+  - Sort results by key (ascending or descending)
+- Parameters
+  - `descending` - Pass true to sortKeys in descending order
+  ```javascript
+    .then(function(query){  
+      return query.sortByKey(true)
+    })
+  ```
+- Returns
+  - `promise` resolved with
+    - **query instance**
+
+
+<h3 id="post-aggregation-limit">.limit(n, n2) <a href="#post-aggregation-limit">#</a></h3>
+
+- Description
+  - Limit results to those between`n` and `n2`.  If `n2` is not passed, will limit to the first `n` records
+- Parameters
+  - `n` - Start index.  Defaults to 0 if `null` or `undefined`,
+  - `n2` - End index.  Defaults to `query.data.length` if `null`.  If `undefined`, will limit to the first `n` records instead.
+  ```javascript
+    .then(function(query){
+      // limits results to the first 5 records
+      return query.limit(5)
+      // limits results to records 5 through 10
+      return query.limit(4, 10)
+    })
+  ```
+- Returns
+  - `promise` resolved with
+    - **query instance**
+
+
+<h3 id="post-aggregation-squash">.squash(n, n2, aggregationMap, keyName) <a href="#post-aggregation-squash">#</a></h3>
+
+- Description
+  - Takes records from `n` to `n2` and reduces them to a single record using the aggregationMap  
+- Parameters
+  - `n` - Start index. Defaults to `0` if `false`-y
+  - `n2` - End index. Defaults to `query.data.length` if `false`-y
+  - `aggregationMap` - A 1:1 map of property to the aggregation to be used when combining the records
+  - `keyName` (optional) - The key to be used for the new record.  Defaults to `Other`
+
+  ```javascript
+  .then(function(universe){
+    universe.query({
+    groupBy: 'type',
+    select: {
+      $sum: 'total',
+      otherColumn: {
+        $avg: 'tip'
+      }
+    })
+  })
+  .then(function(query){
+    // Will squash all records after the 5 record
+    query.squash(5, null, {
+      // Sum the sum column
+      sum: '$sum',
+      othercolumn: {
+        // Average the avg column
+        avg: '$avg'
+      }
+    }, 'Everything after 5')
+    // Give the squashed record a new key
+  })
+  ```
+- Returns
+  - `promise` resolved with
+    - **query instance**
+
+
+<h3 id="post-aggregation-change">.change(n, n2, changeFields) <a href="#post-aggregation-change">#</a></h3>
+
+- Description
+  - Determines the change from the `n` to `n2` using the keys in `changeFields`
+- Parameters
+  - `n` - Start index. Defaults to `0` if `false`-y
+  - `n2` - End index. Defaults to `query.data.length` if `false`-y
+  - `changeFields` - An object or array, referencing the fields to measure for change
+
+  ```javascript
+  .then(function(universe){
+    universe.query({
+      groupBy: 'type',
+      select: {
+        $sum: 'total',
+        otherColumn: {
+          $avg: 'tip'
+        }
+      }
+    })
+  })
+  .then(function(query){
+    // Measure the change for sum and avg from result 0 to 10
+    query.change(0, 10, {
+      sum: true
+      otherColumn: {
+        avg: true
+      }
+    })
+  })
+  ```
+- Returns
+  - `promise` resolved with
+    - **query instance**
+      - `query.data` is now an object:
+      ```javascript
+      {
+        key: ['nKey', 'n2Key'],
+        value: {
+          sumChange: 7,
+          otherColumn: {
+            avgChange: 4
+          }
+        }
+      }
+      ```
+
+
+<h3 id="post-aggregation-changeMap">.changeMap(changeMapObj) <a href="#post-aggregation-changeMap">#</a></h3>
+
+- Description
+  - Determines incremental change for each record across the fields defined in `changeMapObj`
+- Parameters
+  - `changeMapObj` - An object or array, referencing the fields to measure for change
+
+  ```javascript
+  .then(function(universe){
+    universe.query({
+      groupBy: 'type',
+      select: {
+        $sum: 'total',
+        otherColumn: {
+          $avg: 'tip'
+        }
+      }
+    })
+  })
+  .then(function(query){
+    // Measure the change for sum and avg from result 0 to 10
+    query.change({
+      sum: true
+      otherColumn: {
+        avg: true
+      }
+    })
+  })
+  ```
+- Returns
+  - `promise` resolved with
+    - **query instance**
+      - `query.data` records are now decorated with incremental change data:
+      ```javascript
+      [...{
+        key: 'tag5'
+        value: {
+          sum: 5
+          sumChange: 7,
+          sumChangeFromStart: 0,
+          sumChangeFromEnd: 30,
+          otherColumn: {
+            avgChange: 4
+            avgChangeFromStart: -4
+            avgChangeFromEnd: -20
+          }
+        }
+      }...]
+      ```
+
+
+<h3 id="post-aggregation-post">.post(callback) <a href="#post-aggregation-post">#</a></h3>
+
+- Description
+  - Use a custom callback function to perform your own post aggregations.
+- Parameters
+  - `callback` - the callback function to execute.  It accepts the following parameters:
+    - `query` - the new query object. A fresh reference (or copy, if the parent is locked) is located at `query.data`.  It is highly discouraged to change any other property on this object
+    - `parentQuery` - the parent query.
+  - You may optionally return a promise-like value for asynchronous processing
+  ```javascript
+    .post(function(query, parentQuery){
+      query.data[0].key = 'newKeyName'
+      return Promise.resolve(doSomethingSpecial(query.data))
+    })
+  ```
+- Returns
+  - `promise` resolved with
+    - **query instance**
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 <h2 id="pro-tips">Pro Tips <a href="#pro-tips">#</a></h2>
 
 #### No Arrays Necessary
 Don’t want to use arrays in your aggregations? No problem, because this:
 
 ```javascript
-u.query({
-        select: {
-          $sum: {
-            $sum: [
-              {$max: ['tip', 'total’]},
-              {$min: ['quantity', 'total’]}
-            ]
-          },
-        }
-      })
+.then(function(universe){
+  universe.query({
+    select: {
+      $sum: {
+        $sum: [
+          {$max: ['tip', 'total’]},
+          {$min: ['quantity', 'total’]}
+        ]
+      },
+    }
+  })
+})
 ```
 … is now easier written like this:
 
 ```javascript
-u.query({
-        select: {
-          $sum: {
-            $sum: {
-              $max: ['tip', 'total'],
-              $min: ['quantity', 'total']
-            }
-          },
+.then(function(universe){
+  universe.query({
+    select: {
+      $sum: {
+        $sum: {
+          $max: ['tip', 'total'],
+          $min: ['quantity', 'total']
         }
-      })
+      },
+    }
+  })
+})
 ```
 
 #### No Objects Necessary, either!
 What’s that? Don’t like the verbosity of objects or arrays? Use the new string syntax!
 
 ```javascript
-universe.query({
-        select: {
-          $sum: '$sum($max(tip,total), $min(quantity,total))'
-        }
-      })
+.then(function(universe){
+  universe.query({
+    select: {
+      $sum: '$sum($max(tip,total), $min(quantity,total))'
+    }
+  })
+})
 ```
 
 #### Pre-compile Columns
