@@ -33,6 +33,9 @@
 
 <p>With Universe, you can be there in just a few lines of code. You've got better things to do than write intense map-reduce functions or learn the intricate inner-workings of <a href="https://github.com/crossfilter/crossfilter">Crossfilter</a> ;)</p>
 
+See the Pen <a href="http://codepen.io/tannerlinsley/pen/oxjyvg/">Universe - The fastest way to query and explore multivariate datasets</a> by Tanner Linsley (<a href="http://codepen.io/tannerlinsley">@tannerlinsley</a>) on <a href="http://codepen.io">CodePen</a>.
+
+
 <h2>
 <a id="features" class="anchor" href="#features" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features</h2>
 
@@ -42,6 +45,18 @@
 <li>Real-time updates to query results as you filter</li>
 <li>Flexible filtering system</li>
 <li>Automatic and invisible management of data indexing and memory</li>
+<li>Post Aggregation</li>
+</ul>
+
+<h2>
+<a id="features-in-the-pipeline" class="anchor" href="#features-in-the-pipeline" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Features in the Pipeline</h2>
+
+<ul>
+<li>Query Joins</li>
+<li>Query Macros</li>
+<li>Sub Queries</li>
+<li>To help contribute, join us at  <a href="https://gitter.im/crossfilter/universe?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img src="https://badges.gitter.im/crossfilter/universe.svg" alt="Join the chat at https://gitter.im/crossfilter/universe"></a>
+</li>
 </ul>
 
 <h2>
@@ -69,7 +84,14 @@
 <li><a href="#api-remove">.remove()</a></li>
 </ul>
 </li>
-<li><p><a href="#pro-tips">Pro Tips</a></p></li>
+<li>
+<p><a href="#post-aggregation">Post Aggregation</a></p>
+
+<ul>
+<li><a href="#post-aggregation-post">.post()</a></li>
+</ul>
+</li>
+<li><a href="#pro-tips">Pro Tips</a></li>
 </ul>
 
 <h2>
@@ -123,6 +145,17 @@
       }
     },
   })
+
+  <span class="pl-c">// Optionally post-aggregate your data</span>
+  <span class="pl-c">// Reduce all results after 5 to a single result using sums</span>
+  <span class="pl-smi">myUniverse</span>.<span class="pl-en">squash</span>(<span class="pl-c1">5</span>, <span class="pl-c1">null</span>, {
+    count<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>$sum<span class="pl-pds">'</span></span>,
+    quantity<span class="pl-k">:</span> {
+      sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>$sum<span class="pl-pds">'</span></span>
+    }
+  })
+
+  <span class="pl-c">// See Post-Aggregations for more information</span>
 })</pre></div>
 
 <h3>
@@ -209,8 +242,7 @@
 <span class="pl-c">// Remove all columns</span>
 .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">myUniverse</span>){
   <span class="pl-k">return</span> <span class="pl-smi">myUniverse</span>.<span class="pl-c1">clear</span>()
-})
-</pre></div>
+})</pre></div>
 
 <h2 id="api">
 <a id="api-" class="anchor" href="#api-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>API <a href="#api">#</a>
@@ -381,17 +413,21 @@ universe([
 <code>columnKey</code> - the column property or array index you would like to pre-compile eg.</li>
 </ul>
 
-<div class="highlight highlight-source-js"><pre>  .<span class="pl-en">column</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>)</pre></div>
+<div class="highlight highlight-source-js"><pre>  .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+    <span class="pl-k">return</span> <span class="pl-smi">universe</span>.<span class="pl-en">column</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>)
+  })</pre></div>
 
 <ul>
 <li>
 <code>columnObject</code> allows you to override the column type, otherwise it is calculated automatically:</li>
 </ul>
 
-<div class="highlight highlight-source-js"><pre>    .<span class="pl-en">column</span>({
+<div class="highlight highlight-source-js"><pre>  .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+    <span class="pl-k">return</span> <span class="pl-smi">universe</span>.<span class="pl-en">column</span>({
       key<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>,
       type<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>number<span class="pl-pds">'</span></span>
-    })</pre></div>
+    })
+  })</pre></div>
 </li>
 <li>
 <p>Returns</p>
@@ -427,14 +463,16 @@ universe([
 <code>columnKey</code> - the column property or array of columns you would like to clear eg.</li>
 </ul>
 
-<div class="highlight highlight-source-js"><pre>  <span class="pl-c">// Single Key</span>
-  .<span class="pl-c1">clear</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>)
-  <span class="pl-c">// Complex Key</span>
-  .<span class="pl-c1">clear</span>({key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>complex<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>key<span class="pl-pds">'</span></span>]})
-  <span class="pl-c">// Multiple Single Keys</span>
-  .<span class="pl-c1">clear</span>([<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span>])
-  <span class="pl-c">// Multiple Complex Keys</span>
-  .<span class="pl-c1">clear</span>([{key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>complex<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>key<span class="pl-pds">'</span></span>]}, {key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>another<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>one<span class="pl-pds">'</span></span>]}])</pre></div>
+<div class="highlight highlight-source-js"><pre>  .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+    <span class="pl-c">// Single Key</span>
+    <span class="pl-k">return</span> <span class="pl-smi">universe</span>.<span class="pl-c1">clear</span>(<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>)
+    <span class="pl-c">// Complex Key</span>
+    <span class="pl-k">return</span> <span class="pl-smi">universe</span>.<span class="pl-c1">clear</span>({key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>complex<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>key<span class="pl-pds">'</span></span>]})
+    <span class="pl-c">// Multiple Single Keys</span>
+    <span class="pl-k">return</span> <span class="pl-smi">universe</span>.<span class="pl-c1">clear</span>([<span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span>])
+    <span class="pl-c">// Multiple Complex Keys</span>
+    <span class="pl-k">return</span> <span class="pl-smi">universe</span>.<span class="pl-c1">clear</span>([{key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>complex<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>key<span class="pl-pds">'</span></span>]}, {key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>another<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>one<span class="pl-pds">'</span></span>]}])
+  })</pre></div>
 </li>
 <li>
 <p>Returns</p>
@@ -484,6 +522,384 @@ universe([
 </li>
 </ul>
 
+<h2 id="post-aggregation">
+<a id="post-aggregation-" class="anchor" href="#post-aggregation-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Post Aggregation <a href="#post-aggregation">#</a>
+</h2>
+
+<p>Post aggregation methods can be run on query results to further modify your data.  Just like queries, the results magically and instantly respond to filtering.</p>
+
+<ul>
+<li>Each post aggregation is very powerful, but not all post aggregations can be chained together.</li>
+</ul>
+
+<h3>
+<a id="locking-a-query" class="anchor" href="#locking-a-query" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Locking a query</h3>
+
+<p>A majority of the time, you're probably only interested in the end result of a query chain. For this reason, Post Aggregations default to mutating the data of their direct parent (unless the parent is the original query), thereby avoiding unnecessary copying of data.
+On the other hand, if you plan on accessing data at any point in the middle of a query chain, you will need to <code>lock()</code> that query's results. This ensure's it won't be overwritten or mutated by any further post aggregation.</p>
+
+<p><em>Note:</em> Running more than 1 post aggregation on a query will automatically lock the parent query.</p>
+
+<div class="highlight highlight-source-js"><pre>
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+  <span class="pl-k">return</span> <span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
+    groupBy<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>tag<span class="pl-pds">'</span></span>
+  })
+})
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">query</span>){
+  <span class="pl-smi">query</span>.<span class="pl-en">lock</span>()
+  <span class="pl-k">var</span> all <span class="pl-k">=</span> <span class="pl-smi">query</span>.<span class="pl-c1">data</span>
+  <span class="pl-k">return</span> <span class="pl-smi">query</span>.<span class="pl-en">limit</span>(<span class="pl-c1">5</span>)
+})
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">query</span>){
+  <span class="pl-k">var</span> only5 <span class="pl-k">=</span> <span class="pl-smi">query</span>.<span class="pl-c1">data</span>
+
+  <span class="pl-smi">all</span>.<span class="pl-c1">length</span> <span class="pl-k">===</span> <span class="pl-c1">10</span>
+  <span class="pl-smi">only5</span>.<span class="pl-c1">length</span> <span class="pl-k">===</span> <span class="pl-c1">5</span>
+})</pre></div>
+
+<p>Without locking the above query before using <code>.limit(5)</code>, the <code>all</code> data array would have been mutated by <code>.limit(5)</code></p>
+
+<h3 id="post-aggregation-sortByKey">
+<a id="sortbykeydescending-" class="anchor" href="#sortbykeydescending-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.sortByKey(descending) <a href="#post-aggregation-sortByKey">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Sort results by key (ascending or descending)</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>descending</code> - Pass true to sortKeys in descending order</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>  .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">query</span>){  
+    <span class="pl-k">return</span> <span class="pl-smi">query</span>.<span class="pl-en">sortByKey</span>(<span class="pl-c1">true</span>)
+  })</pre></div>
+</li>
+<li>Returns
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li><strong>query instance</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h3 id="post-aggregation-limit">
+<a id="limitn-n2-" class="anchor" href="#limitn-n2-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.limit(n, n2) <a href="#post-aggregation-limit">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Limit results to those between<code>n</code> and <code>n2</code>.  If <code>n2</code> is not passed, will limit to the first <code>n</code> records</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>n</code> - Start index.  Defaults to 0 if <code>null</code> or <code>undefined</code>,</li>
+<li>
+<code>n2</code> - End index.  Defaults to <code>query.data.length</code> if <code>null</code>.  If <code>undefined</code>, will limit to the first <code>n</code> records instead.</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>  .<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">query</span>){
+    <span class="pl-c">// limits results to the first 5 records</span>
+    <span class="pl-k">return</span> <span class="pl-smi">query</span>.<span class="pl-en">limit</span>(<span class="pl-c1">5</span>)
+    <span class="pl-c">// limits results to records 5 through 10</span>
+    <span class="pl-k">return</span> <span class="pl-smi">query</span>.<span class="pl-en">limit</span>(<span class="pl-c1">4</span>, <span class="pl-c1">10</span>)
+  })</pre></div>
+</li>
+<li>Returns
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li><strong>query instance</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h3 id="post-aggregation-squash">
+<a id="squashn-n2-aggregationmap-keyname-" class="anchor" href="#squashn-n2-aggregationmap-keyname-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.squash(n, n2, aggregationMap, keyName) <a href="#post-aggregation-squash">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Takes records from <code>n</code> to <code>n2</code> and reduces them to a single record using the aggregationMap<br>
+</li>
+</ul>
+</li>
+<li>
+<p>Parameters</p>
+
+<ul>
+<li>
+<code>n</code> - Start index. Defaults to <code>0</code> if <code>false</code>-y</li>
+<li>
+<code>n2</code> - End index. Defaults to <code>query.data.length</code> if <code>false</code>-y</li>
+<li>
+<code>aggregationMap</code> - A 1:1 map of property to the aggregation to be used when combining the records</li>
+<li>
+<code>keyName</code> (optional) - The key to be used for the new record.  Defaults to <code>Other</code>
+</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+  <span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
+  groupBy<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>,
+  select<span class="pl-k">:</span> {
+    $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>,
+    otherColumn<span class="pl-k">:</span> {
+      $avg<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>
+    }
+  })
+})
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">query</span>){
+  <span class="pl-c">// Will squash all records after the 5 record</span>
+  <span class="pl-smi">query</span>.<span class="pl-en">squash</span>(<span class="pl-c1">5</span>, <span class="pl-c1">null</span>, {
+    <span class="pl-c">// Sum the sum column</span>
+    sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>$sum<span class="pl-pds">'</span></span>,
+    othercolumn<span class="pl-k">:</span> {
+      <span class="pl-c">// Average the avg column</span>
+      avg<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>$avg<span class="pl-pds">'</span></span>
+    }
+  }, <span class="pl-s"><span class="pl-pds">'</span>Everything after 5<span class="pl-pds">'</span></span>)
+  <span class="pl-c">// Give the squashed record a new key</span>
+})</pre></div>
+</li>
+<li>Returns
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li><strong>query instance</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h3 id="post-aggregation-change">
+<a id="changen-n2-changefields-" class="anchor" href="#changen-n2-changefields-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.change(n, n2, changeFields) <a href="#post-aggregation-change">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Determines the change from the <code>n</code> to <code>n2</code> using the keys in <code>changeFields</code>
+</li>
+</ul>
+</li>
+<li>
+<p>Parameters</p>
+
+<ul>
+<li>
+<code>n</code> - Start index. Defaults to <code>0</code> if <code>false</code>-y</li>
+<li>
+<code>n2</code> - End index. Defaults to <code>query.data.length</code> if <code>false</code>-y</li>
+<li>
+<code>changeFields</code> - An object or array, referencing the fields to measure for change</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+  <span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
+    groupBy<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>,
+    select<span class="pl-k">:</span> {
+      $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>,
+      otherColumn<span class="pl-k">:</span> {
+        $avg<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>
+      }
+    }
+  })
+})
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">query</span>){
+  <span class="pl-c">// Measure the change for sum and avg from result 0 to 10</span>
+  <span class="pl-smi">query</span>.<span class="pl-en">change</span>(<span class="pl-c1">0</span>, <span class="pl-c1">10</span>, {
+    sum<span class="pl-k">:</span> <span class="pl-c1">true</span>
+    otherColumn<span class="pl-k">:</span> {
+      avg<span class="pl-k">:</span> <span class="pl-c1">true</span>
+    }
+  })
+})</pre></div>
+</li>
+<li>Returns
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li>
+<strong>query instance</strong>
+
+<ul>
+<li>
+<code>query.data</code> is now an object:</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>{
+  key<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>nKey<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>n2Key<span class="pl-pds">'</span></span>],
+  value<span class="pl-k">:</span> {
+    sumChange<span class="pl-k">:</span> <span class="pl-c1">7</span>,
+    otherColumn<span class="pl-k">:</span> {
+      avgChange<span class="pl-k">:</span> <span class="pl-c1">4</span>
+    }
+  }
+}</pre></div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h3 id="post-aggregation-changeMap">
+<a id="changemapchangemapobj-" class="anchor" href="#changemapchangemapobj-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.changeMap(changeMapObj) <a href="#post-aggregation-changeMap">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Determines incremental change for each record across the fields defined in <code>changeMapObj</code>
+</li>
+</ul>
+</li>
+<li>
+<p>Parameters</p>
+
+<ul>
+<li>
+<code>changeMapObj</code> - An object or array, referencing the fields to measure for change</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+  <span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
+    groupBy<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>type<span class="pl-pds">'</span></span>,
+    select<span class="pl-k">:</span> {
+      $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>,
+      otherColumn<span class="pl-k">:</span> {
+        $avg<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>
+      }
+    }
+  })
+})
+.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">query</span>){
+  <span class="pl-c">// Measure the change for sum and avg from result 0 to 10</span>
+  <span class="pl-smi">query</span>.<span class="pl-en">change</span>({
+    sum<span class="pl-k">:</span> <span class="pl-c1">true</span>
+    otherColumn<span class="pl-k">:</span> {
+      avg<span class="pl-k">:</span> <span class="pl-c1">true</span>
+    }
+  })
+})</pre></div>
+</li>
+<li>Returns
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li>
+<strong>query instance</strong>
+
+<ul>
+<li>
+<code>query.data</code> records are now decorated with incremental change data:</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>[<span class="pl-k">...</span>{
+  key<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>tag5<span class="pl-pds">'</span></span>
+  value<span class="pl-k">:</span> {
+    sum<span class="pl-k">:</span> <span class="pl-c1">5</span>
+    sumChange<span class="pl-k">:</span> <span class="pl-c1">7</span>,
+    sumChangeFromStart<span class="pl-k">:</span> <span class="pl-c1">0</span>,
+    sumChangeFromEnd<span class="pl-k">:</span> <span class="pl-c1">30</span>,
+    otherColumn<span class="pl-k">:</span> {
+      avgChange<span class="pl-k">:</span> <span class="pl-c1">4</span>
+      avgChangeFromStart<span class="pl-k">:</span> <span class="pl-k">-</span><span class="pl-c1">4</span>
+      avgChangeFromEnd<span class="pl-k">:</span> <span class="pl-k">-</span><span class="pl-c1">20</span>
+    }
+  }
+}<span class="pl-k">...</span>]</pre></div>
+</li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+<h3 id="post-aggregation-post">
+<a id="postcallback-" class="anchor" href="#postcallback-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>.post(callback) <a href="#post-aggregation-post">#</a>
+</h3>
+
+<ul>
+<li>Description
+
+<ul>
+<li>Use a custom callback function to perform your own post aggregations.</li>
+</ul>
+</li>
+<li>Parameters
+
+<ul>
+<li>
+<code>callback</code> - the callback function to execute.  It accepts the following parameters:
+
+<ul>
+<li>
+<code>query</code> - the new query object. A fresh reference (or copy, if the parent is locked) is located at <code>query.data</code>.  It is highly discouraged to change any other property on this object</li>
+<li>
+<code>parentQuery</code> - the parent query.</li>
+</ul>
+</li>
+<li>You may optionally return a promise-like value for asynchronous processing</li>
+</ul>
+
+<div class="highlight highlight-source-js"><pre>  .<span class="pl-en">post</span>(<span class="pl-k">function</span>(<span class="pl-smi">query</span>, <span class="pl-smi">parentQuery</span>){
+    <span class="pl-smi">query</span>.<span class="pl-c1">data</span>[<span class="pl-c1">0</span>].<span class="pl-smi">key</span> <span class="pl-k">=</span> <span class="pl-s"><span class="pl-pds">'</span>newKeyName<span class="pl-pds">'</span></span>
+    <span class="pl-k">return</span> <span class="pl-smi">Promise</span>.<span class="pl-en">resolve</span>(<span class="pl-en">doSomethingSpecial</span>(<span class="pl-smi">query</span>.<span class="pl-c1">data</span>))
+  })</pre></div>
+</li>
+<li>Returns
+
+<ul>
+<li>
+<code>promise</code> resolved with
+
+<ul>
+<li><strong>query instance</strong></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
 <h2 id="pro-tips">
 <a id="pro-tips-" class="anchor" href="#pro-tips-" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pro Tips <a href="#pro-tips">#</a>
 </h2>
@@ -493,40 +909,46 @@ universe([
 
 <p>Don’t want to use arrays in your aggregations? No problem, because this:</p>
 
-<div class="highlight highlight-source-js"><pre><span class="pl-smi">u</span>.<span class="pl-en">query</span>({
-        select<span class="pl-k">:</span> {
-          $sum<span class="pl-k">:</span> {
-            $sum<span class="pl-k">:</span> [
-              {$max<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-ii">total’]},</span></span>
-<span class="pl-s">              {$min: [<span class="pl-pds">'</span></span>quantity<span class="pl-s"><span class="pl-pds">'</span>, <span class="pl-pds">'</span></span>total’]}
-            ]
-          },
-        }
-      })</pre></div>
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+  <span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
+    select<span class="pl-k">:</span> {
+      $sum<span class="pl-k">:</span> {
+        $sum<span class="pl-k">:</span> [
+          {$max<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span><span class="pl-ii">total’]},</span></span>
+<span class="pl-s">          {$min: [<span class="pl-pds">'</span></span>quantity<span class="pl-s"><span class="pl-pds">'</span>, <span class="pl-pds">'</span></span>total’]}
+        ]
+      },
+    }
+  })
+})</pre></div>
 
 <p>… is now easier written like this:</p>
 
-<div class="highlight highlight-source-js"><pre><span class="pl-smi">u</span>.<span class="pl-en">query</span>({
-        select<span class="pl-k">:</span> {
-          $sum<span class="pl-k">:</span> {
-            $sum<span class="pl-k">:</span> {
-              $max<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>],
-              $min<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>]
-            }
-          },
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+  <span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
+    select<span class="pl-k">:</span> {
+      $sum<span class="pl-k">:</span> {
+        $sum<span class="pl-k">:</span> {
+          $max<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>tip<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>],
+          $min<span class="pl-k">:</span> [<span class="pl-s"><span class="pl-pds">'</span>quantity<span class="pl-pds">'</span></span>, <span class="pl-s"><span class="pl-pds">'</span>total<span class="pl-pds">'</span></span>]
         }
-      })</pre></div>
+      },
+    }
+  })
+})</pre></div>
 
 <h4>
 <a id="no-objects-necessary-either" class="anchor" href="#no-objects-necessary-either" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>No Objects Necessary, either!</h4>
 
 <p>What’s that? Don’t like the verbosity of objects or arrays? Use the new string syntax!</p>
 
-<div class="highlight highlight-source-js"><pre><span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
-        select<span class="pl-k">:</span> {
-          $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>$sum($max(tip,total), $min(quantity,total))<span class="pl-pds">'</span></span>
-        }
-      })</pre></div>
+<div class="highlight highlight-source-js"><pre>.<span class="pl-en">then</span>(<span class="pl-k">function</span>(<span class="pl-smi">universe</span>){
+  <span class="pl-smi">universe</span>.<span class="pl-en">query</span>({
+    select<span class="pl-k">:</span> {
+      $sum<span class="pl-k">:</span> <span class="pl-s"><span class="pl-pds">'</span>$sum($max(tip,total), $min(quantity,total))<span class="pl-pds">'</span></span>
+    }
+  })
+})</pre></div>
 
 <h4>
 <a id="pre-compile-columns" class="anchor" href="#pre-compile-columns" aria-hidden="true"><span aria-hidden="true" class="octicon octicon-link"></span></a>Pre-compile Columns</h4>
