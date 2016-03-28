@@ -189,13 +189,13 @@ function convertAggregatorString(keyString) {
 function $sum(children) {
   return children.reduce(function(a, b) {
     return a + b
-  })
+  }, 0)
 }
 
 function $avg(children) {
   return children.reduce(function(a, b) {
     return a + b
-  }) / children.length
+  }, 0) / children.length
 }
 
 function $max(children) {

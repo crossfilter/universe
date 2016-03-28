@@ -82,6 +82,28 @@ describe('universe postAggregation', function() {
       })
   })
 
+  it('works after filtering', function() {
+    var query
+    return u.then(function(u) {
+        return u.query({
+          groupBy: 'total',
+        })
+      })
+      .then(function(res) {
+        return res.changeMap({
+          count: true
+        })
+      })
+      .then(function(res) {
+        query = res
+        expect(res.data[0].value.countChangeFromEnd).to.equal(5)
+        return res.universe.filter('type', 'cash')
+      })
+      .then(function(){
+        expect(query.data[0].value.countChangeFromEnd).to.equal(0)
+      })
+  })
+
   it('can sortByKey ascending and descending', function() {
     return u.then(function(u) {
         return u.query({
