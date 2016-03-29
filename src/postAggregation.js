@@ -80,7 +80,8 @@ module.exports = function(service) {
     query.data = obj
   }
 
-  function changeMap(query, parent, aggObj) {
+  function changeMap(query, parent, aggObj, defaultNull) {
+    defaultNull = _.isUndefined(defaultNull) ? 0 : defaultNull
     query.data = cloneIfLocked(parent)
     _.recurseObject(aggObj, function(val, key, path) {
 
@@ -96,14 +97,14 @@ module.exports = function(service) {
       fromStartPath.push(key + 'ChangeFromStart')
       fromEndPath.push(key + 'ChangeFromEnd')
 
-      var start = _.get(query.data[0].value, path)
-      var end = _.get(query.data[query.data.length - 1].value, path)
+      var start = _.get(query.data[0].value, path, defaultNull)
+      var end = _.get(query.data[query.data.length - 1].value, path, defaultNull)
 
       _.forEach(query.data, function(record, i) {
         var previous = query.data[i - 1] || query.data[0]
-        _.set(query.data[i].value, changePath, _.get(record.value, path) - (previous ? _.get(previous.value, path) : 0))
-        _.set(query.data[i].value, fromStartPath, _.get(record.value, path) - start)
-        _.set(query.data[i].value, fromEndPath, _.get(record.value, path) - end)
+        _.set(query.data[i].value, changePath, _.get(record.value, path, defaultNull) - (previous ? _.get(previous.value, path, defaultNull) : defaultNull))
+        _.set(query.data[i].value, fromStartPath, _.get(record.value, path, defaultNull) - start)
+        _.set(query.data[i].value, fromEndPath, _.get(record.value, path, defaultNull) - end)
       })
     })
   }
