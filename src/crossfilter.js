@@ -45,7 +45,9 @@ module.exports = function(service) {
       .then(function() {
         return Promise.serial(_.map(service.dataListeners, function(listener) {
           return function() {
-            return listener(true)
+            return listener({
+              added: data
+            })
           }
         }))
       })

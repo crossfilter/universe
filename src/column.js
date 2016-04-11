@@ -78,7 +78,7 @@ module.exports = function(service) {
     }
 
     // for storing info about queries and post aggregations
-    column.queries = [];
+    column.queries = []
     service.columns.push(column)
 
     column.promise = Promise.try(function() {
@@ -125,22 +125,31 @@ module.exports = function(service) {
         return buildColumnKeys()
 
         // Build the columnKeys
-        function buildColumnKeys(onAdd) {
+        function buildColumnKeys(changes) {
           if (column.key === true) {
             return Promise.resolve()
           }
-          return Promise.resolve(column.dimension.bottom(Infinity))
-            .then(function(rows) {
-              var accessor = dimension.makeAccessor(column.key)
-              if (column.type === 'complex') {
-                column.values = _.uniq(_.flatten(_.map(rows, accessor)))
-              }
-              else if (column.type === 'array') {
-                column.values = _.uniq(_.flatten(_.map(rows, accessor)))
-              } else {
-                column.values = _.uniq(_.map(rows, accessor))
-              }
-            })
+
+          var accessor = dimension.makeAccessor(column.key)
+          column.values = column.values || []
+
+          return Promise.try(function(){
+            if (changes && changes.added) {
+              return Promise.resolve(changes.added)
+            } else {
+              return Promise.resolve(column.dimension.bottom(Infinity))
+            }
+          })
+          .then(function(rows) {
+            if (column.type === 'complex') {
+              var newValues = _.flatten(_.map(rows, accessor))
+            } else if (column.type === 'array') {
+              var newValues = _.flatten(_.map(rows, accessor))
+            } else {
+              var newValues = _.map(rows, accessor)
+            }
+            column.values = _.uniq(column.values.concat(newValues))
+          })
         }
       })
 

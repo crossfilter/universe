@@ -216,7 +216,7 @@ module.exports = function(service) {
       }
 
       function clearQuery() {
-        _.forEach(q.removeListners, function(l) {
+        _.forEach(q.removeListeners, function(l) {
           l()
         })
         return Promise.try(function() {
@@ -224,6 +224,7 @@ module.exports = function(service) {
           })
           .then(function() {
             q.column.queries.splice(q.column.queries.indexOf(q), 1)
+            // Automatically recycle the column if there are no queries active on it
             if (!q.column.queries.length) {
               return service.clear(q.column.key)
             }
@@ -235,7 +236,7 @@ module.exports = function(service) {
 
       function postAggregateMethodWrap(postMethod) {
         return function() {
-          var args = Array.prototype.slice.call(arguments);
+          var args = Array.prototype.slice.call(arguments)
           var sub = {}
           newQueryObj(sub, q)
           args.unshift(sub, q)
