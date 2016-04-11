@@ -31,6 +31,7 @@ function universe(data, options) {
         query: require('./query')(service),
         filter: require('./filters')(service).filter,
         clear: require('./clear')(service),
+        destroy: require('./destroy')(service),
         onDataChange: onDataChange,
         onFilter: onFilter,
       })

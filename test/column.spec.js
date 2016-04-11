@@ -79,21 +79,6 @@ describe('universe column', function() {
           u.column({
             key: ['type', 'total']
           }),
-        ])
-        .then(function(){
-          return u
-        })
-      })
-      .then(function(u) {
-        diff1 = Date.now() - now
-        return u
-      })
-      .then(function(u) {
-        now = Date.now()
-        return Promise.all([
-          u.column({
-            key: ['type', 'total']
-          }),
           u.column({
             key: ['type', 'total']
           }),
@@ -128,10 +113,12 @@ describe('universe column', function() {
             key: ['type', 'total']
           })
         ])
+        .then(function(){
+          return u
+        })
       })
-      .then(function() {
-        var diff2 = Date.now() - now
-        expect((diff2 - diff1) < 10).to.equal(true)
+      .then(function(u) {
+        expect(u.columns.length).to.equal(1)
       })
   })
 
