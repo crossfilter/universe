@@ -49,6 +49,7 @@ module.exports = function(service) {
     return createColumn(query)
       .then(makeCrossfilterGroup)
       .then(buildRequiredColumns)
+      .then(setupDataListeners)
       .then(applyQuery)
 
 
@@ -93,29 +94,32 @@ module.exports = function(service) {
               dynamicReference: query.group
             })
           }))
-          .then(function() {
-            // Here, we create a listener to recreate and apply the reducer
-            // (with updated reference data) to
-            // the group anytime data changes
-            var stopDataListen = service.onDataChange(function() {
-              return applyQuery(query)
-            })
-            query.removeListeners.push(stopDataListen)
+          .then(function(){
             return query
           })
       }
       return query
     }
 
-    function applyQuery(query) {
+    function setupDataListeners(query){
+      // Here, we create a listener to recreate and apply the reducer to
+      // the group anytime underlying data changes
+      var stopDataListen = service.onDataChange(function() {
+        return applyQuery(query)
+      })
+      query.removeListeners.push(stopDataListen)
 
-      // apply a one time listener for filtering. This is what allows
-      // us to post aggregate and change the data on each filter
+      // This is a similar listener for filtering which will (if needed)
+      // run any post aggregations on the data after each filter action
       var stopFilterListen = service.onFilter(function() {
         return postAggregate(query)
       })
       query.removeListeners.push(stopFilterListen)
 
+      return query
+    }
+
+    function applyQuery(query) {
       return buildReducer(query)
         .then(applyReducer)
         .then(attachData)

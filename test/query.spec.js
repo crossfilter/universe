@@ -5,17 +5,21 @@ var chaiAsPromised = require('chai-as-promised')
 chai.use(chaiAsPromised)
 
 
-var universe = require('../universe');
-var data = require('./data');
-var crossfilter = require('crossfilter2');
+var universe = require('../universe')
+var data = require('./data')
+var crossfilter = require('crossfilter2')
 
 describe('universe query', function() {
 
-  var u = universe(crossfilter(data))
+  var u
 
   beforeEach(function() {
+    u = universe(data)
+  })
+
+  afterEach(function() {
     return u.then(function(u){
-      return u.clear()
+      return u.destroy()
     })
   })
 

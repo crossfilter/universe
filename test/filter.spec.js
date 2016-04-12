@@ -4,22 +4,27 @@ var chaiAsPromised = require('chai-as-promised')
 chai.use(chaiAsPromised)
 var expect = chai.expect
 
-var universe = require('../universe');
-var crossfilter = require('crossfilter2');
+var universe = require('../universe')
+var crossfilter = require('crossfilter2')
 
 
-var data = require('./data');
+var data = require('./data')
 
 
 describe('universe filter', function() {
 
-  var u = universe(data)
-
+  var u
+  
   beforeEach(function() {
-    return u.then(function(u) {
-      return u.clear()
+    u = universe(data)
+  })
+
+  afterEach(function() {
+    return u.then(function(u){
+      return u.destroy()
     })
   })
+
 
   it('has the filter method', function() {
     return u.then(function(u) {
