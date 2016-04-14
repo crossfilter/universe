@@ -586,8 +586,8 @@ Don’t want to use arrays in your aggregations? No problem, because this:
     select: {
       $sum: {
         $sum: [
-          {$max: ['tip', 'total’]},
-          {$min: ['quantity', 'total’]}
+          {$max: ['tip', 'total']},
+          {$min: ['quantity', 'total']}
         ]
       },
     }
