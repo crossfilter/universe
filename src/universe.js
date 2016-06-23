@@ -5,6 +5,8 @@ require('./q.serial')
 var Promise = require('q')
 var _ = require('./lodash')
 
+
+
 module.exports = universe
 
 function universe(data, options) {
@@ -18,6 +20,7 @@ function universe(data, options) {
   }
 
   var cf = require('./crossfilter')(service)
+  var filters = require('./filters')(service)
 
   data = cf.generateColumns(data)
 
@@ -29,7 +32,8 @@ function universe(data, options) {
         remove: cf.remove,
         column: require('./column')(service),
         query: require('./query')(service),
-        filter: require('./filters')(service).filter,
+        filter: filters.filter,
+        filterAll: filters.filterAll,
         clear: require('./clear')(service),
         destroy: require('./destroy')(service),
         onDataChange: onDataChange,
