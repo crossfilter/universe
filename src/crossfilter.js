@@ -1,12 +1,11 @@
 'use strict'
 
-var Promise = require('q');
+var Promise = require('q')
 var crossfilter = require('crossfilter2')
 
 var _ = require('./lodash')
 
 module.exports = function(service) {
-
   return {
     build: build,
     generateColumns: generateColumns,
@@ -19,7 +18,7 @@ module.exports = function(service) {
       // This allows support for crossfilter async
       return Promise.resolve(crossfilter(c))
     }
-    if (!c || typeof(c.dimension) !== 'function') {
+    if (!c || typeof c.dimension !== 'function') {
       return Promise.reject(new Error('No Crossfilter data or instance found!'))
     }
     return Promise.resolve(c)
@@ -29,7 +28,7 @@ module.exports = function(service) {
     if (!service.options.generatedColumns) {
       return data
     }
-    return _.map(data, function(d, i) {
+    return _.map(data, function(d/* , i */) {
       _.forEach(service.options.generatedColumns, function(val, key) {
         d[key] = val(d)
       })
@@ -40,28 +39,28 @@ module.exports = function(service) {
   function add(data) {
     data = generateColumns(data)
     return Promise.try(function() {
-        return Promise.resolve(service.cf.add(data))
-      })
-      .then(function() {
-        return Promise.serial(_.map(service.dataListeners, function(listener) {
-          return function() {
-            return listener({
-              added: data
-            })
-          }
-        }))
-      })
-      .then(function() {
-        return service
-      })
+      return Promise.resolve(service.cf.add(data))
+    })
+    .then(function() {
+      return Promise.serial(_.map(service.dataListeners, function(listener) {
+        return function() {
+          return listener({
+            added: data
+          })
+        }
+      }))
+    })
+    .then(function() {
+      return service
+    })
   }
 
   function remove() {
     return Promise.try(function() {
-        return Promise.resolve(service.cf.remove())
-      })
-      .then(function() {
-        return service
-      })
+      return Promise.resolve(service.cf.remove())
+    })
+    .then(function() {
+      return service
+    })
   }
 }

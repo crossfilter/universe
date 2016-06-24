@@ -20,17 +20,16 @@ var aggregators = {
   $map: $map,
 }
 
-
 module.exports = {
-    makeValueAccessor: makeValueAccessor,
-    aggregators: aggregators,
-    extractKeyValOrArray: extractKeyValOrArray,
-    parseAggregatorParams: parseAggregatorParams,
-  }
+  makeValueAccessor: makeValueAccessor,
+  aggregators: aggregators,
+  extractKeyValOrArray: extractKeyValOrArray,
+  parseAggregatorParams: parseAggregatorParams,
+}
   // This is used to build aggregation stacks for sub-reductio
   // aggregations, or plucking values for use in filters from the data
 function makeValueAccessor(obj) {
-  if (typeof(obj) === 'string') {
+  if (typeof obj === 'string') {
     if (isStringSyntax(obj)) {
       obj = convertAggregatorString(obj)
     } else {
@@ -39,7 +38,7 @@ function makeValueAccessor(obj) {
     }
   }
   // Must be a column index. Return an identity accessor
-  if (typeof(obj) === 'number') {
+  if (typeof obj === 'number') {
     return obj
   }
   // If it's an object, we need to build a custom value accessor function
@@ -59,7 +58,6 @@ function makeValueAccessor(obj) {
 // a function. The returned function, when called, will recursively invoke
 // with the properties from the previous stack in reverse order
 function makeSubAggregationFunction(obj) {
-
   // If its an object, either unwrap all of the properties as an
   // array of keyValues, or unwrap the first keyValue set as an object
   obj = _.isObject(obj) ? extractKeyValOrArray(obj) : obj
@@ -69,14 +67,12 @@ function makeSubAggregationFunction(obj) {
     // If begins with a $, then we need to convert it over to a regular query object and analyze it again
     if (isStringSyntax(obj)) {
       return makeSubAggregationFunction(convertAggregatorString(obj))
-    } else {
-      // If normal string, then just return a an itentity accessor
-      return function identity(d) {
-        return d[obj]
-      }
+    }
+    // If normal string, then just return a an itentity accessor
+    return function identity(d) {
+      return d[obj]
     }
   }
-
 
   // If an array, recurse into each item and return as a map
   if (_.isArray(obj)) {
@@ -95,9 +91,8 @@ function makeSubAggregationFunction(obj) {
       return function getAggregation(d) {
         return aggregators[obj.key](subAggregationFunction(d))
       }
-    } else {
-      console.error('Could not find aggregration method', obj)
     }
+    console.error('Could not find aggregration method', obj)
   }
 
   return []
@@ -107,7 +102,7 @@ function extractKeyValOrArray(obj) {
   var keyVal
   var values = []
   for (var key in obj) {
-    if (obj.hasOwnProperty(key)) {
+    if ({}.hasOwnProperty.call(obj, key)) {
       keyVal = {
         key: key,
         value: obj[key]
@@ -123,7 +118,6 @@ function extractKeyValOrArray(obj) {
 function isStringSyntax(str) {
   return ['$', '('].indexOf(str.charAt(0)) > -1
 }
-
 
 function parseAggregatorParams(keyString) {
   var params = []
@@ -144,14 +138,14 @@ function parseAggregatorParams(keyString) {
 }
 
 function convertAggregatorString(keyString) {
-  var obj = {}
+  // var obj = {} // obj is defined but not used
 
   // 1. unwrap top parentheses
   // 2. detect arrays
 
   // parentheses
   var outerParens = /\((.+)\)/g
-  var innerParens = /\(([^\(\)]+)\)/g
+  // var innerParens = /\(([^\(\)]+)\)/g  // innerParens is defined but not used
     // comma not in ()
   var hasComma = /(?:\([^\(\)]*\))|(,)/g
 
@@ -162,27 +156,20 @@ function convertAggregatorString(keyString) {
     return '"' + str.replace(outerParens, function(p, pr) {
       if (hasComma.test(pr)) {
         if (pr.charAt(0) === '$') {
-          return '":{"' + pr.replace(hasComma, function(p2, pr2) {
+          return '":{"' + pr.replace(hasComma, function(p2/* , pr2 */) {
             if (p2 === ',') {
               return ',"'
             }
             return unwrapParensAndCommas(p2).trim()
           }) + '}'
         }
-        return ':["' + pr.replace(hasComma, function(p2, pr2) {
+        return ':["' + pr.replace(hasComma, function(/* p2 , pr2 */) {
           return '","'
         }) + '"]'
       }
     })
   }
 }
-
-
-
-
-
-
-
 
 // Collection Aggregators
 
@@ -210,7 +197,7 @@ function $count(children) {
   return children.length
 }
 
-function $med(children) {
+/* function $med(children) { // $med is defined but not used
   children.sort(function(a, b) {
     return a - b
   })
@@ -219,7 +206,7 @@ function $med(children) {
     return children[half]
   else
     return (children[half - 1] + children[half]) / 2.0
-}
+} */
 
 function $first(children) {
   return children[0]

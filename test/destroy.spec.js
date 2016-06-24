@@ -2,14 +2,13 @@ var chai = require('chai')
 var chaiAsPromised = require('chai-as-promised')
 
 chai.use(chaiAsPromised)
-var expect = chai.expect
+// var expect = chai.expect // defined but never used
 
 var universe = require('../universe')
-var crossfilter = require('crossfilter2')
+// var crossfilter = require('crossfilter2') // defined but never used
 var data = require('./data')
 
 describe('universe clear', function() {
-
   var u = universe(data)
 
   beforeEach(function() {
@@ -20,92 +19,91 @@ describe('universe clear', function() {
 
   it('can destroy the universe a few times over', function() {
     return u.then(function(u) {
-        return u.query({
-          groupBy: 'type',
-          select: {
-            $count: true
-          }
-        })
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.universe.query({
-          groupBy: 'total',
-          select: {
-            $count: true
-          }
-        })
+    })
+    .then(function(u) {
+      return u.universe.query({
+        groupBy: 'total',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.universe.query({
-          groupBy: 'tip',
-          select: {
-            $count: true
-          }
-        })
+    })
+    .then(function(u) {
+      return u.universe.query({
+        groupBy: 'tip',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.universe.destroy()
+    })
+    .then(function(u) {
+      return u.universe.destroy()
+    })
+    .then(function(u) {
+      return u.add(data)
+    })
+    .then(function(u) {
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.add(data)
+    })
+    .then(function(u) {
+      return u.universe.query({
+        groupBy: 'total',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.query({
-          groupBy: 'type',
-          select: {
-            $count: true
-          }
-        })
+    })
+    .then(function(u) {
+      return u.universe.query({
+        groupBy: 'tip',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.universe.query({
-          groupBy: 'total',
-          select: {
-            $count: true
-          }
-        })
+    })
+    .then(function(u) {
+      return u.universe.destroy()
+    })
+    .then(function(u) {
+      return u.add(data)
+    })
+    .then(function(u) {
+      return u.query({
+        groupBy: 'type',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.universe.query({
-          groupBy: 'tip',
-          select: {
-            $count: true
-          }
-        })
+    })
+    .then(function(u) {
+      return u.universe.query({
+        groupBy: 'total',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.universe.destroy()
+    })
+    .then(function(u) {
+      return u.universe.query({
+        groupBy: 'tip',
+        select: {
+          $count: true
+        }
       })
-      .then(function(u) {
-        return u.add(data)
-      })
-      .then(function(u) {
-        return u.query({
-          groupBy: 'type',
-          select: {
-            $count: true
-          }
-        })
-      })
-      .then(function(u) {
-        return u.universe.query({
-          groupBy: 'total',
-          select: {
-            $count: true
-          }
-        })
-      })
-      .then(function(u) {
-        return u.universe.query({
-          groupBy: 'tip',
-          select: {
-            $count: true
-          }
-        })
-      })
-      .then(function(u) {
-        return u.universe.destroy()
-      })
+    })
+    .then(function(u) {
+      return u.universe.destroy()
+    })
   })
-
 })

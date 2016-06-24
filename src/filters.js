@@ -20,35 +20,34 @@ module.exports = function(service) {
 
     // If the filters dimension doesn't exist yet, try and create it
     return Promise.try(function() {
-        if (!exists) {
-          return service.column({
-              key: column,
-              temporary: true,
-            })
-            .then(function() {
-              // It was able to be created, so retrieve and return it
-              return service.column.find(column)
-            })
-        }
-        // It exists, so just return what we found
-        return exists
-      })
-      .then(function(column) {
-        // Clone a copy of the new filters
-        var newFilters = _.clone(service.filters, true)
-          // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
-        var filterKey = column.complex ? JSON.stringify(column.key) : column.key
-          // Build the filter object
-        newFilters[filterKey] = buildFilterObject(fil, isRange, replace)
+      if (!exists) {
+        return service.column({
+          key: column,
+          temporary: true,
+        })
+        .then(function() {
+          // It was able to be created, so retrieve and return it
+          return service.column.find(column)
+        })
+      }
+      // It exists, so just return what we found
+      return exists
+    })
+    .then(function(column) {
+      // Clone a copy of the new filters
+      var newFilters = _.clone(service.filters, true)
+        // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
+      var filterKey = column.complex ? JSON.stringify(column.key) : column.key
+        // Build the filter object
+      newFilters[filterKey] = buildFilterObject(fil, isRange, replace)
 
-        return applyFilters(newFilters)
-      })
+      return applyFilters(newFilters)
+    })
   }
 
   function filterAll() {
     return applyFilters({})
   }
-
 
   function buildFilterObject(fil, isRange, replace) {
     if (_.isUndefined(fil)) {
@@ -100,13 +99,10 @@ module.exports = function(service) {
         column = service.column.find(i)
       }
 
-
       // Toggling a filter value is a bit different from replacing them
       if (fil && existing && !fil.replace) {
         newFilters[i] = fil = toggleFilters(fil, existing)
       }
-
-
 
       // If no filter, remove everything from the dimension
       if (!fil) {
@@ -170,17 +166,11 @@ module.exports = function(service) {
     // Exact from Inclusive
     if (fil.type === 'exact' && existing.type === 'inclusive') {
       fil.value = _.xor([fil.value], existing.value)
-    }
-    // Inclusive from Exact
-    else if (fil.type === 'inclusive' && existing.type === 'exact') {
+    } else if (fil.type === 'inclusive' && existing.type === 'exact') { // Inclusive from Exact
       fil.value = _.xor(fil.value, [existing.value])
-    }
-    // Inclusive / Inclusive Merge
-    else if (fil.type === 'inclusive' && existing.type === 'inclusive') {
+    } else if (fil.type === 'inclusive' && existing.type === 'inclusive') { // Inclusive / Inclusive Merge
       fil.value = _.xor(fil.value, existing.value)
-    }
-    // Exact / Exact
-    else if (fil.type === 'exact' && existing.type === 'exact') {
+    } else if (fil.type === 'exact' && existing.type === 'exact') { // Exact / Exact
       // If the values are the same, remove the filter entirely
       if (fil.value === existing.value) {
         return false
@@ -215,11 +205,15 @@ module.exports = function(service) {
       _.forEach(obj, function(val, key) {
         // find the data references, if any
         var ref = findDataReferences(val, key)
-        if (ref) columns.push(ref)
+        if (ref) {
+          columns.push(ref)
+        }
           // if it's a string
         if (_.isString(val)) {
           ref = findDataReferences(null, val)
-          if (ref) columns.push(ref)
+          if (ref) {
+            columns.push(ref)
+          }
         }
         // If it's another object, keep looking
         if (_.isObject(val)) {
@@ -246,7 +240,6 @@ module.exports = function(service) {
   }
 
   function makeFunction(obj, isAggregation) {
-
     var subGetters
 
     // Detect raw $data reference
@@ -254,7 +247,7 @@ module.exports = function(service) {
       var dataRef = findDataReferences(null, obj)
       if (dataRef) {
         var data = service.cf.all()
-        return function(d) {
+        return function() {
           return data
         }
       }
@@ -262,7 +255,7 @@ module.exports = function(service) {
 
     if (_.isString(obj) || _.isNumber(obj) || _.isBoolean(obj)) {
       return function(d) {
-        if (typeof(d) === 'undefined') {
+        if (typeof d === 'undefined') {
           return obj
         }
         return expressions.$eq(d, function() {
@@ -286,7 +279,6 @@ module.exports = function(service) {
     // If object, return a recursion function that itself, returns the results of all of the object keys
     if (_.isObject(obj)) {
       subGetters = _.map(obj, function(val, key) {
-
         // Get the child
         var getSub = makeFunction(val, isAggregation)
 
@@ -295,7 +287,7 @@ module.exports = function(service) {
         if (dataRef) {
           var column = service.column.find(dataRef)
           var data = column.values
-          return function(d) {
+          return function() {
             return data
           }
         }
@@ -316,7 +308,7 @@ module.exports = function(service) {
             // an aggregatino chain has started and to stop using $AND
           getSub = makeFunction(val, isAggregation)
             // If it's an aggregation object, be sure to pass in the children, and then any additional params passed into the aggregation string
-          return function(d) {
+          return function() {
             return aggregatorObj.aggregator.apply(null, [getSub()].concat(aggregatorObj.params))
           }
         }
@@ -326,7 +318,6 @@ module.exports = function(service) {
           d = d[key]
           return getSub(d, getSub)
         }
-
       })
 
       // All object expressions are basically AND's

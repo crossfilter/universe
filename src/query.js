@@ -1,12 +1,13 @@
 'use strict'
 
-var Promise = require('q');
+var Promise = require('q')
 var _ = require('./lodash')
 
 module.exports = function(service) {
   var reductiofy = require('./reductiofy')(service)
   var filters = require('./filters')(service)
   var postAggregation = require('./postAggregation')(service)
+
   var postAggregationMethods = _.keys(postAggregation)
 
   return function doQuery(queryObj) {
@@ -16,13 +17,12 @@ module.exports = function(service) {
     for (var i = 0; i < service.columns.length; i++) {
       for (var j = 0; j < service.columns[i].queries.length; j++) {
         if (service.columns[i].queries[j].hash === queryHash) {
-          return Promise.try(function() {
+          return Promise.try(function() { // eslint-disable-line no-loop-func
             return service.columns[i].queries[j]
           })
         }
       }
     }
-
 
     var query = {
       // Original query passed in to query method
@@ -52,24 +52,23 @@ module.exports = function(service) {
       .then(setupDataListeners)
       .then(applyQuery)
 
-
     function createColumn(query) {
       // Ensure column is created
       return service.column({
-          key: query.original.groupBy,
-          type: !_.isUndefined(query.type) ? query.type : null,
-          array: !!query.array
+        key: query.original.groupBy,
+        type: _.isUndefined(query.type) ? null : query.type,
+        array: Boolean(query.array)
+      })
+      .then(function() {
+        // Attach the column to the query
+        var column = service.column.find(query.original.groupBy)
+        query.column = column
+        column.queries.push(query)
+        column.removeListeners.push(function() {
+          return query.clear()
         })
-        .then(function() {
-          // Attach the column to the query
-          var column = service.column.find(query.original.groupBy)
-          query.column = column
-          column.queries.push(query)
-          column.removeListeners.push(function() {
-            return query.clear()
-          })
-          return query
-        })
+        return query
+      })
     }
 
     function makeCrossfilterGroup(query) {
@@ -89,19 +88,19 @@ module.exports = function(service) {
         // the group to be rebuilt when data is added or removed in any way.
       if (requiredColumns.length) {
         return Promise.all(_.map(requiredColumns, function(columnKey) {
-            return service.column({
-              key: columnKey,
-              dynamicReference: query.group
-            })
-          }))
-          .then(function(){
-            return query
+          return service.column({
+            key: columnKey,
+            dynamicReference: query.group
           })
+        }))
+        .then(function() {
+          return query
+        })
       }
       return query
     }
 
-    function setupDataListeners(query){
+    function setupDataListeners(query) {
       // Here, we create a listener to recreate and apply the reducer to
       // the group anytime underlying data changes
       var stopDataListen = service.onDataChange(function() {
@@ -150,17 +149,17 @@ module.exports = function(service) {
     }
 
     function postAggregate(query) {
-      if(query.postAggregations.length > 1){
+      if (query.postAggregations.length > 1) {
         // If the query is used by 2+ post aggregations, we need to lock
         // it against getting mutated by the post-aggregations
         query.locked = true
       }
       return Promise.all(_.map(query.postAggregations, function(post) {
-          return post()
-        }))
-        .then(function() {
-          return query
-        })
+        return post()
+      }))
+      .then(function() {
+        return query
+      })
     }
 
     function newQueryObj(q, parent) {
@@ -207,15 +206,15 @@ module.exports = function(service) {
 
       return q
 
-      function lock(set){
-        if(!_.isUndefined(set)){
-          q.locked = !!set
+      function lock(set) {
+        if (!_.isUndefined(set)) {
+          q.locked = Boolean(set)
           return
         }
         q.locked = true
       }
 
-      function unlock(){
+      function unlock() {
         q.locked = false
       }
 
@@ -224,18 +223,18 @@ module.exports = function(service) {
           l()
         })
         return Promise.try(function() {
-            return q.group.dispose()
-          })
-          .then(function() {
-            q.column.queries.splice(q.column.queries.indexOf(q), 1)
-            // Automatically recycle the column if there are no queries active on it
-            if (!q.column.queries.length) {
-              return service.clear(q.column.key)
-            }
-          })
-          .then(function() {
-            return service
-          })
+          return q.group.dispose()
+        })
+        .then(function() {
+          q.column.queries.splice(q.column.queries.indexOf(q), 1)
+          // Automatically recycle the column if there are no queries active on it
+          if (!q.column.queries.length) {
+            return service.clear(q.column.key)
+          }
+        })
+        .then(function() {
+          return service
+        })
       }
 
       function postAggregateMethodWrap(postMethod) {
@@ -255,13 +254,12 @@ module.exports = function(service) {
 
           function postAggregateChildren() {
             return postAggregate(sub)
-              .then(function(){
+              .then(function() {
                 return sub
               })
           }
         }
       }
-
     }
   }
 }

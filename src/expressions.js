@@ -64,7 +64,6 @@ function $not(d, child) {
   return true
 }
 
-
 // Expressions
 
 function $eq(d, child) {
@@ -92,7 +91,7 @@ function $ne(d, child) {
 }
 
 function $type(d, child) {
-  return typeof(d) === child()
+  return typeof d === child()
 }
 
 // Array Expressions

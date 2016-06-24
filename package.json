@@ -26,9 +26,11 @@
     "gulp-uglify": "^1.5.3",
     "lodash": "^4.6.1",
     "mocha": "^2.4.5",
-    "vinyl-source-stream": "^1.1.0"
+    "vinyl-source-stream": "^1.1.0",
+    "xo": "^0.16.0"
   },
   "scripts": {
+    "lint": "xo",
     "test": "gulp test"
   },
   "repository": {
@@ -48,5 +50,32 @@
   "bugs": {
     "url": "https://github.com/crossfilter/universe/issues"
   },
-  "homepage": "https://github.com/crossfilter/universe"
+  "homepage": "https://github.com/crossfilter/universe",
+  "xo": {
+    "semicolon": false,
+    "esnext": false,
+    "space": 2,
+    "rules": {
+      "xo/filename-case": "warn",
+      "quotes": ["warn", "single", {
+        "allowTemplateLiterals": true
+      }],
+      "comma-dangle": ["warn", "never"],
+      "space-before-function-paren": ["warn", {
+        "anonymous": "always",
+        "named": "never"
+      }]
+    },
+    "overrides": [
+      {
+        "files": "test/*.spec.js",
+        "globals": ["it", "describe", "beforeEach", "afterEach"],
+        "rules": {
+          "no-unused-expressions": "warn",
+          "no-prototype-builtins": "warn"
+        }
+      }
+    ],
+    "ignores": ["universe.js", "universe.min.js"]
+  }
 }

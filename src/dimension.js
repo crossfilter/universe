@@ -1,10 +1,9 @@
 'use strict'
 
-var Promise = require('q');
+var Promise = require('q')
 var _ = require('./lodash')
 
 module.exports = function(service) {
-
   return {
     make: make,
     makeAccessor: makeAccessor,
@@ -14,10 +13,10 @@ module.exports = function(service) {
     var accessor = makeAccessor(key)
     // Promise.resolve will handle promises or non promises, so
     // this crossfilter async is supported if present
-    return Promise.resolve(service.cf.dimension(accessor, type == 'array'))
+    return Promise.resolve(service.cf.dimension(accessor, type === 'array'))
   }
 
-  function makeAccessor(key){
+  function makeAccessor(key) {
     var accessorFunction
 
     // Multi-key dimension
@@ -25,7 +24,7 @@ module.exports = function(service) {
       var arrayString = _.map(key, function(k) {
         return "d['" + k + "']"
       })
-      accessorFunction = new Function('d', 'return ' + JSON.stringify(arrayString).replace(/\"/g, '') + '')
+      accessorFunction = new Function('d', String('return ' + JSON.stringify(arrayString).replace(/"/g, '')))  // eslint-disable-line  no-new-func
     } else {
       accessorFunction =
         // Index Dimension

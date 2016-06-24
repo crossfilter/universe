@@ -5,7 +5,7 @@ var _ = require('./lodash')
 
 var aggregation = require('./aggregation')
 
-module.exports = function(service) {
+module.exports = function(/* service */) {
   return {
     post: post,
     sortByKey: sortByKey,
@@ -84,7 +84,6 @@ module.exports = function(service) {
     defaultNull = _.isUndefined(defaultNull) ? 0 : defaultNull
     query.data = cloneIfLocked(parent)
     _.recurseObject(aggObj, function(val, key, path) {
-
       var changePath = _.clone(path)
       var fromStartPath = _.clone(path)
       var fromEndPath = _.clone(path)
@@ -108,9 +107,7 @@ module.exports = function(service) {
       })
     })
   }
-
 }
-
 
 function cloneIfLocked(parent) {
   return parent.locked ? _.clone(parent.data) : parent.data

@@ -1,6 +1,6 @@
 'use strict'
 
-var _ = require('./lodash')
+// var _ = require('./lodash') // _ is defined but never used
 
 module.exports = {
   shorthandLabels: {
@@ -29,7 +29,7 @@ module.exports = {
 
 // Aggregators
 
-function $count(reducer, value) {
+function $count(reducer/* , value */) {
   return reducer.count(true)
 }
 
@@ -65,7 +65,7 @@ function $valueList(reducer, value) {
   return reducer.valueList(value)
 }
 
-function $dataList(reducer, value) {
+function $dataList(reducer/* , value */) {
   return reducer.dataList(true)
 }
 
