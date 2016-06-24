@@ -46,6 +46,9 @@ module.exports = function(service) {
   }
 
   function filterAll() {
+    service.columns.forEach(function (col) {
+      col.dimension.filterAll()
+    })
     return applyFilters({})
   }
 

@@ -1,3 +1,5 @@
+/* globals describe, it, beforeEach */
+
 var chai = require('chai')
 var chaiAsPromised = require('chai-as-promised')
 
