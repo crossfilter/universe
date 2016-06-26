@@ -1,9 +1,9 @@
 'use strict'
 
-var Promise = require("q")
+var Promise = require('q')
 var _ = require('./lodash')
 
-module.exports = function(service) {
+module.exports = function (service) {
   var dimension = require('./dimension')(service)
 
   var columnFunc = column
@@ -24,13 +24,13 @@ module.exports = function(service) {
 
     // Mapp all column creation, wait for all to settle, then return the instance
     return Promise.all(_.map(def, makeColumn))
-      .then(function() {
+      .then(function () {
         return service
       })
   }
 
   function findColumn(d) {
-    return _.find(service.columns, function(c) {
+    return _.find(service.columns, function (c) {
       if (_.isArray(d)) {
         return !_.xor(c.key, d).length
       }
@@ -67,7 +67,7 @@ module.exports = function(service) {
         existing.dynamicReference = false
       }
       return existing.promise
-        .then(function() {
+        .then(function () {
           return service
         })
     }
@@ -76,10 +76,10 @@ module.exports = function(service) {
     column.queries = []
     service.columns.push(column)
 
-    column.promise = Promise.try(function() {
+    column.promise = Promise.try(function () {
       return Promise.resolve(service.cf.all())
     })
-    .then(function(all) {
+    .then(function (all) {
       var sample
 
       // Complex column Keys
@@ -110,7 +110,7 @@ module.exports = function(service) {
 
       return dimension.make(column.key, column.type)
     })
-    .then(function(dim) {
+    .then(function (dim) {
       column.dimension = dim
       column.filterCount = 0
       var stopListeningForData = service.onDataChange(buildColumnKeys)
@@ -127,13 +127,13 @@ module.exports = function(service) {
         var accessor = dimension.makeAccessor(column.key)
         column.values = column.values || []
 
-        return Promise.try(function() {
+        return Promise.try(function () {
           if (changes && changes.added) {
             return Promise.resolve(changes.added)
           }
           return Promise.resolve(column.dimension.bottom(Infinity))
         })
-        .then(function(rows) {
+        .then(function (rows) {
           var newValues
           if (column.type === 'complex') {
             newValues = _.flatten(_.map(rows, accessor))
@@ -148,7 +148,7 @@ module.exports = function(service) {
     })
 
     return column.promise
-      .then(function() {
+      .then(function () {
         return service
       })
   }

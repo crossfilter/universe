@@ -3,7 +3,7 @@
 var Promise = require('q')
 var _ = require('./lodash')
 
-module.exports = function(service) {
+module.exports = function (service) {
   return function clear(def) {
     // Clear a single or multiple column definitions
     if (def) {
@@ -13,18 +13,18 @@ module.exports = function(service) {
     if (!def) {
       // Clear all of the column defenitions
       return Promise.all(_.map(service.columns, disposeColumn))
-        .then(function() {
+        .then(function () {
           service.columns = []
           return service
         })
     }
 
-    return Promise.all(_.map(def, function(d) {
+    return Promise.all(_.map(def, function (d) {
       if (_.isObject(d)) {
         d = d.key
       }
       // Clear the column
-      var column = _.remove(service.columns, function(c) {
+      var column = _.remove(service.columns, function (c) {
         if (_.isArray(d)) {
           return !_.xor(c.key, d).length
         }
@@ -43,7 +43,7 @@ module.exports = function(service) {
 
       disposeColumn(column)
     }))
-    .then(function() {
+    .then(function () {
       return service
     })
 
@@ -51,7 +51,7 @@ module.exports = function(service) {
       var disposalActions = []
         // Dispose the dimension
       if (column.removeListeners) {
-        disposalActions = _.map(column.removeListeners, function(listener) {
+        disposalActions = _.map(column.removeListeners, function (listener) {
           return Promise.resolve(listener())
         })
       }

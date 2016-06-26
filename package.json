@@ -56,15 +56,8 @@
     "esnext": false,
     "space": 2,
     "rules": {
-      "xo/filename-case": "warn",
-      "quotes": ["warn", "single", {
-        "allowTemplateLiterals": true
-      }],
-      "comma-dangle": ["warn", "never"],
-      "space-before-function-paren": ["warn", {
-        "anonymous": "always",
-        "named": "never"
-      }]
+      "xo/filename-case": 0,
+      "comma-dangle": 0
     },
     "overrides": [
       {

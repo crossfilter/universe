@@ -50,7 +50,7 @@ function find(a, b) {
 }
 
 function remove(a, b) {
-  return a.filter(function(o, i) {
+  return a.filter(function (o, i) {
     var r = b(o)
     if (r) {
       a.splice(i, 1)
@@ -92,22 +92,22 @@ function get(a, b) {
     .replace('[', '.').replace(']', '')
     .split('.')
     .reduce(
-      function(obj, property) {
+      function (obj, property) {
         return obj[property]
       }, a
     )
 }
 
 function set(obj, prop, value) {
-  if (typeof prop === "string") {
+  if (typeof prop === 'string') {
     prop = prop
       .replace('[', '.').replace(']', '')
-      .split(".")
+      .split('.')
   }
   if (prop.length > 1) {
     var e = prop.shift()
     assign(obj[e] =
-      Object.prototype.toString.call(obj[e]) === "[object Object]" ? obj[e] : {},
+      Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
       prop,
       value)
   } else {
@@ -139,7 +139,7 @@ function map(a, b) {
     }
     return m
   }
-  return a.map(function(aa) {
+  return a.map(function (aa) {
     return aa[b]
   })
 }
@@ -150,7 +150,7 @@ function keys(obj) {
 
 function sortBy(a, b) {
   if (isFunction(b)) {
-    return a.sort(function(aa, bb) {
+    return a.sort(function (aa, bb) {
       if (b(aa) > b(bb)) {
         return 1
       }
@@ -183,7 +183,7 @@ function isUndefined(a) {
 
 function pick(a, b) {
   var c = {}
-  forEach(b, function(bb) {
+  forEach(b, function (bb) {
     if (typeof a[bb] !== 'undefined') {
       c[bb] = a[bb]
     }
@@ -193,12 +193,12 @@ function pick(a, b) {
 
 function xor(a, b) {
   var unique = []
-  forEach(a, function(aa) {
+  forEach(a, function (aa) {
     if (b.indexOf(aa) === -1) {
       return unique.push(aa)
     }
   })
-  forEach(b, function(bb) {
+  forEach(b, function (bb) {
     if (a.indexOf(bb) === -1) {
       return unique.push(bb)
     }
@@ -208,7 +208,7 @@ function xor(a, b) {
 
 function clone(a) {
   return JSON.parse(JSON.stringify(a, function replacer(key, value) {
-    if (typeof value === "function") {
+    if (typeof value === 'function') {
       return value.toString()
     }
     return value
@@ -216,7 +216,7 @@ function clone(a) {
 }
 
 function isEqual(x, y) {
-  if ((typeof x === "object" && x !== null) && (typeof y === "object" && y !== null)) {
+  if ((typeof x === 'object' && x !== null) && (typeof y === 'object' && y !== null)) {
     if (Object.keys(x).length !== Object.keys(y).length) {
       return false
     }
@@ -245,7 +245,7 @@ function replaceArray(a, b) {
   } else if (al < bl) {
     a.push.apply(a, new Array(bl - al))
   }
-  forEach(a, function(val, key) {
+  forEach(a, function (val, key) {
     a[key] = b[key]
   })
   return a
@@ -253,7 +253,7 @@ function replaceArray(a, b) {
 
 function uniq(a) {
   var seen = new Set()
-  return a.filter(function(item) {
+  return a.filter(function (item) {
     var allow = false
     if (!seen.has(item)) {
       seen.add(item)
@@ -305,7 +305,7 @@ function recurseObject(obj, cb) {
     for (var k in obj) { //  eslint-disable-line guard-for-in
       var newPath = clone(path)
       newPath.push(k)
-      if (typeof obj[k] === "object" && obj[k] !== null) {
+      if (typeof obj[k] === 'object' && obj[k] !== null) {
         _recurseObject(obj[k], newPath)
       } else {
         if (!obj.hasOwnProperty(k)) {

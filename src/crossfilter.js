@@ -5,7 +5,7 @@ var crossfilter = require('crossfilter2')
 
 var _ = require('./lodash')
 
-module.exports = function(service) {
+module.exports = function (service) {
   return {
     build: build,
     generateColumns: generateColumns,
@@ -28,8 +28,8 @@ module.exports = function(service) {
     if (!service.options.generatedColumns) {
       return data
     }
-    return _.map(data, function(d/* , i */) {
-      _.forEach(service.options.generatedColumns, function(val, key) {
+    return _.map(data, function (d/* , i */) {
+      _.forEach(service.options.generatedColumns, function (val, key) {
         d[key] = val(d)
       })
       return d
@@ -38,28 +38,28 @@ module.exports = function(service) {
 
   function add(data) {
     data = generateColumns(data)
-    return Promise.try(function() {
+    return Promise.try(function () {
       return Promise.resolve(service.cf.add(data))
     })
-    .then(function() {
-      return Promise.serial(_.map(service.dataListeners, function(listener) {
-        return function() {
+    .then(function () {
+      return Promise.serial(_.map(service.dataListeners, function (listener) {
+        return function () {
           return listener({
             added: data
           })
         }
       }))
     })
-    .then(function() {
+    .then(function () {
       return service
     })
   }
 
   function remove() {
-    return Promise.try(function() {
+    return Promise.try(function () {
       return Promise.resolve(service.cf.remove())
     })
-    .then(function() {
+    .then(function () {
       return service
     })
   }

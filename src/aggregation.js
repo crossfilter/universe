@@ -78,7 +78,7 @@ function makeSubAggregationFunction(obj) {
   if (_.isArray(obj)) {
     var subStack = _.map(obj, makeSubAggregationFunction)
     return function getSubStack(d) {
-      return subStack.map(function(s) {
+      return subStack.map(function (s) {
         return s(d)
       })
     }
@@ -153,17 +153,17 @@ function convertAggregatorString(keyString) {
 
   function unwrapParensAndCommas(str) {
     str = str.replace(' ', '')
-    return '"' + str.replace(outerParens, function(p, pr) {
+    return '"' + str.replace(outerParens, function (p, pr) {
       if (hasComma.test(pr)) {
         if (pr.charAt(0) === '$') {
-          return '":{"' + pr.replace(hasComma, function(p2/* , pr2 */) {
+          return '":{"' + pr.replace(hasComma, function (p2/* , pr2 */) {
             if (p2 === ',') {
               return ',"'
             }
             return unwrapParensAndCommas(p2).trim()
           }) + '}'
         }
-        return ':["' + pr.replace(hasComma, function(/* p2 , pr2 */) {
+        return ':["' + pr.replace(hasComma, function (/* p2 , pr2 */) {
           return '","'
         }) + '"]'
       }
@@ -174,13 +174,13 @@ function convertAggregatorString(keyString) {
 // Collection Aggregators
 
 function $sum(children) {
-  return children.reduce(function(a, b) {
+  return children.reduce(function (a, b) {
     return a + b
   }, 0)
 }
 
 function $avg(children) {
-  return children.reduce(function(a, b) {
+  return children.reduce(function (a, b) {
     return a + b
   }, 0) / children.length
 }
@@ -229,7 +229,7 @@ function $nthPct(children, n) {
 }
 
 function $map(children, n) {
-  return children.map(function(d) {
+  return children.map(function (d) {
     return d[n]
   })
 }

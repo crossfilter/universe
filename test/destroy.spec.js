@@ -8,17 +8,17 @@ var universe = require('../universe')
 // var crossfilter = require('crossfilter2') // defined but never used
 var data = require('./data')
 
-describe('universe clear', function() {
+describe('universe clear', function () {
   var u = universe(data)
 
-  beforeEach(function() {
-    return u.then(function(u) {
+  beforeEach(function () {
+    return u.then(function (u) {
       return u.clear()
     })
   })
 
-  it('can destroy the universe a few times over', function() {
-    return u.then(function(u) {
+  it('can destroy the universe a few times over', function () {
+    return u.then(function (u) {
       return u.query({
         groupBy: 'type',
         select: {
@@ -26,7 +26,7 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.query({
         groupBy: 'total',
         select: {
@@ -34,7 +34,7 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.query({
         groupBy: 'tip',
         select: {
@@ -42,13 +42,13 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.destroy()
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.add(data)
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.query({
         groupBy: 'type',
         select: {
@@ -56,7 +56,7 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.query({
         groupBy: 'total',
         select: {
@@ -64,7 +64,7 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.query({
         groupBy: 'tip',
         select: {
@@ -72,13 +72,13 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.destroy()
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.add(data)
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.query({
         groupBy: 'type',
         select: {
@@ -86,7 +86,7 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.query({
         groupBy: 'total',
         select: {
@@ -94,7 +94,7 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.query({
         groupBy: 'tip',
         select: {
@@ -102,7 +102,7 @@ describe('universe clear', function() {
         }
       })
     })
-    .then(function(u) {
+    .then(function (u) {
       return u.universe.destroy()
     })
   })

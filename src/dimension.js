@@ -3,7 +3,7 @@
 var Promise = require('q')
 var _ = require('./lodash')
 
-module.exports = function(service) {
+module.exports = function (service) {
   return {
     make: make,
     makeAccessor: makeAccessor,
@@ -21,8 +21,8 @@ module.exports = function(service) {
 
     // Multi-key dimension
     if (_.isArray(key)) {
-      var arrayString = _.map(key, function(k) {
-        return "d['" + k + "']"
+      var arrayString = _.map(key, function (k) {
+        return 'd[\'' + k + '\']'
       })
       accessorFunction = new Function('d', String('return ' + JSON.stringify(arrayString).replace(/"/g, '')))  // eslint-disable-line  no-new-func
     } else {
@@ -32,7 +32,7 @@ module.exports = function(service) {
           return i
         } :
         // Value Accessor Dimension
-        function(d) {
+        function (d) {
           return d[key]
         }
     }
