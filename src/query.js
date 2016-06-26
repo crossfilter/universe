@@ -1,12 +1,13 @@
 'use strict'
 
-var Promise = require('q');
+var Promise = require('q')
 var _ = require('./lodash')
 
-module.exports = function(service) {
+module.exports = function (service) {
   var reductiofy = require('./reductiofy')(service)
   var filters = require('./filters')(service)
   var postAggregation = require('./postAggregation')(service)
+
   var postAggregationMethods = _.keys(postAggregation)
 
   return function doQuery(queryObj) {
@@ -16,13 +17,12 @@ module.exports = function(service) {
     for (var i = 0; i < service.columns.length; i++) {
       for (var j = 0; j < service.columns[i].queries.length; j++) {
         if (service.columns[i].queries[j].hash === queryHash) {
-          return Promise.try(function() {
+          return Promise.try(function () { // eslint-disable-line no-loop-func
             return service.columns[i].queries[j]
           })
         }
       }
     }
-
 
     var query = {
       // Original query passed in to query method
@@ -52,24 +52,23 @@ module.exports = function(service) {
       .then(setupDataListeners)
       .then(applyQuery)
 
-
     function createColumn(query) {
       // Ensure column is created
       return service.column({
-          key: query.original.groupBy,
-          type: !_.isUndefined(query.type) ? query.type : null,
-          array: !!query.array
+        key: query.original.groupBy,
+        type: _.isUndefined(query.type) ? null : query.type,
+        array: Boolean(query.array)
+      })
+      .then(function () {
+        // Attach the column to the query
+        var column = service.column.find(query.original.groupBy)
+        query.column = column
+        column.queries.push(query)
+        column.removeListeners.push(function () {
+          return query.clear()
         })
-        .then(function() {
-          // Attach the column to the query
-          var column = service.column.find(query.original.groupBy)
-          query.column = column
-          column.queries.push(query)
-          column.removeListeners.push(function() {
-            return query.clear()
-          })
-          return query
-        })
+        return query
+      })
     }
 
     function makeCrossfilterGroup(query) {
@@ -77,7 +76,7 @@ module.exports = function(service) {
       // Using Promise Resolve allows support for crossfilter async
       // TODO check if query already exists, and use the same base query // if possible
       return Promise.resolve(query.column.dimension.group())
-        .then(function(g) {
+        .then(function (g) {
           query.group = g
           return query
         })
@@ -88,30 +87,30 @@ module.exports = function(service) {
         // We need to scan the group for any filters that would require
         // the group to be rebuilt when data is added or removed in any way.
       if (requiredColumns.length) {
-        return Promise.all(_.map(requiredColumns, function(columnKey) {
-            return service.column({
-              key: columnKey,
-              dynamicReference: query.group
-            })
-          }))
-          .then(function(){
-            return query
+        return Promise.all(_.map(requiredColumns, function (columnKey) {
+          return service.column({
+            key: columnKey,
+            dynamicReference: query.group
           })
+        }))
+        .then(function () {
+          return query
+        })
       }
       return query
     }
 
-    function setupDataListeners(query){
+    function setupDataListeners(query) {
       // Here, we create a listener to recreate and apply the reducer to
       // the group anytime underlying data changes
-      var stopDataListen = service.onDataChange(function() {
+      var stopDataListen = service.onDataChange(function () {
         return applyQuery(query)
       })
       query.removeListeners.push(stopDataListen)
 
       // This is a similar listener for filtering which will (if needed)
       // run any post aggregations on the data after each filter action
-      var stopFilterListen = service.onFilter(function() {
+      var stopFilterListen = service.onFilter(function () {
         return postAggregate(query)
       })
       query.removeListeners.push(stopFilterListen)
@@ -128,7 +127,7 @@ module.exports = function(service) {
 
     function buildReducer(query) {
       return reductiofy(query.original)
-        .then(function(reducer) {
+        .then(function (reducer) {
           query.reducer = reducer
           return query
         })
@@ -136,31 +135,31 @@ module.exports = function(service) {
 
     function applyReducer(query) {
       return Promise.resolve(query.reducer(query.group))
-        .then(function() {
+        .then(function () {
           return query
         })
     }
 
     function attachData(query) {
       return Promise.resolve(query.group.all())
-        .then(function(data) {
+        .then(function (data) {
           query.data = data
           return query
         })
     }
 
     function postAggregate(query) {
-      if(query.postAggregations.length > 1){
+      if (query.postAggregations.length > 1) {
         // If the query is used by 2+ post aggregations, we need to lock
         // it against getting mutated by the post-aggregations
         query.locked = true
       }
-      return Promise.all(_.map(query.postAggregations, function(post) {
-          return post()
-        }))
-        .then(function() {
-          return query
-        })
+      return Promise.all(_.map(query.postAggregations, function (post) {
+        return post()
+      }))
+      .then(function () {
+        return query
+      })
     }
 
     function newQueryObj(q, parent) {
@@ -201,51 +200,51 @@ module.exports = function(service) {
         clear: clearQuery,
       })
 
-      _.forEach(postAggregationMethods, function(method) {
+      _.forEach(postAggregationMethods, function (method) {
         q[method] = postAggregateMethodWrap(postAggregation[method])
       })
 
       return q
 
-      function lock(set){
-        if(!_.isUndefined(set)){
-          q.locked = !!set
+      function lock(set) {
+        if (!_.isUndefined(set)) {
+          q.locked = Boolean(set)
           return
         }
         q.locked = true
       }
 
-      function unlock(){
+      function unlock() {
         q.locked = false
       }
 
       function clearQuery() {
-        _.forEach(q.removeListeners, function(l) {
+        _.forEach(q.removeListeners, function (l) {
           l()
         })
-        return Promise.try(function() {
-            return q.group.dispose()
-          })
-          .then(function() {
-            q.column.queries.splice(q.column.queries.indexOf(q), 1)
-            // Automatically recycle the column if there are no queries active on it
-            if (!q.column.queries.length) {
-              return service.clear(q.column.key)
-            }
-          })
-          .then(function() {
-            return service
-          })
+        return Promise.try(function () {
+          return q.group.dispose()
+        })
+        .then(function () {
+          q.column.queries.splice(q.column.queries.indexOf(q), 1)
+          // Automatically recycle the column if there are no queries active on it
+          if (!q.column.queries.length) {
+            return service.clear(q.column.key)
+          }
+        })
+        .then(function () {
+          return service
+        })
       }
 
       function postAggregateMethodWrap(postMethod) {
-        return function() {
+        return function () {
           var args = Array.prototype.slice.call(arguments)
           var sub = {}
           newQueryObj(sub, q)
           args.unshift(sub, q)
 
-          q.postAggregations.push(function() {
+          q.postAggregations.push(function () {
             Promise.resolve(postMethod.apply(null, args))
               .then(postAggregateChildren)
           })
@@ -255,13 +254,12 @@ module.exports = function(service) {
 
           function postAggregateChildren() {
             return postAggregate(sub)
-              .then(function(){
+              .then(function () {
                 return sub
               })
           }
         }
       }
-
     }
   }
 }

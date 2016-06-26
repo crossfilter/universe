@@ -4,15 +4,15 @@ var reductio = require('reductio')
 
 var _ = require('./lodash')
 var rAggregators = require('./reductioAggregators')
-var expressions = require('./expressions')
+// var expressions = require('./expressions')  // exporession is defined but never used
 var aggregation = require('./aggregation')
 
-module.exports = function(service) {
+module.exports = function (service) {
   var filters = require('./filters')(service)
 
   return function reductiofy(query) {
     var reducer = reductio()
-    var groupBy = query.groupBy
+    // var groupBy = query.groupBy // groupBy is defined but never used
     aggregateOrNest(reducer, query.select)
 
     if (query.filter) {
@@ -24,20 +24,18 @@ module.exports = function(service) {
 
     return Promise.resolve(reducer)
 
-
     // This function recursively find the first level of reductio methods in
     // each object and adds that reduction method to reductio
     function aggregateOrNest(reducer, selects) {
-
       // Sort so nested values are calculated last by reductio's .value method
       var sortedSelectKeyValue = _.sortBy(
-        _.map(selects, function(val, key) {
+        _.map(selects, function (val, key) {
           return {
             key: key,
             value: val
           }
         }),
-        function(s) {
+        function (s) {
           if (rAggregators.aggregators[s.key]) {
             return 0
           }
@@ -45,8 +43,7 @@ module.exports = function(service) {
         })
 
       // dive into each key/value
-      return _.forEach(sortedSelectKeyValue, function(s) {
-
+      return _.forEach(sortedSelectKeyValue, function (s) {
         // Found a Reductio Aggregation
         if (rAggregators.aggregators[s.key]) {
           // Build the valueAccessorFunction
@@ -65,7 +62,6 @@ module.exports = function(service) {
 
         // It's another nested object, so just repeat this process on it
         reducer = aggregateOrNest(reducer.value(s.key), s.value)
-
       })
     }
   }

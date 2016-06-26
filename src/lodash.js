@@ -1,3 +1,4 @@
+/* eslint no-prototype-builtins: "warn" */
 'use strict'
 
 module.exports = {
@@ -29,31 +30,33 @@ module.exports = {
   recurseObject: recurseObject,
 }
 
-
 function assign(out) {
   out = out || {}
   for (var i = 1; i < arguments.length; i++) {
-    if (!arguments[i])
-      continue;
+    if (!arguments[i]) {
+      continue
+    }
     for (var key in arguments[i]) {
-      if (arguments[i].hasOwnProperty(key))
+      if (arguments[i].hasOwnProperty(key)) {
         out[key] = arguments[i][key]
+      }
     }
   }
   return out
 }
 
 function find(a, b) {
-  return a.find(b);
+  return a.find(b)
 }
 
 function remove(a, b) {
-  return a.filter(function(o, i) {
+  return a.filter(function (o, i) {
     var r = b(o)
     if (r) {
       a.splice(i, 1)
       return true
     }
+    return false
   })
 }
 
@@ -62,23 +65,23 @@ function isArray(a) {
 }
 
 function isObject(d) {
-  return typeof(d) === 'object' && !isArray(d)
+  return typeof d === 'object' && !isArray(d)
 }
 
 function isBoolean(d) {
-  return typeof(d) === 'boolean'
+  return typeof d === 'boolean'
 }
 
 function isString(d) {
-  return typeof(d) === 'string'
+  return typeof d === 'string'
 }
 
 function isNumber(d) {
-  return typeof(d) === 'number'
+  return typeof d === 'number'
 }
 
 function isFunction(a) {
-  return typeof(a) === 'function'
+  return typeof a === 'function'
 }
 
 function get(a, b) {
@@ -89,22 +92,22 @@ function get(a, b) {
     .replace('[', '.').replace(']', '')
     .split('.')
     .reduce(
-      function(obj, property) {
-        return obj[property];
+      function (obj, property) {
+        return obj[property]
       }, a
     )
 }
 
 function set(obj, prop, value) {
-  if (typeof prop === "string") {
+  if (typeof prop === 'string') {
     prop = prop
       .replace('[', '.').replace(']', '')
-      .split(".")
+      .split('.')
   }
   if (prop.length > 1) {
     var e = prop.shift()
     assign(obj[e] =
-      Object.prototype.toString.call(obj[e]) === "[object Object]" ? obj[e] : {},
+      Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
       prop,
       value)
   } else {
@@ -136,7 +139,7 @@ function map(a, b) {
     }
     return m
   }
-  return a.map(function(aa, i) {
+  return a.map(function (aa) {
     return aa[b]
   })
 }
@@ -147,16 +150,16 @@ function keys(obj) {
 
 function sortBy(a, b) {
   if (isFunction(b)) {
-    return a.sort(function(aa, bb) {
+    return a.sort(function (aa, bb) {
       if (b(aa) > b(bb)) {
-        return 1;
+        return 1
       }
       if (b(aa) < b(bb)) {
-        return -1;
+        return -1
       }
       // a must be equal to b
-      return 0;
-    });
+      return 0
+    })
   }
 }
 
@@ -175,26 +178,27 @@ function forEach(a, b) {
 }
 
 function isUndefined(a) {
-  return typeof(a) === 'undefined'
+  return typeof a === 'undefined'
 }
 
 function pick(a, b) {
   var c = {}
-  forEach(b, function(bb) {
-    if (typeof(a[bb]) !== 'undefined') c[bb] = a[bb]
+  forEach(b, function (bb) {
+    if (typeof a[bb] !== 'undefined') {
+      c[bb] = a[bb]
+    }
   })
   return c
 }
 
 function xor(a, b) {
-
   var unique = []
-  forEach(a, function(aa) {
+  forEach(a, function (aa) {
     if (b.indexOf(aa) === -1) {
       return unique.push(aa)
     }
   })
-  forEach(b, function(bb) {
+  forEach(b, function (bb) {
     if (a.indexOf(bb) === -1) {
       return unique.push(bb)
     }
@@ -204,31 +208,33 @@ function xor(a, b) {
 
 function clone(a) {
   return JSON.parse(JSON.stringify(a, function replacer(key, value) {
-    if (typeof value === "function") {
-      return value.toString();
+    if (typeof value === 'function') {
+      return value.toString()
     }
-    return value;
+    return value
   }))
 }
 
 function isEqual(x, y) {
-  if ((typeof x == "object" && x !== null) && (typeof y == "object" && y !== null)) {
-    if (Object.keys(x).length != Object.keys(y).length)
-      return false;
+  if ((typeof x === 'object' && x !== null) && (typeof y === 'object' && y !== null)) {
+    if (Object.keys(x).length !== Object.keys(y).length) {
+      return false
+    }
 
     for (var prop in x) {
       if (y.hasOwnProperty(prop)) {
-        if (!isEqual(x[prop], y[prop]))
-          return false;
-      } else
-        return false;
+        if (!isEqual(x[prop], y[prop])) {
+          return false
+        }
+      }
+      return false
     }
 
-    return true;
-  } else if (x !== y)
-    return false;
-  else
-    return true;
+    return true
+  } else if (x !== y) {
+    return false
+  }
+  return true
 }
 
 function replaceArray(a, b) {
@@ -239,46 +245,47 @@ function replaceArray(a, b) {
   } else if (al < bl) {
     a.push.apply(a, new Array(bl - al))
   }
-  forEach(a, function(val, key) {
+  forEach(a, function (val, key) {
     a[key] = b[key]
   })
   return a
 }
 
 function uniq(a) {
-  var seen = new Set();
-  return a.filter(function(item) {
-    var allow = false;
+  var seen = new Set()
+  return a.filter(function (item) {
+    var allow = false
     if (!seen.has(item)) {
-      seen.add(item);
-      allow = true;
+      seen.add(item)
+      allow = true
     }
-    return allow;
+    return allow
   })
 }
 
 function flatten(aa) {
-  var flattened = [];
+  var flattened = []
   for (var i = 0; i < aa.length; ++i) {
-    var current = aa[i];
-    for (var j = 0; j < current.length; ++j)
-      flattened.push(current[j]);
+    var current = aa[i]
+    for (var j = 0; j < current.length; ++j) {
+      flattened.push(current[j])
+    }
   }
   return flattened
 }
 
 function sort(arr) {
   for (var i = 1; i < arr.length; i++) {
-    var tmp = arr[i],
-      j = i;
+    var tmp = arr[i]
+    var j = i
     while (arr[j - 1] > tmp) {
       arr[j] = arr[j - 1];
-      --j;
+      --j
     }
-    arr[j] = tmp;
+    arr[j] = tmp
   }
 
-  return arr;
+  return arr
 }
 
 function values(a) {
@@ -295,10 +302,10 @@ function recurseObject(obj, cb) {
   _recurseObject(obj, [])
   return obj
   function _recurseObject(obj, path) {
-    for (var k in obj) {
+    for (var k in obj) { //  eslint-disable-line guard-for-in
       var newPath = clone(path)
       newPath.push(k)
-      if (typeof obj[k] == "object" && obj[k] !== null) {
+      if (typeof obj[k] === 'object' && obj[k] !== null) {
         _recurseObject(obj[k], newPath)
       } else {
         if (!obj.hasOwnProperty(k)) {

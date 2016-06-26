@@ -5,7 +5,7 @@ var _ = require('./lodash')
 
 var aggregation = require('./aggregation')
 
-module.exports = function(service) {
+module.exports = function (/* service */) {
   return {
     post: post,
     sortByKey: sortByKey,
@@ -22,7 +22,7 @@ module.exports = function(service) {
 
   function sortByKey(query, parent, desc) {
     query.data = cloneIfLocked(parent)
-    query.data = _.sortBy(query.data, function(d) {
+    query.data = _.sortBy(query.data, function (d) {
       return d.key
     })
     if (desc) {
@@ -53,9 +53,9 @@ module.exports = function(service) {
       key: label || 'Other',
       value: {}
     }
-    _.recurseObject(aggObj, function(val, key, path) {
+    _.recurseObject(aggObj, function (val, key, path) {
       var items = []
-      _.forEach(toSquash, function(record) {
+      _.forEach(toSquash, function (record) {
         items.push(_.get(record.value, path))
       })
       _.set(squashed.value, path, aggregation.aggregators[val](items))
@@ -71,7 +71,7 @@ module.exports = function(service) {
       key: [query.data[start].key, query.data[end].key],
       value: {}
     }
-    _.recurseObject(aggObj, function(val, key, path) {
+    _.recurseObject(aggObj, function (val, key, path) {
       var changePath = _.clone(path)
       changePath.pop()
       changePath.push(key + 'Change')
@@ -83,8 +83,7 @@ module.exports = function(service) {
   function changeMap(query, parent, aggObj, defaultNull) {
     defaultNull = _.isUndefined(defaultNull) ? 0 : defaultNull
     query.data = cloneIfLocked(parent)
-    _.recurseObject(aggObj, function(val, key, path) {
-
+    _.recurseObject(aggObj, function (val, key, path) {
       var changePath = _.clone(path)
       var fromStartPath = _.clone(path)
       var fromEndPath = _.clone(path)
@@ -100,7 +99,7 @@ module.exports = function(service) {
       var start = _.get(query.data[0].value, path, defaultNull)
       var end = _.get(query.data[query.data.length - 1].value, path, defaultNull)
 
-      _.forEach(query.data, function(record, i) {
+      _.forEach(query.data, function (record, i) {
         var previous = query.data[i - 1] || query.data[0]
         _.set(query.data[i].value, changePath, _.get(record.value, path, defaultNull) - (previous ? _.get(previous.value, path, defaultNull) : defaultNull))
         _.set(query.data[i].value, fromStartPath, _.get(record.value, path, defaultNull) - start)
@@ -108,9 +107,7 @@ module.exports = function(service) {
       })
     })
   }
-
 }
-
 
 function cloneIfLocked(parent) {
   return parent.locked ? _.clone(parent.data) : parent.data

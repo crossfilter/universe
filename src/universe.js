@@ -2,15 +2,12 @@
 
 require('./q.serial')
 
-var Promise = require('q')
+// var Promise = require('q')  // Promise is defined but never used
 var _ = require('./lodash')
-
-
 
 module.exports = universe
 
 function universe(data, options) {
-
   var service = {
     options: _.assign({}, options),
     columns: [],
@@ -25,7 +22,7 @@ function universe(data, options) {
   data = cf.generateColumns(data)
 
   return cf.build(data)
-    .then(function(data) {
+    .then(function (data) {
       service.cf = data
       return _.assign(service, {
         add: cf.add,
@@ -41,16 +38,16 @@ function universe(data, options) {
       })
     })
 
-  function onDataChange(cb){
+  function onDataChange(cb) {
     service.dataListeners.push(cb)
-    return function(){
+    return function () {
       service.dataListeners.splice(service.dataListeners.indexOf(cb), 1)
     }
   }
 
-  function onFilter(cb){
+  function onFilter(cb) {
     service.filterListeners.push(cb)
-    return function(){
+    return function () {
       service.filterListeners.splice(service.filterListeners.indexOf(cb), 1)
     }
   }

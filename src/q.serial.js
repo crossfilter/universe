@@ -5,58 +5,58 @@ var _ = require('./lodash')
 
 Promise.serial = serial
 
-var isPromiseLike = function(obj) {
-  return obj && _.isFunction(obj.then);
+var isPromiseLike = function (obj) {
+  return obj && _.isFunction(obj.then)
 }
 
 function serial(tasks) {
-  //Fake a "previous task" for our initial iteration
-  var prevPromise;
-  var error = new Error();
-  _.forEach(tasks, function(task, key) {
-    var success = task.success || task;
-    var fail = task.fail;
-    var notify = task.notify;
-    var nextPromise;
+  // Fake a "previous task" for our initial iteration
+  var prevPromise
+  var error = new Error()
+  _.forEach(tasks, function (task, key) {
+    var success = task.success || task
+    var fail = task.fail
+    var notify = task.notify
+    var nextPromise
 
-    //First task
-    if (!prevPromise) {
-      nextPromise = success();
+    // First task
+    if (!prevPromise) { // eslint-disable-line no-negated-condition
+      nextPromise = success()
       if (!isPromiseLike(nextPromise)) {
-        error.message = "Task " + key + " did not return a promise.";
-        throw error;
+        error.message = 'Task ' + key + ' did not return a promise.'
+        throw error
       }
     } else {
-      //Wait until the previous promise has resolved or rejected to execute the next task
+      // Wait until the previous promise has resolved or rejected to execute the next task
       nextPromise = prevPromise.then(
-        /*success*/
-        function(data) {
+        /* success */
+        function (data) {
           if (!success) {
-            return data;
+            return data
           }
-          var ret = success(data);
+          var ret = success(data)
           if (!isPromiseLike(ret)) {
-            error.message = "Task " + key + " did not return a promise.";
-            throw error;
+            error.message = 'Task ' + key + ' did not return a promise.'
+            throw error
           }
-          return ret;
+          return ret
         },
-        /*failure*/
-        function(reason) {
+        /* failure */
+        function (reason) {
           if (!fail) {
-            return Promise.reject(reason);
+            return Promise.reject(reason)
           }
-          var ret = fail(reason);
+          var ret = fail(reason)
           if (!isPromiseLike(ret)) {
-            error.message = "Fail for task " + key + " did not return a promise.";
-            throw error;
+            error.message = 'Fail for task ' + key + ' did not return a promise.'
+            throw error
           }
-          return ret;
+          return ret
         },
-        notify);
+        notify)
     }
-    prevPromise = nextPromise;
-  });
+    prevPromise = nextPromise
+  })
 
-  return prevPromise || Promise.when();
+  return prevPromise || Promise.when()
 }
