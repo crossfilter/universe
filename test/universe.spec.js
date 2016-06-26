@@ -1,60 +1,49 @@
-var chai = require('chai')
-var chaiAsPromised = require('chai-as-promised')
-var crossfilter = require('crossfilter2')
+import test from 'ava'
 
-var universe = require('../universe')
-var data = require('./data')
+import crossfilter from 'crossfilter2'
 
-var expect = chai.expect
-chai.use(chaiAsPromised)
+import universe from '../src/universe'
+import data from './fixtures/data'
 
-describe('universe', function () {
-  it('is a function', function () {
-    expect(typeof universe).to.equal('function')
-  })
+test('is a function', async t => {
+  t.is(typeof universe, 'function')
+})
 
-  it('requires a crossfilter instance', function () {
-    return universe()
-      .then(function (res) {
-        return expect(res).to.be.undefined
-      })
-      .catch(function (err) {
-        return expect(err).to.be.defined
-      })
-  })
-
-  it('can accept a crossfilter instance', function () {
-    return universe(crossfilter(data))
-  })
-
-  it('can accept an array of data points', function () {
-    expect(function () {
-      universe(data)
-    }).not.to.throw()
-  })
-
-  it('can create generated columns using an accessor function', function () {
-    return universe(data, {
-      generatedColumns: {
-        totalAndTip: function (d) {
-          return d.total + d.tip
-        }
-      }
+test('requires a crossfilter instance', t => {
+  return universe()
+    .then(res => {
+      return t.is(typeof res, 'object')
     })
-    .then(function (myUniverse) {
-      return myUniverse.query({
-        groupBy: 'totalAndTip'
-      })
+    .catch(err => {
+      return t.is(typeof err, 'object')
     })
-    .then(function (res) {
-      expect(res.data).to.deep.equal([
-        {key: 90, value: {count: 6}},
-        {key: 100, value: {count: 1}},
-        {key: 200, value: {count: 1}},
-        {key: 290, value: {count: 2}},
-        {key: 300, value: {count: 1}},
-        {key: 500, value: {count: 1}}
-      ])
-    })
+})
+
+test('can accept a crossfilter instance', () => {
+  return universe(crossfilter(data))
+})
+
+test('can accept an array of data points', () => {
+  return universe(data)
+})
+
+test('can create generated columns using an accessor function', async t => {
+  const u = await universe(data, {
+    generatedColumns: {
+      totalAndTip: d => d.total + d.tip
+    }
   })
+
+  const res = await u.query({
+    groupBy: 'totalAndTip'
+  })
+
+  t.deepEqual(res.data, [
+    {key: 90, value: {count: 6}},
+    {key: 100, value: {count: 1}},
+    {key: 200, value: {count: 1}},
+    {key: 290, value: {count: 2}},
+    {key: 300, value: {count: 1}},
+    {key: 500, value: {count: 1}}
+  ])
 })

@@ -1,77 +1,50 @@
-/* globals describe, it, beforeEach */
+import test from 'ava'
 
-var chai = require('chai')
-var chaiAsPromised = require('chai-as-promised')
+import universe from '../src/universe'
+import data from './fixtures/data'
 
-chai.use(chaiAsPromised)
-var expect = chai.expect
+test('can clear all columns', async t => {
+  const u = await universe(data)
 
-var universe = require('../universe')
-// var crossfilter = require('crossfilter2') // crossfilter is defined but never used
-var data = require('./data')
+  await u.column(['type', 'total'])
+  t.is(u.columns.length, 2)
 
-describe('universe clear', function () {
-  var u = universe(data)
+  await u.clear()
 
-  beforeEach(function () {
-    return u.then(function (u) {
-      return u.clear()
-    })
+  t.deepEqual(u.columns, [])
+})
+
+test('can remove a single column', async t => {
+  const u = await universe(data)
+
+  await u.column('type')
+
+  t.is(u.columns.length, 1)
+  await u.clear('type')
+
+  t.is(u.columns.length, 0)
+})
+
+test('can remove a single column based on multiple keys', async t => {
+  const u = await universe(data)
+
+  await u.column({
+    key: ['type', 'total', 'quantity', 'tip']
   })
+  t.is(u.columns.length, 1)
 
-  it('can clear all columns', function () {
-    return u.then(function (u) {
-      return u.column(['type', 'total'])
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.deep.equal(2)
-      return u.clear()
-    })
-    .then(function (u) {
-      expect(u.columns).to.deep.equal([])
-    })
+  await u.clear({
+    key: ['type', 'total', 'quantity', 'tip']
   })
+  t.is(u.columns.length, 0)
+})
 
-  it('can remove a single column', function () {
-    return u.then(function (u) {
-      return u.column('type')
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.deep.equal(1)
-      return u.clear('type')
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.deep.equal(0)
-    })
-  })
+test('can remove multiple columns', async t => {
+  const u = await universe(data)
 
-  it('can remove a single column based on multiple keys', function () {
-    return u.then(function (u) {
-      return u.column({
-        key: ['type', 'total', 'quantity', 'tip']
-      })
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.deep.equal(1)
-      return u.clear({
-        key: ['type', 'total', 'quantity', 'tip']
-      })
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.deep.equal(0)
-    })
-  })
+  await u.column(['type', 'total'])
+  t.is(u.columns.length, 2)
 
-  it('can remove multiple columns', function () {
-    return u.then(function (u) {
-      return u.column(['type', 'total'])
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.deep.equal(2)
-      return u.clear(['type', 'total'])
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.deep.equal(0)
-    })
-  })
+  await u.clear(['type', 'total'])
+  t.is(u.columns.length, 0)
 })

@@ -1,4 +1,4 @@
-/* eslint no-prototype-builtins: "warn" */
+/* eslint no-prototype-builtins: 0 */
 'use strict'
 
 module.exports = {

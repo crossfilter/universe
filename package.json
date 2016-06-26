@@ -13,26 +13,22 @@
     "reductio": "0.5.3"
   },
   "devDependencies": {
+    "ava": "^0.15.2",
     "browserify": "^13.0.0",
     "browserify-shim": "^3.8.12",
-    "chai": "^3.5.0",
-    "chai-as-promised": "^5.2.0",
     "gulp": "^3.9.1",
     "gulp-bump": "^1.0.0",
     "gulp-concat": "^2.6.0",
-    "gulp-coverage": "^0.3.38",
-    "gulp-mocha": "^2.2.0",
     "gulp-rename": "^1.2.2",
     "gulp-streamify": "^1.0.2",
     "gulp-uglify": "^1.5.3",
     "lodash": "^4.6.1",
-    "mocha": "^2.4.5",
     "vinyl-source-stream": "^1.1.0",
     "xo": "^0.16.0"
   },
   "scripts": {
     "lint": "xo",
-    "test": "gulp test"
+    "test": "xo && ava"
   },
   "repository": {
     "type": "git",
@@ -62,14 +58,18 @@
     },
     "overrides": [
       {
-        "files": "test/*.spec.js",
-        "globals": ["it", "describe", "beforeEach", "afterEach"],
+        "files": "test/*.js",
+        "esnext": true,
         "rules": {
-          "no-unused-expressions": "warn",
-          "no-prototype-builtins": "warn"
+          "no-unused-expressions": 0,
+          "no-prototype-builtins": 0
         }
       }
     ],
-    "ignores": ["universe.js", "universe.min.js"]
+    "ignores": [
+      "universe.js",
+      "universe.min.js",
+      "mocha/*.js"
+    ]
   }
 }

@@ -6,13 +6,6 @@ var browserify = require('browserify')
 var source = require('vinyl-source-stream')
 var streamify = require('gulp-streamify')
 var bump = require('gulp-bump')
-var mocha = require('gulp-mocha')
-// var cover = require('gulp-coverage') // defined but never used
-
-var testFiles = [
-  'universe.js',
-  'test/**/*.spec.js'
-]
 
 gulp.task('scripts', function () {
   return browserify('./src/universe.js', {
@@ -53,27 +46,5 @@ gulp.task('watch', function () {
   gulp.watch('./docs/*', ['docs'])
 })
 
-gulp.task('test', function () {
-  return gulp.src(testFiles, {
-    read: false
-  })
-  // .pipe(cover.instrument({
-  //   pattern: ['src/**/*.js'],
-  //   debugDirectory: 'debug'
-  // }))
-  .pipe(mocha({
-    reporter: 'nyan'
-  }))
-  // .pipe(cover.gather())
-  // .pipe(cover.format())
-  // .pipe(gulp.dest('coverage'));
-})
-
-// Watch Files For Changes
-gulp.task('testWatch', function () {
-  gulp.watch(testFiles, ['test'])
-  gulp.watch('universe.js', ['test'])
-})
-
-gulp.task('default', ['scripts', 'docs', 'testWatch', 'watch'])
-gulp.task('all', ['scripts', 'docs', 'test'])
+gulp.task('default', ['scripts', 'docs', 'watch'])
+gulp.task('all', ['scripts', 'docs'])

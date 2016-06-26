@@ -1,121 +1,91 @@
-var chai = require('chai')
-var chaiAsPromised = require('chai-as-promised')
+import test from 'ava'
 
-chai.use(chaiAsPromised)
-var expect = chai.expect
+import universe from '../src/universe'
+import data from './fixtures/data'
 
-var universe = require('../universe')
-// var crossfilter = require('crossfilter2') // crossfilter is defined but never used
-var data = require('./data')
+test('has the columns properties', async t => {
+  const u = await universe(data)
+  t.deepEqual(u.columns, [])
+})
 
-describe('universe column', function () {
-  var u = universe(data)
+test('has the column method', async t => {
+  const u = await universe(data)
+  t.is(typeof u.column, 'function')
+})
 
-  beforeEach(function () {
-    return u.then(function (u) {
-      return u.clear()
-    })
+test('can add a column without a default type of string', async t => {
+  const u = await universe(data)
+  const res = await u.column('type')
+  t.is(res.columns[0].key, 'type')
+  t.is(res.columns[0].type, 'string')
+  t.is(typeof res.columns[0].dimension, 'object')
+})
+
+test('can add a column with a specified type', async t => {
+  const u = await universe(data)
+  const res = await u.column({
+    key: 'productIDs',
+    array: true
   })
 
-  it('has the columns properties', function () {
-    return u.then(function (u) {
-      expect(u.columns).to.deep.equal([])
-    })
+  t.is(res.columns[0].key, 'productIDs')
+  t.is(res.columns[0].type, 'array')
+  t.is(typeof res.columns[0].dimension, 'object')
+})
+
+test('can add a column with a complex key', async t => {
+  const u = await universe(data)
+
+  const res = await u.column({
+    key: ['type', 'total', 'quantity', 'tip']
   })
 
-  it('has the column method', function () {
-    return u.then(function (u) {
-      expect(typeof u.column).to.deep.equal('function')
-    })
-  })
+  t.deepEqual(res.columns[0].key, ['type', 'total', 'quantity', 'tip'])
+  t.is(res.columns[0].type, 'complex')
+  t.is(typeof res.columns[0].dimension, 'object')
+})
 
-  it('can add a column without a default type of string', function () {
-    return u.then(function (u) {
-      return u.column('type')
-    })
-    .then(function (u) {
-      expect(u.columns[0].key).to.deep.equal('type')
-      expect(u.columns[0].type).to.deep.equal('string')
-      expect(u.columns[0].dimension).to.be.defined
-    })
-  })
+test('can try to create the same column multiple times, but still only create one', async t => {
+  const u = await universe(data)
 
-  it('can add a column with a specified type', function () {
-    return u.then(function (u) {
-      return u.column({
-        key: 'productIDs',
-        array: true
-      })
+  await Promise.all([
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
+    }),
+    u.column({
+      key: ['type', 'total']
     })
-    .then(function (u) {
-      expect(u.columns[0].key).to.deep.equal('productIDs')
-      expect(u.columns[0].type).to.deep.equal('array')
-      expect(u.columns[0].dimension).to.be.defined
-    })
-  })
+  ])
 
-  it('can add a column with a complex key', function () {
-    return u.then(function (u) {
-      return u.column({
-        key: ['type', 'total', 'quantity', 'tip']
-      })
-    })
-    .then(function (u) {
-      expect(u.columns[0].key).to.deep.equal(['type', 'total', 'quantity', 'tip'])
-      expect(u.columns[0].type).to.deep.equal('complex')
-      expect(u.columns[0].dimension).to.be.defined
-    })
-  })
-
-  it('can try to create the same column multiple times, but still only create one', function () {
-    // var now = Date.now() // now is defined but never used
-    // var diff1 // defined but never used
-    // var diff2 // defined but never used
-    return u.then(function (u) {
-      return Promise.all([
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        }),
-        u.column({
-          key: ['type', 'total']
-        })
-      ])
-      .then(function () {
-        return u
-      })
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.equal(1)
-    })
-  })
+  t.is(u.columns.length, 1)
 })
