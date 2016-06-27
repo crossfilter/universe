@@ -99,7 +99,7 @@ test('can filter based using filterFunction', async t => {
   ])
 })
 
-test('can filter based using filterFunction', async t => {
+test('can filter based using filterFunction, together with exact', async t => {
   const u = await universe(data)
 
   const q = await u.query({
@@ -122,7 +122,7 @@ test('can filter based using filterFunction', async t => {
 })
 
 // see https://github.com/crossfilter/universe/issues/20
-test.failing('can filter based using filterFunction, works in reverse', async t => {
+test('can filter based using filterFunction, works in reverse', async t => {
   const u = await universe(data)
 
   const q = await u.query({
@@ -284,7 +284,7 @@ test('can toggle filters using simple values', async t => {
 })
 
 // see https://github.com/crossfilter/universe/issues/20
-test.failing('can toggle multiple filters using simple values', async t => {
+test('can toggle multiple filters using simple values', async t => {
   const u = await universe(data)
 
   await u.query({
