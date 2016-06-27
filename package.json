@@ -6,11 +6,14 @@
   "directories": {
     "test": "test"
   },
-  "files": ["src","universe.*"],
+  "files": [
+    "src",
+    "universe.*"
+  ],
   "dependencies": {
     "crossfilter2": "2.0.0-alpha.04",
     "q": "^1.4.1",
-    "reductio": "0.5.3"
+    "reductio": "^0.6.2"
   },
   "devDependencies": {
     "ava": "^0.15.2",
