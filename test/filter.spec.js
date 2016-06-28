@@ -1,359 +1,289 @@
-var chai = require('chai')
-var chaiAsPromised = require('chai-as-promised')
+import test from 'ava'
 
-chai.use(chaiAsPromised)
-var expect = chai.expect
+import universe from '../src/universe'
+import data from './fixtures/data'
 
-var universe = require('../universe')
-// var crossfilter = require('crossfilter2') // defined but never used
+test('has the filter method', async t => {
+  const u = await universe(data)
+  t.is(typeof u.filter, 'function')
+})
 
-var data = require('./data')
+test('can filter', async t => {
+  const u = await universe(data)
 
-describe('universe filter', function () {
-  var u
-
-  beforeEach(function () {
-    u = universe(data)
-  })
-
-  afterEach(function () {
-    return u.then(function (u) {
-      return u.destroy()
-    })
-  })
-
-  it('has the filter method', function () {
-    return u.then(function (u) {
-      expect(typeof u.filter).to.deep.equal('function')
-    })
-  })
-
-  it('can filter', function () {
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: 'true',
-          $sum: 'total'
-        },
-        filter: {
-          $or: [{
-            total: {
-              $gt: 50
-            }
-          }, {
-            quantity: {
-              $gt: 1
-            }
-          }]
+  const q = await u.query({
+    groupBy: 'type',
+    select: {
+      $count: 'true',
+      $sum: 'total'
+    },
+    filter: {
+      $or: [{
+        total: {
+          $gt: 50
         }
-      })
-    })
-    .then(function (res) {
-      expect(res.data).to.deep.equal([
-        {key: 'cash', value: {count: 2, sum: 300}},
-        {key: 'tab', value: {count: 8, sum: 920}},
-        {key: 'visa', value: {count: 2, sum: 500}}
-      ])
-    })
-  })
-
-  it('can not filter on a non-existent column', function () {
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'total',
-        select: {
-          $max: 'total'
+      }, {
+        quantity: {
+          $gt: 1
         }
-      })
-      .then(function (res) {
-        return res.universe.filter('someOtherColumn', {
-          $gt: 95
-        })
-      })
-      .catch(function (err) {
-        expect(err).to.be.defined
-      })
-    })
+      }]
+    }
   })
 
-  it('can filter based on a single column that is not defined yet, then recycle that column', function () {
-    var data
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'tip',
-        select: {
-          $max: 'total'
+  t.deepEqual(q.data, [
+    {key: 'cash', value: {count: 2, sum: 300}},
+    {key: 'tab', value: {count: 8, sum: 920}},
+    {key: 'visa', value: {count: 2, sum: 500}}
+  ])
+})
+
+test('can not filter on a non-existent column', async t => {
+  const u = await universe(data)
+
+  await u.query({
+    groupBy: 'total',
+    select: {
+      $max: 'total'
+    }
+  })
+
+  try {
+    await u.filter('someOtherColumn', {
+      $gt: 95
+    })
+  } catch (err) {
+    t.is(String(err), 'Error: Column key does not exist in data!')
+  }
+})
+
+test('can filter based on a single column that is not defined yet, then recycle that column', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'tip',
+    select: {
+      $max: 'total'
+    }
+  })
+
+  await u.filter('total', {
+    $gt: 95
+  })
+
+  t.deepEqual(q.data, [
+    {key: 0, value: {max: 200, valueList: [100, 200]}},
+    {key: 100, value: {max: 200, valueList: [190, 190, 200]}},
+    {key: 200, value: {max: 300, valueList: [300]}}
+  ])
+
+  await u.filter('total')
+  t.is(u.columns.length, 1)
+})
+
+test('can filter based on a complex column regardless of key order', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: ['tip', 'total'],
+    select: {
+      $max: 'total'
+    }
+  })
+
+  await u.filter(['total', 'tip'], {
+    $gt: 95
+  })
+
+  t.deepEqual(q.data, [
+    {key: [0, 100], value: {valueList: [100], max: 100}},
+    {key: [0, 200], value: {valueList: [200], max: 200}},
+    {key: [0, 90], value: {valueList: [90, 90, 90, 90, 90, 90], max: 90}},
+    {key: [100, 190], value: {valueList: [190, 190], max: 190}},
+    {key: [100, 200], value: {valueList: [200], max: 200}},
+    {key: [200, 300], value: {valueList: [300], max: 300}}
+  ])
+})
+
+test('can filter using $column data', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'tip',
+    filter: {
+      type: {
+        $last: {
+          $column: 'type'
         }
-      })
-      .then(function (res) {
-        data = res.data
-        return res.universe.filter('total', {
-          $gt: 95
-        })
-      })
-      .then(function (u) {
-        expect(data).to.deep.equal([
-          {key: 0, value: {max: 200, valueList: [100, 200]}},
-          {key: 100, value: {max: 200, valueList: [190, 190, 200]}},
-          {key: 200, value: {max: 300, valueList: [300]}}
-        ])
-        return u.filter('total')
-      })
-      .then(function (u) {
-        expect(u.columns.length).to.deep.equal(1)
-      })
-    })
+      }
+    }
   })
 
-  it('can filter based on a complex column regardless of key order', function () {
-    var data
-    return u.then(function (u) {
-      return u.query({
-        groupBy: ['tip', 'total'],
-        select: {
-          $max: 'total'
+  t.deepEqual(q.data, [
+    {key: 0, value: {count: 8}},
+    {key: 100, value: {count: 3}},
+    {key: 200, value: {count: 1}}
+  ])
+})
+
+test('can filter using all $data', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'type',
+    select: {
+      $count: 'true',
+    },
+    filter: {
+      date: {
+        $gt: {
+          '$get(date)': {
+            '$nthPct(50)': '$data'
+          }
         }
-      })
-      .then(function (res) {
-        data = res.data
-        return res.universe.filter(['total', 'tip'], {
-          $gt: 95
-        })
-      })
-      .then(function () {
-        expect(data).to.deep.equal([
-          {key: [0, 100], value: {valueList: [100], max: 100}},
-          {key: [0, 200], value: {valueList: [200], max: 200}},
-          {key: [0, 90], value: {valueList: [90, 90, 90, 90, 90, 90], max: 90}},
-          {key: [100, 190], value: {valueList: [190, 190], max: 190}},
-          {key: [100, 200], value: {valueList: [200], max: 200}},
-          {key: [200, 300], value: {valueList: [300], max: 300}}
-        ])
-      })
-    })
+      }
+    }
   })
 
-  it('can filter using $column data', function () {
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'tip',
-        filter: {
-          type: {
-            $last: {
-              $column: 'type'
+  t.deepEqual(q.data, [
+    {key: 'cash', value: {count: 1}},
+    {key: 'tab', value: {count: 3}},
+    {key: 'visa', value: {count: 1}}
+  ])
+})
+
+test('can not remove colum that is used in dynamic filter', async t => {
+  const u = await universe(data)
+
+  await u.query({
+    groupBy: 'type',
+    select: {
+      $count: 'true',
+    },
+    filter: {
+      date: {
+        $gt: {
+          '$get(date)': {
+            '$nth(2)': {
+              $column: 'date'
             }
           }
         }
-      })
-      .then(function (u) {
-        expect(u.data).to.deep.equal([
-          {key: 0, value: {count: 8}},
-          {key: 100, value: {count: 3}},
-          {key: 200, value: {count: 1}}
-        ])
-      })
-    })
+      }
+    }
   })
 
-  it('can filter using all $data', function () {
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: 'true',
-        },
-        filter: {
-          date: {
-            $gt: {
-              '$get(date)': {
-                '$nthPct(50)': '$data'
-              }
-            }
-          }
-        }
-      })
-    })
-    .then(function (res) {
-      expect(res.data).to.deep.equal([
-        {key: 'cash', value: {count: 1}},
-        {key: 'tab', value: {count: 3}},
-        {key: 'visa', value: {count: 1}}
-      ])
-    })
+  await u.clear('date')
+  t.is(u.columns.length, 2)
+})
+
+test('can toggle filters using simple values', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'tip',
+    select: {
+      $count: true
+    }
   })
 
-  it('can not remove colum that is used in dynamic filter', function () {
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: 'true',
-        },
-        filter: {
-          date: {
-            $gt: {
-              '$get(date)': {
-                '$nth(2)': {
-                  $column: 'date'
-                }
-              }
-            }
-          }
-        }
-      })
-    })
-    .then(function (res) {
-      return res.universe.clear('date')
-    })
-    .then(function (u) {
-      expect(u.columns.length).to.deep.equal(2)
-    })
+  await u.filter('type', 'cash')
+  t.is(u.filters.type.value, 'cash')
+  t.deepEqual(q.data, [
+    {key: 0, value: {count: 2}},
+    {key: 100, value: {count: 0}},
+    {key: 200, value: {count: 0}}
+  ])
+
+  await u.filter('type', 'visa')
+  t.deepEqual(u.filters.type.value, ['visa', 'cash'])
+  t.deepEqual(q.data, [
+    {key: 0, value: {count: 2}},
+    {key: 100, value: {count: 1}},
+    {key: 200, value: {count: 1}}
+  ])
+
+  await u.filter('type', 'tab')
+  t.deepEqual(u.filters.type.value, ['tab', 'visa', 'cash'])
+  t.deepEqual(q.data, [
+    {key: 0, value: {count: 8}},
+    {key: 100, value: {count: 3}},
+    {key: 200, value: {count: 1}}
+  ])
+
+  await u.filter('type', 'visa')
+  t.deepEqual(u.filters.type.value, ['tab', 'cash'])
+  t.deepEqual(q.data, [
+    {key: 0, value: {count: 8}},
+    {key: 100, value: {count: 2}},
+    {key: 200, value: {count: 0}}
+  ])
+})
+
+test('can toggle filters using an array as a range', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'type',
+    select: {
+      $count: true
+    }
   })
 
-  it('can toggle filters using simple values', function () {
-    var data
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'tip',
-        select: {
-          $count: true
-        }
-      })
-      .then(function (res) {
-        data = res.data
-        return res.universe.filter('type', 'cash')
-      })
-      .then(function (u) {
-        expect(u.filters.type.value).to.deep.equal('cash')
-        expect(data).to.deep.equal([
-          {key: 0, value: {count: 2}},
-          {key: 100, value: {count: 0}},
-          {key: 200, value: {count: 0}}
-        ])
-        return u.filter('type', 'visa')
-      })
-      .then(function (u) {
-        expect(u.filters.type.value).to.deep.equal(['visa', 'cash'])
-        expect(data).to.deep.equal([
-          {key: 0, value: {count: 2}},
-          {key: 100, value: {count: 1}},
-          {key: 200, value: {count: 1}}
-        ])
-        return u.filter('type', 'tab')
-      })
-      .then(function (u) {
-        expect(u.filters.type.value).to.deep.equal(['tab', 'visa', 'cash'])
-        expect(data).to.deep.equal([
-          {key: 0, value: {count: 8}},
-          {key: 100, value: {count: 3}},
-          {key: 200, value: {count: 1}}
-        ])
-        return u.filter('type', 'visa')
-      })
-      .then(function (u) {
-        expect(u.filters.type.value).to.deep.equal(['tab', 'cash'])
-        expect(data).to.deep.equal([
-          {key: 0, value: {count: 8}},
-          {key: 100, value: {count: 2}},
-          {key: 200, value: {count: 0}}
-        ])
-        return u.filter('type')
-      })
-    })
+  await u.filter('total', [85, 101], true)
+  t.deepEqual(q.data, [
+    {key: 'cash', value: {count: 1}},
+    {key: 'tab', value: {count: 6}},
+    {key: 'visa', value: {count: 0}}
+  ])
+
+  await u.filter('total', [85, 91], true)
+  t.deepEqual(q.data, [
+    {key: 'cash', value: {count: 0}},
+    {key: 'tab', value: {count: 6}},
+    {key: 'visa', value: {count: 0}}
+  ])
+})
+
+test('can toggle filters using an array as an include', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'type',
+    select: {
+      $count: true
+    }
   })
 
-  it('can toggle filters using an array as a range', function () {
-    var data
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: true
-        }
-      })
-      .then(function (res) {
-        data = res.data
-        return res.universe.filter('total', [85, 101], true)
-      })
-      .then(function (u) {
-        expect(data).to.deep.equal([
-          {key: 'cash', value: {count: 1}},
-          {key: 'tab', value: {count: 6}},
-          {key: 'visa', value: {count: 0}}
-        ])
-        return u
-      })
-      .then(function (u) {
-        return u.filter('total', [85, 91], true)
-      })
-      .then(function () {
-        expect(data).to.deep.equal([
-          {key: 'cash', value: {count: 0}},
-          {key: 'tab', value: {count: 6}},
-          {key: 'visa', value: {count: 0}}
-        ])
-      })
-    })
+  await u.filter('total', [90, 100])
+
+  t.deepEqual(q.data, [
+    {key: 'cash', value: {count: 1}},
+    {key: 'tab', value: {count: 6}},
+    {key: 'visa', value: {count: 0}}
+  ])
+
+  await u.filter('total', [90, 300, 200])
+
+  t.deepEqual(q.data, [
+    {key: 'cash', value: {count: 2}},
+    {key: 'tab', value: {count: 0}},
+    {key: 'visa', value: {count: 2}}
+  ])
+})
+
+test('can forcefully replace filters', async t => {
+  const u = await universe(data)
+
+  await u.query({
+    groupBy: 'tip',
+    select: {
+      $count: true
+    }
   })
 
-  it('can toggle filters using an array as an include', function () {
-    var data
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: true
-        }
-      })
-      .then(function (res) {
-        data = res.data
-        return res.universe.filter('total', [90, 100])
-      })
-      .then(function (u) {
-        expect(data).to.deep.equal([
-          {key: 'cash', value: {count: 1}},
-          {key: 'tab', value: {count: 6}},
-          {key: 'visa', value: {count: 0}}
-        ])
-        return u
-      })
-      .then(function (u) {
-        return u.filter('total', [90, 300, 200])
-      })
-      .then(function () {
-        expect(data).to.deep.equal([
-          {key: 'cash', value: {count: 2}},
-          {key: 'tab', value: {count: 0}},
-          {key: 'visa', value: {count: 2}}
-        ])
-      })
-    })
-  })
+  await u.filter('type', 'cash')
+  t.is(u.filters.type.value, 'cash')
 
-  it('can forcefully replace filters', function () {
-    // var data  // defined but never used
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'tip',
-        select: {
-          $count: true
-        }
-      })
-      .then(function (res) {
-        // data = res.data
-        return res.universe.filter('type', 'cash')
-      })
-      .then(function (u) {
-        expect(u.filters.type.value).to.deep.equal('cash')
-        return u
-      })
-      .then(function (u) {
-        return u.filter('type', ['tab', 'visa'], false, true)
-      })
-      .then(function (u) {
-        expect(u.filters.type.value).to.deep.equal(['tab', 'visa'])
-      })
-    })
-  })
+  await u.filter('type', ['tab', 'visa'], false, true)
+  t.deepEqual(u.filters.type.value, ['tab', 'visa'])
 })

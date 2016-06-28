@@ -1,109 +1,81 @@
-var chai = require('chai')
-var chaiAsPromised = require('chai-as-promised')
+import test from 'ava'
 
-chai.use(chaiAsPromised)
-// var expect = chai.expect // defined but never used
+import universe from '../src/universe'
+import data from './fixtures/data'
 
-var universe = require('../universe')
-// var crossfilter = require('crossfilter2') // defined but never used
-var data = require('./data')
+test('can destroy the universe a few times over', async () => {
+  const u = await universe(data)
 
-describe('universe clear', function () {
-  var u = universe(data)
-
-  beforeEach(function () {
-    return u.then(function (u) {
-      return u.clear()
-    })
+  await u.query({
+    groupBy: 'type',
+    select: {
+      $count: true
+    }
   })
 
-  it('can destroy the universe a few times over', function () {
-    return u.then(function (u) {
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.query({
-        groupBy: 'total',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.query({
-        groupBy: 'tip',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.destroy()
-    })
-    .then(function (u) {
-      return u.add(data)
-    })
-    .then(function (u) {
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.query({
-        groupBy: 'total',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.query({
-        groupBy: 'tip',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.destroy()
-    })
-    .then(function (u) {
-      return u.add(data)
-    })
-    .then(function (u) {
-      return u.query({
-        groupBy: 'type',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.query({
-        groupBy: 'total',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.query({
-        groupBy: 'tip',
-        select: {
-          $count: true
-        }
-      })
-    })
-    .then(function (u) {
-      return u.universe.destroy()
-    })
+  await u.query({
+    groupBy: 'total',
+    select: {
+      $count: true
+    }
   })
+
+  await u.query({
+    groupBy: 'tip',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.destroy()
+
+  await u.add(data)
+
+  await u.query({
+    groupBy: 'type',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.query({
+    groupBy: 'total',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.query({
+    groupBy: 'tip',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.destroy()
+
+  await u.add(data)
+
+  await u.query({
+    groupBy: 'type',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.query({
+    groupBy: 'total',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.query({
+    groupBy: 'tip',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.destroy()
 })
