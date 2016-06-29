@@ -30,6 +30,7 @@ With Universe, you can be there in just a few lines of code. You've got better t
 - [universe()](#api-universe)
   - [.query()](#api-query)
   - [.filter()](#api-filter)
+  - [.filterAll()](#api-filterAll)
   - [.column()](#api-column)
   - [.clear()](#api-clear)
   - [.add()](#api-add)
@@ -264,6 +265,14 @@ As you filter your data on the universe level, every query's result is updated i
     - **universe instance**
 
 - [Example](#Query your data)
+
+<h3 id="api-filterAll">.filterAll() <a href="#api-filterAll">#</a></h3>
+
+- Description
+  - Clears all filters accross all dimensiona. 
+- Returns
+  - `promise` resolved with
+    - **universe instance**
 
 <h3 id="api-column">.column( columnKey/columnObject ) <a href="#api-column">#</a></h3>
 
