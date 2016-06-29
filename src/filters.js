@@ -35,7 +35,7 @@ module.exports = function (service) {
     })
     .then(function (column) {
       // Clone a copy of the new filters
-      var newFilters = Object.assign({}, service.filters)
+      var newFilters = _.assign({}, service.filters)
       // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
       var filterKey = column.complex ? JSON.stringify(column.key) : column.key
       // Build the filter object
