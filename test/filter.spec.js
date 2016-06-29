@@ -80,6 +80,70 @@ test('can filter based on a single column that is not defined yet, then recycle 
   t.is(u.columns.length, 1)
 })
 
+test('can filter based using filterFunction', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'tip',
+    select: {
+      $max: 'total'
+    }
+  })
+
+  await u.filter('total', d => d > 95)
+
+  t.deepEqual(q.data, [
+    {key: 0, value: {max: 200, valueList: [100, 200]}},
+    {key: 100, value: {max: 200, valueList: [190, 190, 200]}},
+    {key: 200, value: {max: 300, valueList: [300]}}
+  ])
+})
+
+test('can filter based using filterFunction, together with exact', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'tip',
+    select: {
+      $max: 'total'
+    }
+  })
+
+  await u.filter('type', 'visa', true, true)
+  t.is(typeof u.filters.type.value, 'string')
+
+  await u.filter('total', d => d > 95)
+  t.is(typeof u.filters.total.value, 'function')
+  t.is(typeof u.filters.type.value, 'string')
+
+  // t.deepEqual(q.data[0], {key: 0, value: {max: null, valueList: []}})
+  t.deepEqual(q.data[1], {key: 100, value: {max: 200, valueList: [200]}})
+  t.deepEqual(q.data[2], {key: 200, value: {max: 300, valueList: [300]}})
+})
+
+// see https://github.com/crossfilter/universe/issues/20
+test('can filter based using filterFunction, works in reverse', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    groupBy: 'tip',
+    select: {
+      $max: 'total'
+    }
+  })
+
+  await u.filter('total', d => d > 95)
+  t.is(typeof u.filters.total.value, 'function')
+
+  await u.filter('type', 'visa', true, true)
+  t.is(typeof u.filters.total.value, 'function')
+  t.is(typeof u.filters.type.value, 'string')
+
+  // t.deepEqual(q.data[0], {key: 0, value: {max: null, valueList: []}})
+  t.deepEqual(q.data[1], {key: 100, value: {max: 200, valueList: [200]}})
+  t.deepEqual(q.data[2], {key: 200, value: {max: 300, valueList: [300]}})
+})
+
 test('can filter based on a complex column regardless of key order', async t => {
   const u = await universe(data)
 
@@ -217,6 +281,28 @@ test('can toggle filters using simple values', async t => {
     {key: 100, value: {count: 2}},
     {key: 200, value: {count: 0}}
   ])
+})
+
+// see https://github.com/crossfilter/universe/issues/20
+test('can toggle multiple filters using simple values', async t => {
+  const u = await universe(data)
+
+  await u.query({
+    groupBy: 'tip',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.filter('type', 'cash')
+  t.is(u.filters.type.value, 'cash')
+
+  await u.filter('type', 'visa')
+  t.deepEqual(u.filters.type.value, ['visa', 'cash'])
+
+  await u.filter('quantity', 2)
+  t.deepEqual(u.filters.quantity.value, 2)
+  t.deepEqual(u.filters.type.value, ['visa', 'cash'])
 })
 
 test('can toggle filters using an array as a range', async t => {
