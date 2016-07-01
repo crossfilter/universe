@@ -49,7 +49,7 @@ With Universe, you can be there in just a few lines of code. You've got better t
 npm install universe --save
 ```
 
-**Download** from the [releases](https://github.com/crossfilter/universe/releases) page. Serve the universe.js or universe.min.js file in the top-level directory as part of your application.
+**CDN or Download** from the [npmcdn](https://npmcdn.com/) load or download [universe.js](https://npmcdn.com/universe@0.6.4/universe.js) or [universe.min.js](https://npmcdn.com/universe@0.6.4/universe.min.js) file as part of your application.
 
 ### Create a new Universe
 Pass `universe` an array of objects or a Crossfilter instance:
@@ -269,7 +269,7 @@ As you filter your data on the universe level, every query's result is updated i
 <h3 id="api-filterAll">.filterAll() <a href="#api-filterAll">#</a></h3>
 
 - Description
-  - Clears all filters accross all dimensiona. 
+  - Clears all filters accross all dimensiona.
 - Returns
   - `promise` resolved with
     - **universe instance**

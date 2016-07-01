@@ -1,7 +1,6 @@
 node_modules/
-
 npm-debug.log
-
 .coverrun
-
 coverage/coverage.html
+universe.js
+universe.min.js
