@@ -16,8 +16,21 @@ module.exports = function (service) {
   }
 
   function filter(column, fil, isRange, replace) {
-    var exists = service.column.find(column)
+    return getColumn(column)
+    .then(function (column) {
+      // Clone a copy of the new filters
+      var newFilters = _.assign({}, service.filters)
+      // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
+      var filterKey = column.complex ? JSON.stringify(column.key) : column.key
+      // Build the filter object
+      newFilters[filterKey] = buildFilterObject(fil, isRange, replace)
 
+      return applyFilters(newFilters)
+    })
+  }
+
+  function getColumn(column) {
+    var exists = service.column.find(column)
     // If the filters dimension doesn't exist yet, try and create it
     return Promise.try(function () {
       if (!exists) {
@@ -33,23 +46,34 @@ module.exports = function (service) {
       // It exists, so just return what we found
       return exists
     })
-    .then(function (column) {
-      // Clone a copy of the new filters
-      var newFilters = _.assign({}, service.filters)
-      // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
-      var filterKey = column.complex ? JSON.stringify(column.key) : column.key
-      // Build the filter object
-      newFilters[filterKey] = buildFilterObject(fil, isRange, replace)
-
-      return applyFilters(newFilters)
-    })
   }
 
-  function filterAll() {
-    service.columns.forEach(function (col) {
-      col.dimension.filterAll()
+  function filterAll(fils) {
+    // If empty, remove all filters
+    if (!fils) {
+      service.columns.forEach(function (col) {
+        col.dimension.filterAll()
+      })
+      return applyFilters({})
+    }
+
+    // Clone a copy for the new filters
+    var newFilters = _.assign({}, service.filters)
+
+    var ds = _.map(fils, function (fil) {
+      return getColumn(fil.column)
+        .then(function (column) {
+          // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
+          var filterKey = column.complex ? JSON.stringify(column.key) : column.key
+          // Build the filter object
+          newFilters[filterKey] = buildFilterObject(fil.value, fil.isRange, fil.replace)
+        })
     })
-    return applyFilters({})
+
+    return Promise.all(ds)
+      .then(function () {
+        return applyFilters(newFilters)
+      })
   }
 
   function buildFilterObject(fil, isRange, replace) {

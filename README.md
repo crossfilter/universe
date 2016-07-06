@@ -171,6 +171,18 @@ As you filter your data on the universe level, every query's result is updated i
   return myUniverse.filter('type')
 })
 
+// Apply many filters in one go
+.then(function(myUniverse){
+  return myUniverse.filterAll([{
+    column: 'type',
+    value: 'visa',
+  }, {
+    column: 'quantity',
+    value: [200, 500],
+    isRange: true,
+  }])
+})
+
 // Clear all of the filters
 .then(function(myUniverse){
   return myUniverse.filterAll()

@@ -1,6 +1,6 @@
 {
   "name": "universe",
-  "version": "0.6.4",
+  "version": "0.7.0",
   "description": "The fastest way to query and explore multivariate datasets",
   "main": "src/universe.js",
   "directories": {
@@ -24,9 +24,9 @@
   },
   "scripts": {
     "lint": "xo",
-    "test": "xo && ava",
-    "browserify": "browserify ./src/universe.js -d -s universe > universe.js",
-    "min": "uglifyjs universe.js > universe.min.js",
+    "test": "xo && ava --verbose",
+    "browserify": "browserify ./src/universe.js -d -s universe -o universe.js",
+    "min": "uglifyjs universe.js -o universe.min.js",
     "build": "npm run browserify && npm run min",
     "prepublish": "npm run build"
   },
