@@ -373,3 +373,39 @@ test('can forcefully replace filters', async t => {
   await u.filter('type', ['tab', 'visa'], false, true)
   t.deepEqual(u.filters.type.value, ['tab', 'visa'])
 })
+
+test('can apply many filters in one go', async t => {
+  const u = await universe(data)
+
+  await u.query({
+    groupBy: 'tip',
+    select: {
+      $count: true
+    }
+  })
+
+  await u.filter('type', 'cash')
+  t.is(u.filters.type.value, 'cash')
+
+  await u.filterAll([{
+    column: 'type',
+    value: 'visa',
+  }, {
+    column: 'quantity',
+    value: [200, 500],
+    isRange: true,
+  }])
+
+  t.deepEqual(u.filters, {
+    type: {
+      value: ['visa', 'cash'],
+      replace: undefined,
+      type: 'inclusive'
+    },
+    quantity: {
+      value: [200, 500],
+      replace: true,
+      type: 'range'
+    }
+  }
+)})
