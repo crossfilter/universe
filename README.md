@@ -251,7 +251,7 @@ As you filter your data on the universe level, every query's result is updated i
   - Creates a new query from a universe instance
 - Parameters
   - `queryObject`:
-    - `groupBy` - Exactly what it sounds like.  It groups the records by this column key
+    - `groupBy` - Property name, property string representation, or even a function! (see `.column()` method),
     - `select` - An object of column aggregations and/or column names
       - `$aggregation` - Aggregations are prefixed with a `$`
       - `columnName` - Creates a nested column with the name provided
@@ -289,7 +289,11 @@ As you filter your data on the universe level, every query's result is updated i
 <h3 id="api-column">.column( columnKey/columnObject ) <a href="#api-column">#</a></h3>
 
 - Description
-  - Use to optionally pre-index a column. Accepts a string or number corresponding to the key or index of the column you would like to define.
+  - Use to optionally pre-index a column. Accepts either:
+    - String or number corresponding to the key or index of the column. eg. `propertyName` or `2`
+    - A nested string representation of the property. eg.  `a.nested.property`, `a.nested[number]`
+    - Multiple singular key shorthand eg. `['prop1', 'prop2', 'prop3']`
+    - A callback function that returns the key (very powerful) eg. `function(d){return d.myProperty}`
 - Parameters
   - `columnKey` - the column property or array index you would like to pre-compile eg.
   ```javascript
@@ -301,7 +305,7 @@ As you filter your data on the universe level, every query's result is updated i
   ```javascript
     .then(function(universe){
       return universe.column({
-        key: 'total',
+        key: columnKey,
         type: 'number'
       })
     })
