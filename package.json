@@ -11,7 +11,7 @@
     "universe.*"
   ],
   "dependencies": {
-    "crossfilter2": "2.0.0-alpha.04",
+    "crossfilter2": "1.4.0-alpha.6",
     "q": "^1.4.1",
     "reductio": "^0.6.2"
   },
@@ -19,7 +19,7 @@
     "ava": "^0.15.2",
     "browserify": "^13.0.0",
     "browserify-shim": "^3.8.12",
-    "uglify-js": "^2.6.4",
+    "uglify-js": "^2.7.0",
     "xo": "^0.16.0"
   },
   "scripts": {
