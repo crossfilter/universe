@@ -4,3 +4,5 @@ npm-debug.log
 coverage/coverage.html
 /universe.js
 /universe.min.js
+
+npm-debug.log*
