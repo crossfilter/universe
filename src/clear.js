@@ -55,7 +55,13 @@ module.exports = function (service) {
           return Promise.resolve(listener())
         })
       }
-      var filterKey = column.complex ? JSON.stringify(column.key) : column.key
+      var filterKey = column.key
+      if (column.complex === 'array') {
+        filterKey = JSON.stringify(column.key)
+      }
+      if (column.complex === 'function') {
+        filterKey = column.key.toString()
+      }
       delete service.filters[filterKey]
       if (column.dimension) {
         disposalActions.push(Promise.resolve(column.dimension.dispose()))
