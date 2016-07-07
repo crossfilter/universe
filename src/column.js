@@ -83,8 +83,14 @@ module.exports = function (service) {
       var sample
 
       // Complex column Keys
-      if (_.isArray(column.key)) {
-        column.complex = true
+      if (_.isFunction(column.key)) {
+        column.complex = 'function'
+        sample = column.key(all[0])
+      } else if (_.isString(column.key) && (column.key.indexOf('.') > -1 || column.key.indexOf('[') > -1)) {
+        column.complex = 'string'
+        sample = _.get(all[0], column.key)
+      } else if (_.isArray(column.key)) {
+        column.complex = 'array'
         sample = _.values(_.pick(all[0], column.key))
         if (sample.length !== column.key.length) {
           throw new Error('Column key does not exist in data!', column.key)
@@ -102,13 +108,17 @@ module.exports = function (service) {
       // as permanent. There is a slight chance it exists because
       // of a filter, and the user decides to make it permanent
 
-      column.type =
-        column.key === true ? 'all' :
-        column.complex ? 'complex' :
-        column.array ? 'array' :
-        getType(sample)
+      if (column.key === true) {
+        column.type = 'all'
+      } else if (column.complex) {
+        column.type = 'complex'
+      } else if (column.array) {
+        column.type = 'array'
+      } else {
+        column.type = getType(sample)
+      }
 
-      return dimension.make(column.key, column.type)
+      return dimension.make(column.key, column.type, column.complex)
     })
     .then(function (dim) {
       column.dimension = dim
@@ -124,7 +134,7 @@ module.exports = function (service) {
           return Promise.resolve()
         }
 
-        var accessor = dimension.makeAccessor(column.key)
+        var accessor = dimension.makeAccessor(column.key, column.complex)
         column.values = column.values || []
 
         return Promise.try(function () {
@@ -135,8 +145,9 @@ module.exports = function (service) {
         })
         .then(function (rows) {
           var newValues
-          if (column.type === 'complex') {
-            newValues = _.flatten(_.map(rows, accessor))
+          if (column.complex === 'string' || column.complex === 'function') {
+            newValues = _.map(rows, accessor)
+            // console.log(rows, accessor.toString(), newValues)
           } else if (column.type === 'array') {
             newValues = _.flatten(_.map(rows, accessor))
           } else {

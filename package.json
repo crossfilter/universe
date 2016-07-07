@@ -1,6 +1,6 @@
 {
   "name": "universe",
-  "version": "0.7.0",
+  "version": "0.8.0",
   "description": "The fastest way to query and explore multivariate datasets",
   "main": "src/universe.js",
   "directories": {
@@ -27,7 +27,8 @@
     "test": "xo && ava --verbose",
     "browserify": "browserify ./src/universe.js -d -s universe -o universe.js",
     "min": "uglifyjs universe.js -o universe.min.js",
-    "build": "npm run browserify && npm run min",
+    "build": "npm run browserify && npm run min && echo 'Done building.'",
+    "watch": "onchange 'src/**' -i -w -- npm run build",
     "prepublish": "npm run build"
   },
   "repository": {
