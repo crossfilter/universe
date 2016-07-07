@@ -9,18 +9,23 @@ module.exports = function (service) {
     makeAccessor: makeAccessor,
   }
 
-  function make(key, type) {
-    var accessor = makeAccessor(key)
+  function make(key, type, complex) {
+    var accessor = makeAccessor(key, complex)
     // Promise.resolve will handle promises or non promises, so
     // this crossfilter async is supported if present
     return Promise.resolve(service.cf.dimension(accessor, type === 'array'))
   }
 
-  function makeAccessor(key) {
+  function makeAccessor(key, complex) {
     var accessorFunction
 
-    // Multi-key dimension
-    if (_.isArray(key)) {
+    if (complex === 'string') {
+      accessorFunction = function (d) {
+        return _.get(d, key)
+      }
+    } else if (complex === 'function') {
+      accessorFunction = key
+    } else if (complex === 'array') {
       var arrayString = _.map(key, function (k) {
         return 'd[\'' + k + '\']'
       })

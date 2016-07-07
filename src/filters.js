@@ -21,7 +21,13 @@ module.exports = function (service) {
       // Clone a copy of the new filters
       var newFilters = _.assign({}, service.filters)
       // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
-      var filterKey = column.complex ? JSON.stringify(column.key) : column.key
+      var filterKey = column.key
+      if (column.complex === 'array') {
+        filterKey = JSON.stringify(column.key)
+      }
+      if (column.complex === 'function') {
+        filterKey = column.key.toString()
+      }
       // Build the filter object
       newFilters[filterKey] = buildFilterObject(fil, isRange, replace)
 
