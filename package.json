@@ -55,7 +55,8 @@
     "space": 2,
     "rules": {
       "xo/filename-case": 0,
-      "comma-dangle": 0
+      "comma-dangle": 0,
+      "no-use-extend-native/no-use-extend-native": 1
     },
     "overrides": [
       {

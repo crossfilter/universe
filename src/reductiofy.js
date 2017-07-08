@@ -61,7 +61,7 @@ module.exports = function (service) {
         }
 
         // It's another nested object, so just repeat this process on it
-        reducer = aggregateOrNest(reducer.value(s.key), s.value)
+        aggregateOrNest(reducer.value(s.key), s.value)
       })
     }
   }

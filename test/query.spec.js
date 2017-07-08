@@ -281,6 +281,32 @@ test('can query using the dataList aggregation', async t => {
 //   })
 // })
 
+test('supports multi aggregation', async t => {
+  const u = await universe(data)
+
+  const q = await u.query({
+    select: {
+      tip: {$sum: 'tip'},
+      total: {$sum: 'total'}
+    }
+  })
+
+  t.deepEqual(q.data, [
+    {key: 0, value: {tip: {sum: 100}, total: {sum: 190}}},
+    {key: 1, value: {tip: {sum: 100}, total: {sum: 190}}},
+    {key: 2, value: {tip: {sum: 200}, total: {sum: 300}}},
+    {key: 3, value: {tip: {sum: 0}, total: {sum: 90}}},
+    {key: 4, value: {tip: {sum: 0}, total: {sum: 90}}},
+    {key: 5, value: {tip: {sum: 0}, total: {sum: 90}}},
+    {key: 6, value: {tip: {sum: 0}, total: {sum: 100}}},
+    {key: 7, value: {tip: {sum: 0}, total: {sum: 90}}},
+    {key: 8, value: {tip: {sum: 0}, total: {sum: 90}}},
+    {key: 9, value: {tip: {sum: 0}, total: {sum: 90}}},
+    {key: 10, value: {tip: {sum: 0}, total: {sum: 200}}},
+    {key: 11, value: {tip: {sum: 100}, total: {sum: 200}}}
+  ])
+})
+
 test('can dispose of a query manually', async t => {
   const u = await universe(data)
 
