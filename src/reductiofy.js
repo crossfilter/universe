@@ -32,7 +32,7 @@ module.exports = function (service) {
         _.map(selects, function (val, key) {
           return {
             key: key,
-            value: val
+            value: val,
           }
         }),
         function (s) {
@@ -48,7 +48,7 @@ module.exports = function (service) {
         if (rAggregators.aggregators[s.key]) {
           // Build the valueAccessorFunction
           var accessor = aggregation.makeValueAccessor(s.value)
-            // Add the reducer with the ValueAccessorFunction to the reducer
+          // Add the reducer with the ValueAccessorFunction to the reducer
           reducer = rAggregators.aggregators[s.key](reducer, accessor)
           return
         }

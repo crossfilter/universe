@@ -108,8 +108,8 @@ function set(obj, prop, value) {
     var e = prop.shift()
     assign(obj[e] =
       Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
-      prop,
-      value)
+    prop,
+    value)
   } else {
     obj[prop[0]] = value
   }
@@ -279,7 +279,7 @@ function sort(arr) {
     var tmp = arr[i]
     var j = i
     while (arr[j - 1] > tmp) {
-      arr[j] = arr[j - 1];
+      arr[j] = arr[j - 1]
       --j
     }
     arr[j] = tmp

@@ -41,26 +41,26 @@ module.exports = function (service) {
     return Promise.try(function () {
       return Promise.resolve(service.cf.add(data))
     })
-    .then(function () {
-      return Promise.serial(_.map(service.dataListeners, function (listener) {
-        return function () {
-          return listener({
-            added: data
-          })
-        }
-      }))
-    })
-    .then(function () {
-      return service
-    })
+      .then(function () {
+        return Promise.serial(_.map(service.dataListeners, function (listener) {
+          return function () {
+            return listener({
+              added: data,
+            })
+          }
+        }))
+      })
+      .then(function () {
+        return service
+      })
   }
 
   function remove() {
     return Promise.try(function () {
       return Promise.resolve(service.cf.remove())
     })
-    .then(function () {
-      return service
-    })
+      .then(function () {
+        return service
+      })
   }
 }

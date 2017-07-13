@@ -37,9 +37,9 @@ module.exports = function (service) {
           return i
         } :
         // Value Accessor Dimension
-        function (d) {
-          return d[key]
-        }
+          function (d) {
+            return d[key]
+          }
     }
     return accessorFunction
   }

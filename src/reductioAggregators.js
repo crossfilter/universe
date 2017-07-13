@@ -24,7 +24,7 @@ module.exports = {
     $std: $std,
     $valueList: $valueList,
     $dataList: $dataList,
-  }
+  },
 }
 
 // Aggregators

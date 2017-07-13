@@ -26,8 +26,8 @@ module.exports = {
   extractKeyValOrArray: extractKeyValOrArray,
   parseAggregatorParams: parseAggregatorParams,
 }
-  // This is used to build aggregation stacks for sub-reductio
-  // aggregations, or plucking values for use in filters from the data
+// This is used to build aggregation stacks for sub-reductio
+// aggregations, or plucking values for use in filters from the data
 function makeValueAccessor(obj) {
   if (typeof obj === 'string') {
     if (isStringSyntax(obj)) {
@@ -78,7 +78,7 @@ function makeSubAggregationFunction(obj) {
   if (_.isArray(obj)) {
     var subStack = _.map(obj, makeSubAggregationFunction)
     return function getSubStack(d) {
-      return subStack.map(function (s) {
+      return subStack.map(function(s) {
         return s(d)
       })
     }
@@ -105,7 +105,7 @@ function extractKeyValOrArray(obj) {
     if ({}.hasOwnProperty.call(obj, key)) {
       keyVal = {
         key: key,
-        value: obj[key]
+        value: obj[key],
       }
       var subObj = {}
       subObj[key] = obj[key]
@@ -133,7 +133,7 @@ function parseAggregatorParams(keyString) {
 
   return {
     aggregator: aggregators[key],
-    params: params
+    params: params,
   }
 }
 
@@ -146,43 +146,59 @@ function convertAggregatorString(keyString) {
   // parentheses
   var outerParens = /\((.+)\)/g
   // var innerParens = /\(([^\(\)]+)\)/g  // innerParens is defined but not used
-    // comma not in ()
+  // comma not in ()
   var hasComma = /(?:\([^\(\)]*\))|(,)/g
 
   return JSON.parse('{' + unwrapParensAndCommas(keyString) + '}')
 
   function unwrapParensAndCommas(str) {
     str = str.replace(' ', '')
-    return '"' + str.replace(outerParens, function (p, pr) {
-      if (hasComma.test(pr)) {
-        if (pr.charAt(0) === '$') {
-          return '":{"' + pr.replace(hasComma, function (p2/* , pr2 */) {
-            if (p2 === ',') {
-              return ',"'
-            }
-            return unwrapParensAndCommas(p2).trim()
-          }) + '}'
+    return (
+      '"' +
+      str.replace(outerParens, function(p, pr) {
+        if (hasComma.test(pr)) {
+          if (pr.charAt(0) === '$') {
+            return (
+              '":{"' +
+              pr.replace(hasComma, function(p2 /* , pr2 */) {
+                if (p2 === ',') {
+                  return ',"'
+                }
+                return unwrapParensAndCommas(p2).trim()
+              }) +
+              '}'
+            )
+          }
+          return (
+            ':["' +
+            pr.replace(
+              hasComma,
+              function(/* p2 , pr2 */) {
+                return '","'
+              }
+            ) +
+            '"]'
+          )
         }
-        return ':["' + pr.replace(hasComma, function (/* p2 , pr2 */) {
-          return '","'
-        }) + '"]'
-      }
-    })
+      })
+    )
   }
 }
 
 // Collection Aggregators
 
 function $sum(children) {
-  return children.reduce(function (a, b) {
+  return children.reduce(function(a, b) {
     return a + b
   }, 0)
 }
 
 function $avg(children) {
-  return children.reduce(function (a, b) {
-    return a + b
-  }, 0) / children.length
+  return (
+    children.reduce(function(a, b) {
+      return a + b
+    }, 0) / children.length
+  )
 }
 
 function $max(children) {
@@ -229,7 +245,7 @@ function $nthPct(children, n) {
 }
 
 function $map(children, n) {
-  return children.map(function (d) {
+  return children.map(function(d) {
     return d[n]
   })
 }

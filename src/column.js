@@ -79,84 +79,84 @@ module.exports = function (service) {
     column.promise = Promise.try(function () {
       return Promise.resolve(service.cf.all())
     })
-    .then(function (all) {
-      var sample
+      .then(function (all) {
+        var sample
 
-      // Complex column Keys
-      if (_.isFunction(column.key)) {
-        column.complex = 'function'
-        sample = column.key(all[0])
-      } else if (_.isString(column.key) && (column.key.indexOf('.') > -1 || column.key.indexOf('[') > -1)) {
-        column.complex = 'string'
-        sample = _.get(all[0], column.key)
-      } else if (_.isArray(column.key)) {
-        column.complex = 'array'
-        sample = _.values(_.pick(all[0], column.key))
-        if (sample.length !== column.key.length) {
+        // Complex column Keys
+        if (_.isFunction(column.key)) {
+          column.complex = 'function'
+          sample = column.key(all[0])
+        } else if (_.isString(column.key) && (column.key.indexOf('.') > -1 || column.key.indexOf('[') > -1)) {
+          column.complex = 'string'
+          sample = _.get(all[0], column.key)
+        } else if (_.isArray(column.key)) {
+          column.complex = 'array'
+          sample = _.values(_.pick(all[0], column.key))
+          if (sample.length !== column.key.length) {
+            throw new Error('Column key does not exist in data!', column.key)
+          }
+        } else {
+          sample = all[0][column.key]
+        }
+
+        // Index Column
+        if (!column.complex && column.key !== true && typeof sample === 'undefined') {
           throw new Error('Column key does not exist in data!', column.key)
         }
-      } else {
-        sample = all[0][column.key]
-      }
 
-      // Index Column
-      if (!column.complex && column.key !== true && typeof sample === 'undefined') {
-        throw new Error('Column key does not exist in data!', column.key)
-      }
+        // If the column exists, let's at least make sure it's marked
+        // as permanent. There is a slight chance it exists because
+        // of a filter, and the user decides to make it permanent
 
-      // If the column exists, let's at least make sure it's marked
-      // as permanent. There is a slight chance it exists because
-      // of a filter, and the user decides to make it permanent
-
-      if (column.key === true) {
-        column.type = 'all'
-      } else if (column.complex) {
-        column.type = 'complex'
-      } else if (column.array) {
-        column.type = 'array'
-      } else {
-        column.type = getType(sample)
-      }
-
-      return dimension.make(column.key, column.type, column.complex)
-    })
-    .then(function (dim) {
-      column.dimension = dim
-      column.filterCount = 0
-      var stopListeningForData = service.onDataChange(buildColumnKeys)
-      column.removeListeners = [stopListeningForData]
-
-      return buildColumnKeys()
-
-      // Build the columnKeys
-      function buildColumnKeys(changes) {
         if (column.key === true) {
-          return Promise.resolve()
+          column.type = 'all'
+        } else if (column.complex) {
+          column.type = 'complex'
+        } else if (column.array) {
+          column.type = 'array'
+        } else {
+          column.type = getType(sample)
         }
 
-        var accessor = dimension.makeAccessor(column.key, column.complex)
-        column.values = column.values || []
+        return dimension.make(column.key, column.type, column.complex)
+      })
+      .then(function (dim) {
+        column.dimension = dim
+        column.filterCount = 0
+        var stopListeningForData = service.onDataChange(buildColumnKeys)
+        column.removeListeners = [stopListeningForData]
 
-        return Promise.try(function () {
-          if (changes && changes.added) {
-            return Promise.resolve(changes.added)
+        return buildColumnKeys()
+
+        // Build the columnKeys
+        function buildColumnKeys(changes) {
+          if (column.key === true) {
+            return Promise.resolve()
           }
-          return Promise.resolve(column.dimension.bottom(Infinity))
-        })
-        .then(function (rows) {
-          var newValues
-          if (column.complex === 'string' || column.complex === 'function') {
-            newValues = _.map(rows, accessor)
-            // console.log(rows, accessor.toString(), newValues)
-          } else if (column.type === 'array') {
-            newValues = _.flatten(_.map(rows, accessor))
-          } else {
-            newValues = _.map(rows, accessor)
-          }
-          column.values = _.uniq(column.values.concat(newValues))
-        })
-      }
-    })
+
+          var accessor = dimension.makeAccessor(column.key, column.complex)
+          column.values = column.values || []
+
+          return Promise.try(function () {
+            if (changes && changes.added) {
+              return Promise.resolve(changes.added)
+            }
+            return Promise.resolve(column.dimension.bottom(Infinity))
+          })
+            .then(function (rows) {
+              var newValues
+              if (column.complex === 'string' || column.complex === 'function') {
+                newValues = _.map(rows, accessor)
+                // console.log(rows, accessor.toString(), newValues)
+              } else if (column.type === 'array') {
+                newValues = _.flatten(_.map(rows, accessor))
+              } else {
+                newValues = _.map(rows, accessor)
+              }
+              column.values = _.uniq(column.values.concat(newValues))
+            })
+        }
+      })
 
     return column.promise
       .then(function () {

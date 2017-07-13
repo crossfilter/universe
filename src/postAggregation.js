@@ -51,7 +51,7 @@ module.exports = function (/* service */) {
     var toSquash = query.data.splice(start, end - start)
     var squashed = {
       key: label || 'Other',
-      value: {}
+      value: {},
     }
     _.recurseObject(aggObj, function (val, key, path) {
       var items = []
@@ -69,7 +69,7 @@ module.exports = function (/* service */) {
     end = end || query.data.length
     var obj = {
       key: [query.data[start].key, query.data[end].key],
-      value: {}
+      value: {},
     }
     _.recurseObject(aggObj, function (val, key, path) {
       var changePath = _.clone(path)
