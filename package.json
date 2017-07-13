@@ -1,12 +1,15 @@
 {
   "name": "universe",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "The fastest way to query and explore multivariate datasets",
   "main": "src/universe.js",
   "directories": {
     "test": "test"
   },
-  "files": ["src", "universe.*"],
+  "files": [
+    "src",
+    "universe.*"
+  ],
   "dependencies": {
     "crossfilter2": "1.4.0-alpha.6",
     "q": "^1.4.1",
