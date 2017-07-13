@@ -6,10 +6,7 @@
   "directories": {
     "test": "test"
   },
-  "files": [
-    "src",
-    "universe.*"
-  ],
+  "files": ["src", "universe.*"],
   "dependencies": {
     "crossfilter2": "1.4.0-alpha.6",
     "q": "^1.4.1",
@@ -28,7 +25,8 @@
     "min": "uglifyjs universe.js -o universe.min.js",
     "build": "npm run browserify && npm run min && echo 'Done building.'",
     "watch": "onchange 'src/**' -i -w -- npm run build",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "postpublish": "git push --tags"
   },
   "repository": {
     "type": "git",
