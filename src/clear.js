@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 var _ = require('./lodash')
 
 module.exports = function(service) {

@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 var _ = require('./lodash')
 
 module.exports = function (service) {
@@ -17,8 +16,12 @@ module.exports = function (service) {
     for (var i = 0; i < service.columns.length; i++) {
       for (var j = 0; j < service.columns[i].queries.length; j++) {
         if (service.columns[i].queries[j].hash === queryHash) {
-          return Promise.try(function () { // eslint-disable-line no-loop-func
-            return service.columns[i].queries[j]
+          return new Promise(function (resolve, reject) { // eslint-disable-line no-loop-func
+            try {
+              resolve(service.columns[i].queries[j])
+            } catch (err) {
+              reject(err)
+            }
           })
         }
       }
@@ -222,8 +225,12 @@ module.exports = function (service) {
         _.forEach(q.removeListeners, function (l) {
           l()
         })
-        return Promise.try(function () {
-          return q.group.dispose()
+        return new Promise(function (resolve, reject) {
+          try {
+            resolve(q.group.dispose())
+          } catch (err) {
+            reject(err)
+          }
         })
           .then(function () {
             q.column.queries.splice(q.column.queries.indexOf(q), 1)

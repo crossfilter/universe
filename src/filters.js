@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 var _ = require('./lodash')
 
 var expressions = require('./expressions')
@@ -38,19 +37,25 @@ module.exports = function (service) {
   function getColumn(column) {
     var exists = service.column.find(column)
     // If the filters dimension doesn't exist yet, try and create it
-    return Promise.try(function () {
-      if (!exists) {
-        return service.column({
-          key: column,
-          temporary: true,
-        })
-          .then(function () {
-          // It was able to be created, so retrieve and return it
-            return service.column.find(column)
+    return new Promise(function (resolve, reject) {
+      try {
+        if (!exists) {
+          return resolve(service.column({
+            key: column,
+            temporary: true,
           })
+            .then(function () {
+              // It was able to be created, so retrieve and return it
+              return service.column.find(column)
+            })
+          )
+        } else {
+          // It exists, so just return what we found
+          resolve(exists)
+        }
+      } catch (err) {
+        reject(err)
       }
-      // It exists, so just return what we found
-      return exists
     })
   }
 

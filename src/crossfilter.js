@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 var crossfilter = require('crossfilter2')
 
 var _ = require('./lodash')
@@ -38,17 +37,23 @@ module.exports = function (service) {
 
   function add(data) {
     data = generateColumns(data)
-    return Promise.try(function () {
-      return Promise.resolve(service.cf.add(data))
+    return new Promise(function (resolve, reject) {
+      try {
+        resolve(service.cf.add(data))
+      } catch (err) {
+        reject(err)
+      }
     })
       .then(function () {
-        return Promise.serial(_.map(service.dataListeners, function (listener) {
+        return _.map(service.dataListeners, function (listener) {
           return function () {
             return listener({
               added: data,
             })
           }
-        }))
+        }).reduce(function(promise, data) {
+          return promise.then(data)
+        }, Promise.resolve(true))
       })
       .then(function () {
         return service
@@ -56,8 +61,12 @@ module.exports = function (service) {
   }
 
   function remove() {
-    return Promise.try(function () {
-      return Promise.resolve(service.cf.remove())
+    return new Promise(function (resolve, reject) {
+      try {
+        resolve(service.cf.remove())
+      } catch (err) {
+        reject(err)
+      }
     })
       .then(function () {
         return service
