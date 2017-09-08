@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 var _ = require('./lodash')
 
 module.exports = function (service) {
@@ -76,8 +75,12 @@ module.exports = function (service) {
     column.queries = []
     service.columns.push(column)
 
-    column.promise = Promise.try(function () {
-      return Promise.resolve(service.cf.all())
+    column.promise = new Promise(function (resolve, reject) {
+      try {
+        resolve(service.cf.all())
+      } catch (err) {
+        reject(err)
+      }
     })
       .then(function (all) {
         var sample
@@ -137,11 +140,16 @@ module.exports = function (service) {
           var accessor = dimension.makeAccessor(column.key, column.complex)
           column.values = column.values || []
 
-          return Promise.try(function () {
-            if (changes && changes.added) {
-              return Promise.resolve(changes.added)
+          return new Promise(function (resolve, reject) {
+            try {
+              if (changes && changes.added) {
+                resolve(changes.added)
+              } else {
+                resolve(column.dimension.bottom(Infinity))
+              }
+            } catch (err) {
+              reject(err)
             }
-            return Promise.resolve(column.dimension.bottom(Infinity))
           })
             .then(function (rows) {
               var newValues
