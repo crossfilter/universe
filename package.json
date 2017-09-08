@@ -8,7 +8,7 @@
   },
   "files": ["src", "universe.*"],
   "dependencies": {
-    "crossfilter2": "1.4.0-alpha.6",
+    "crossfilter2": "1.4.1",
     "reductio": "^0.6.2"
   },
   "devDependencies": {
