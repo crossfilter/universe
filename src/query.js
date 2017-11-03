@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 var _ = require('./lodash')
 
 module.exports = function (service) {
@@ -17,8 +16,12 @@ module.exports = function (service) {
     for (var i = 0; i < service.columns.length; i++) {
       for (var j = 0; j < service.columns[i].queries.length; j++) {
         if (service.columns[i].queries[j].hash === queryHash) {
-          return Promise.try(function () { // eslint-disable-line no-loop-func
-            return service.columns[i].queries[j]
+          return new Promise(function (resolve, reject) { // eslint-disable-line no-loop-func
+            try {
+              resolve(service.columns[i].queries[j])
+            } catch (err) {
+              reject(err)
+            }
           })
         }
       }
@@ -27,7 +30,7 @@ module.exports = function (service) {
     var query = {
       // Original query passed in to query method
       original: queryObj,
-      hash: queryHash
+      hash: queryHash,
     }
 
     // Default queryObj
@@ -37,7 +40,7 @@ module.exports = function (service) {
     // Default select
     if (_.isUndefined(query.original.select)) {
       query.original.select = {
-        $count: true
+        $count: true,
       }
     }
     // Default to groupAll
@@ -57,18 +60,18 @@ module.exports = function (service) {
       return service.column({
         key: query.original.groupBy,
         type: _.isUndefined(query.type) ? null : query.type,
-        array: Boolean(query.array)
+        array: Boolean(query.array),
       })
-      .then(function () {
+        .then(function () {
         // Attach the column to the query
-        var column = service.column.find(query.original.groupBy)
-        query.column = column
-        column.queries.push(query)
-        column.removeListeners.push(function () {
-          return query.clear()
+          var column = service.column.find(query.original.groupBy)
+          query.column = column
+          column.queries.push(query)
+          column.removeListeners.push(function () {
+            return query.clear()
+          })
+          return query
         })
-        return query
-      })
     }
 
     function makeCrossfilterGroup(query) {
@@ -84,18 +87,18 @@ module.exports = function (service) {
 
     function buildRequiredColumns(query) {
       var requiredColumns = filters.scanForDynamicFilters(query.original)
-        // We need to scan the group for any filters that would require
-        // the group to be rebuilt when data is added or removed in any way.
+      // We need to scan the group for any filters that would require
+      // the group to be rebuilt when data is added or removed in any way.
       if (requiredColumns.length) {
         return Promise.all(_.map(requiredColumns, function (columnKey) {
           return service.column({
             key: columnKey,
-            dynamicReference: query.group
+            dynamicReference: query.group,
           })
         }))
-        .then(function () {
-          return query
-        })
+          .then(function () {
+            return query
+          })
       }
       return query
     }
@@ -157,9 +160,9 @@ module.exports = function (service) {
       return Promise.all(_.map(query.postAggregations, function (post) {
         return post()
       }))
-      .then(function () {
-        return query
-      })
+        .then(function () {
+          return query
+        })
     }
 
     function newQueryObj(q, parent) {
@@ -222,19 +225,23 @@ module.exports = function (service) {
         _.forEach(q.removeListeners, function (l) {
           l()
         })
-        return Promise.try(function () {
-          return q.group.dispose()
-        })
-        .then(function () {
-          q.column.queries.splice(q.column.queries.indexOf(q), 1)
-          // Automatically recycle the column if there are no queries active on it
-          if (!q.column.queries.length) {
-            return service.clear(q.column.key)
+        return new Promise(function (resolve, reject) {
+          try {
+            resolve(q.group.dispose())
+          } catch (err) {
+            reject(err)
           }
         })
-        .then(function () {
-          return service
-        })
+          .then(function () {
+            q.column.queries.splice(q.column.queries.indexOf(q), 1)
+            // Automatically recycle the column if there are no queries active on it
+            if (!q.column.queries.length) {
+              return service.clear(q.column.key)
+            }
+          })
+          .then(function () {
+            return service
+          })
       }
 
       function postAggregateMethodWrap(postMethod) {

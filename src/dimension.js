@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 var _ = require('./lodash')
 
 module.exports = function (service) {
@@ -36,10 +35,10 @@ module.exports = function (service) {
         key === true ? function accessor(d, i) {
           return i
         } :
-        // Value Accessor Dimension
-        function (d) {
-          return d[key]
-        }
+          // Value Accessor Dimension
+          function (d) {
+            return d[key]
+          }
     }
     return accessorFunction
   }

@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 var _ = require('./lodash')
 
 var expressions = require('./expressions')
@@ -12,45 +11,51 @@ module.exports = function (service) {
     filterAll: filterAll,
     applyFilters: applyFilters,
     makeFunction: makeFunction,
-    scanForDynamicFilters: scanForDynamicFilters
+    scanForDynamicFilters: scanForDynamicFilters,
   }
 
   function filter(column, fil, isRange, replace) {
     return getColumn(column)
-    .then(function (column) {
+      .then(function (column) {
       // Clone a copy of the new filters
-      var newFilters = _.assign({}, service.filters)
-      // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
-      var filterKey = column.key
-      if (column.complex === 'array') {
-        filterKey = JSON.stringify(column.key)
-      }
-      if (column.complex === 'function') {
-        filterKey = column.key.toString()
-      }
-      // Build the filter object
-      newFilters[filterKey] = buildFilterObject(fil, isRange, replace)
+        var newFilters = _.assign({}, service.filters)
+        // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
+        var filterKey = column.key
+        if (column.complex === 'array') {
+          filterKey = JSON.stringify(column.key)
+        }
+        if (column.complex === 'function') {
+          filterKey = column.key.toString()
+        }
+        // Build the filter object
+        newFilters[filterKey] = buildFilterObject(fil, isRange, replace)
 
-      return applyFilters(newFilters)
-    })
+        return applyFilters(newFilters)
+      })
   }
 
   function getColumn(column) {
     var exists = service.column.find(column)
     // If the filters dimension doesn't exist yet, try and create it
-    return Promise.try(function () {
-      if (!exists) {
-        return service.column({
-          key: column,
-          temporary: true,
-        })
-        .then(function () {
-          // It was able to be created, so retrieve and return it
-          return service.column.find(column)
-        })
+    return new Promise(function (resolve, reject) {
+      try {
+        if (!exists) {
+          return resolve(service.column({
+            key: column,
+            temporary: true,
+          })
+            .then(function () {
+              // It was able to be created, so retrieve and return it
+              return service.column.find(column)
+            })
+          )
+        } else {
+          // It exists, so just return what we found
+          resolve(exists)
+        }
+      } catch (err) {
+        reject(err)
       }
-      // It exists, so just return what we found
-      return exists
     })
   }
 
@@ -99,7 +104,7 @@ module.exports = function (service) {
         value: fil,
         function: makeFunction(fil),
         replace: true,
-        type: 'function'
+        type: 'function',
       }
     }
     if (_.isArray(fil)) {
@@ -119,12 +124,12 @@ module.exports = function (service) {
   function applyFilters(newFilters) {
     var ds = _.map(newFilters, function (fil, i) {
       var existing = service.filters[i]
-        // Filters are the same, so no change is needed on this column
+      // Filters are the same, so no change is needed on this column
       if (fil === existing) {
         return Promise.resolve()
       }
       var column
-        // Retrieve complex columns by decoding the column key as json
+      // Retrieve complex columns by decoding the column key as json
       if (i.charAt(0) === '[') {
         column = service.column.find(JSON.parse(i))
       } else {
@@ -241,7 +246,7 @@ module.exports = function (service) {
         if (ref) {
           columns.push(ref)
         }
-          // if it's a string
+        // if it's a string
         if (_.isString(val)) {
           ref = findDataReferences(null, val)
           if (ref) {
@@ -337,10 +342,10 @@ module.exports = function (service) {
           // Make sure that any further operations are for aggregations
           // and not filters
           isAggregation = true
-            // here we pass true to makeFunction which denotes that
-            // an aggregatino chain has started and to stop using $AND
+          // here we pass true to makeFunction which denotes that
+          // an aggregatino chain has started and to stop using $AND
           getSub = makeFunction(val, isAggregation)
-            // If it's an aggregation object, be sure to pass in the children, and then any additional params passed into the aggregation string
+          // If it's an aggregation object, be sure to pass in the children, and then any additional params passed into the aggregation string
           return function () {
             return aggregatorObj.aggregator.apply(null, [getSub()].concat(aggregatorObj.params))
           }

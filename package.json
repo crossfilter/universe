@@ -1,35 +1,31 @@
 {
   "name": "universe",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "The fastest way to query and explore multivariate datasets",
   "main": "src/universe.js",
   "directories": {
     "test": "test"
   },
-  "files": [
-    "src",
-    "universe.*"
-  ],
+  "files": ["src", "universe.*"],
   "dependencies": {
-    "crossfilter2": "1.4.0-alpha.6",
-    "q": "^1.4.1",
+    "crossfilter2": "1.4.1",
     "reductio": "^0.6.2"
   },
   "devDependencies": {
     "ava": "^0.15.2",
     "browserify": "^13.0.0",
     "browserify-shim": "^3.8.12",
-    "uglify-js": "^2.7.0",
-    "xo": "^0.16.0"
+    "uglify-js": "^2.7.0"
   },
   "scripts": {
-    "lint": "xo",
-    "test": "xo && ava --verbose",
+    "lint": "eslint src",
+    "test": "yarn lint && ava --verbose",
     "browserify": "browserify ./src/universe.js -d -s universe -o universe.js",
     "min": "uglifyjs universe.js -o universe.min.js",
     "build": "npm run browserify && npm run min && echo 'Done building.'",
     "watch": "onchange 'src/**' -i -w -- npm run build",
-    "prepublish": "npm run build"
+    "prepublish": "npm run build",
+    "postpublish": "git push --tags"
   },
   "repository": {
     "type": "git",
@@ -48,29 +44,5 @@
   "bugs": {
     "url": "https://github.com/crossfilter/universe/issues"
   },
-  "homepage": "https://github.com/crossfilter/universe",
-  "xo": {
-    "semicolon": false,
-    "esnext": false,
-    "space": 2,
-    "rules": {
-      "xo/filename-case": 0,
-      "comma-dangle": 0
-    },
-    "overrides": [
-      {
-        "files": "test/*.js",
-        "esnext": true,
-        "rules": {
-          "no-unused-expressions": 0,
-          "no-prototype-builtins": 0
-        }
-      }
-    ],
-    "ignores": [
-      "universe.js",
-      "universe.min.js",
-      "mocha/*.js"
-    ]
-  }
+  "homepage": "https://github.com/crossfilter/universe"
 }

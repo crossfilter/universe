@@ -1,8 +1,5 @@
 'use strict'
 
-require('./q.serial')
-
-// var Promise = require('q')  // Promise is defined but never used
 var _ = require('./lodash')
 
 module.exports = universe

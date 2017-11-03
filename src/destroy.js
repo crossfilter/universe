@@ -1,6 +1,5 @@
 'use strict'
 
-var Promise = require('q')
 // var _ = require('./lodash') // _ is defined but never used
 
 module.exports = function (service) {
