@@ -8,8 +8,8 @@
   },
   "files": ["src", "universe.*"],
   "dependencies": {
-    "crossfilter2": "1.4.1",
-    "reductio": "^0.6.2"
+    "crossfilter2": "1.4.3",
+    "reductio": "^0.6.3"
   },
   "devDependencies": {
     "ava": "^0.15.2",
