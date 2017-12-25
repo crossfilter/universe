@@ -101,15 +101,16 @@ function get(a, b) {
 function set(obj, prop, value) {
   if (typeof prop === 'string') {
     prop = prop
-      .replace('[', '.').replace(']', '')
-      .split('.')
+        .replace('[', '.').replace(']', '')
+        .split('.')
   }
   if (prop.length > 1) {
     var e = prop.shift()
+    var _propVal = {}
+    _propVal[prop[0]] = value
     assign(obj[e] =
-      Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
-    prop,
-    value)
+            Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
+        _propVal)
   } else {
     obj[prop[0]] = value
   }
