@@ -319,7 +319,7 @@ As you filter your data on the universe level, every query's result is updated i
 <h3 id="api-clear">.clear( columnKey/columnObject/[columnKeys/columnObjects] ) <a href="#api-clear">#</a></h3>
 
 - Description
-  - Clears individual or all column defenitions and indexes
+  - Clears individual or all column definitions and indexes
 - Parameters
   - `columnKey` - the column property or array of columns you would like to clear eg.
   ```javascript
