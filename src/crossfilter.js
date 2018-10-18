@@ -55,21 +55,37 @@ module.exports = function (service) {
           return promise.then(data)
         }, Promise.resolve(true))
       })
+
+    .then(function() {
+      return Promise.all(_.map(service.filterListeners, function (listener) {
+         return listener()
+      }))      
+    })
+
       .then(function () {
         return service
       })
   }
 
-  function remove() {
+  function remove(predicate) {
     return new Promise(function (resolve, reject) {
       try {
-        resolve(service.cf.remove())
+        resolve(service.cf.remove(predicate))
       } catch (err) {
         reject(err)
       }
     })
-      .then(function () {
-        return service
-      })
+    
+    .then(function() {
+      return Promise.all(_.map(service.filterListeners, function (listener) {
+         return listener()
+      }))      
+    })
+    
+    .then(function () {
+      return service
+    })
   }
 }
+
+
