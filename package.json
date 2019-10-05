@@ -6,20 +6,23 @@
   "directories": {
     "test": "test"
   },
-  "files": ["src", "universe.*"],
+  "files": [
+    "src",
+    "universe.*"
+  ],
   "dependencies": {
     "crossfilter2": "1.4.6",
     "reductio": "^0.6.3"
   },
   "devDependencies": {
-    "ava": "^0.15.2",
+    "ava": "2",
     "browserify": "^13.0.0",
     "browserify-shim": "^3.8.12",
     "uglify-js": "^2.7.0"
   },
   "scripts": {
     "lint": "eslint src",
-    "test": "yarn lint && ava --verbose",
+    "test": "yarn lint && ava --verbose ",
     "browserify": "browserify ./src/universe.js -d -s universe -o universe.js",
     "min": "uglifyjs universe.js -o universe.min.js",
     "build": "npm run browserify && npm run min && echo 'Done building.'",

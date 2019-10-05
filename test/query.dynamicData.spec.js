@@ -1,7 +1,7 @@
 import test from 'ava'
 
 import universe from '../src/universe'
-import data from './fixtures/data'
+import data from './fixtures/data.json'
 
 test('can add data to an existing query', async t => {
   const u = await universe(data)

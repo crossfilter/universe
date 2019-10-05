@@ -147,7 +147,7 @@ function convertAggregatorString(keyString) {
   var outerParens = /\((.+)\)/g
   // var innerParens = /\(([^\(\)]+)\)/g  // innerParens is defined but not used
   // comma not in ()
-  var hasComma = /(?:\([^\(\)]*\))|(,)/g
+  var hasComma = /(?:\([^\(\)]*\))|(,)/g // eslint-disable-line
 
   return JSON.parse('{' + unwrapParensAndCommas(keyString) + '}')
 

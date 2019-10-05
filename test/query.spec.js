@@ -1,14 +1,14 @@
 import test from 'ava'
 
 import universe from '../src/universe'
-import data from './fixtures/data'
+import data from './fixtures/data.json'
 
 test('has the query method', async t => {
   const u = await universe(data)
   t.deepEqual(typeof u.query, 'function')
 })
 
-test('can create ad-hoc dimensions for each column', async () => {
+test('can create ad-hoc dimensions for each column', async (assert) => {
   const u = await universe(data)
 
   await u.query({
@@ -45,6 +45,7 @@ test('can create ad-hoc dimensions for each column', async () => {
     groupBy: ['productIDs', 'date'],
     select: {}
   })
+  assert.true(u !== undefined)
 })
 
 test('Defaults to counting each record', async t => {

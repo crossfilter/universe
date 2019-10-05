@@ -56,11 +56,11 @@ module.exports = function (service) {
         }, Promise.resolve(true))
       })
 
-    .then(function() {
-      return Promise.all(_.map(service.filterListeners, function (listener) {
-         return listener()
-      }))      
-    })
+      .then(function() {
+        return Promise.all(_.map(service.filterListeners, function (listener) {
+          return listener()
+        }))      
+      })
 
       .then(function () {
         return service
@@ -76,15 +76,15 @@ module.exports = function (service) {
       }
     })
     
-    .then(function() {
-      return Promise.all(_.map(service.filterListeners, function (listener) {
-         return listener()
-      }))      
-    })
+      .then(function() {
+        return Promise.all(_.map(service.filterListeners, function (listener) {
+          return listener()
+        }))      
+      })
     
-    .then(function () {
-      return service
-    })
+      .then(function () {
+        return service
+      })
   }
 }
 
