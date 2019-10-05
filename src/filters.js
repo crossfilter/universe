@@ -1,11 +1,8 @@
-'use strict'
+import _ from './lodash'
+import expressions from './expressions'
+import aggregation from './aggregation'
 
-var _ = require('./lodash')
-
-var expressions = require('./expressions')
-var aggregation = require('./aggregation')
-
-module.exports = function (service) {
+export default function (service) {
   return {
     filter: filter,
     filterAll: filterAll,
@@ -18,7 +15,7 @@ module.exports = function (service) {
     return getColumn(column)
       .then(function (column) {
       // Clone a copy of the new filters
-        var newFilters = _.assign({}, service.filters)
+        var newFilters = Object.assign({}, service.filters)
         // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
         var filterKey = column.key
         if (column.complex === 'array') {
@@ -69,7 +66,7 @@ module.exports = function (service) {
     }
 
     // Clone a copy for the new filters
-    var newFilters = _.assign({}, service.filters)
+    var newFilters = Object.assign({}, service.filters)
 
     var ds = _.map(fils, function (fil) {
       return getColumn(fil.column)

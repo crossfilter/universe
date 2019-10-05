@@ -1,8 +1,4 @@
-'use strict'
-
-// var _ = require('./lodash') // _ is defined but never used
-
-module.exports = {
+export default {
   shorthandLabels: {
     $count: 'count',
     $sum: 'sum',

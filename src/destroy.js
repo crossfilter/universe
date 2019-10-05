@@ -1,8 +1,4 @@
-'use strict'
-
-// var _ = require('./lodash') // _ is defined but never used
-
-module.exports = function (service) {
+export default function (service) {
   return function destroy() {
     return service.clear()
       .then(function () {

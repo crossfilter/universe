@@ -1,10 +1,7 @@
-'use strict'
+import crossfilter from 'crossfilter2'
+import _ from './lodash'
 
-var crossfilter = require('crossfilter2')
-
-var _ = require('./lodash')
-
-module.exports = function (service) {
+export default function (service) {
   return {
     build: build,
     generateColumns: generateColumns,

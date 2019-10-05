@@ -15,14 +15,22 @@
     "reductio": "^0.6.3"
   },
   "devDependencies": {
+    "esm": "3.2.25",
     "ava": "2",
     "browserify": "^13.0.0",
     "browserify-shim": "^3.8.12",
     "uglify-js": "^2.7.0"
   },
+  "ava": {
+    "require": [
+      "esm"
+    ]
+  },
   "scripts": {
     "lint": "eslint src",
-    "test": "yarn lint && ava --verbose ",
+    "__test": "yarn lint && node -r esm ava --verbose ",
+    "_test": "node -r esm node_modules/ava/lib/worker/main --verbose ",
+    "test": "ava ",
     "browserify": "browserify ./src/universe.js -d -s universe -o universe.js",
     "min": "uglifyjs universe.js -o universe.min.js",
     "build": "npm run browserify && npm run min && echo 'Done building.'",

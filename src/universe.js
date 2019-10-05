@@ -1,36 +1,37 @@
-'use strict'
-
-var _ = require('./lodash')
-
-module.exports = universe
+import _filters from './filters'
+import _crossfilter from './crossfilter'
+import column from './column'
+import query from './query'
+import clear from './clear'
+import destroy from './destroy'
 
 function universe(data, options) {
   var service = {
-    options: _.assign({}, options),
+    options: Object.assign({}, options),
     columns: [],
     filters: {},
     dataListeners: [],
     filterListeners: [],
   }
 
-  var cf = require('./crossfilter')(service)
-  var filters = require('./filters')(service)
+  var cf = _crossfilter(service)
+  var filters = _filters(service)
 
   data = cf.generateColumns(data)
 
   return cf.build(data)
     .then(function (data) {
       service.cf = data
-      return _.assign(service, {
+      return Object.assign(service, {
         add: cf.add,
         remove: cf.remove,
-        column: require('./column')(service),
-        query: require('./query')(service),
+        column: column(service),
+        query: query(service),
         filter: filters.filter,
         filterAll: filters.filterAll,
         applyFilters: filters.applyFilters,
-        clear: require('./clear')(service),
-        destroy: require('./destroy')(service),
+        clear: clear(service),
+        destroy: destroy(service),
         onDataChange: onDataChange,
         onFilter: onFilter,
       })
@@ -50,3 +51,5 @@ function universe(data, options) {
     }
   }
 }
+
+export default universe

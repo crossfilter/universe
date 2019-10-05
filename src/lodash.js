@@ -1,8 +1,4 @@
-/* eslint no-prototype-builtins: 0 */
-'use strict'
-
-module.exports = {
-  assign: assign,
+export default {
   find: find,
   remove: remove,
   isArray: isArray,
@@ -28,21 +24,6 @@ module.exports = {
   sort: sort,
   values: values,
   recurseObject: recurseObject,
-}
-
-function assign(out) {
-  out = out || {}
-  for (var i = 1; i < arguments.length; i++) {
-    if (!arguments[i]) {
-      continue
-    }
-    for (var key in arguments[i]) {
-      if (arguments[i].hasOwnProperty(key)) {
-        out[key] = arguments[i][key]
-      }
-    }
-  }
-  return out
 }
 
 function find(a, b) {
@@ -106,7 +87,7 @@ function set(obj, prop, value) {
   }
   if (prop.length > 1) {
     var e = prop.shift()
-    assign(obj[e] =
+    Object.assign(obj[e] =
       Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
     prop,
     value)

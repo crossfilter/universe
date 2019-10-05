@@ -1,14 +1,12 @@
-'use strict'
+import reductio from 'reductio'
+import _ from './lodash'
+import rAggregators from './reductioAggregators'
+import _filters from './filters'
 
-var reductio = require('reductio')
+import aggregation from './aggregation'
 
-var _ = require('./lodash')
-var rAggregators = require('./reductioAggregators')
-// var expressions = require('./expressions')  // exporession is defined but never used
-var aggregation = require('./aggregation')
-
-module.exports = function (service) {
-  var filters = require('./filters')(service)
+export default function (service) {
+  var filters = _filters(service)
 
   return function reductiofy(query) {
     var reducer = reductio()

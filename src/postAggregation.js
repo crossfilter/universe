@@ -1,10 +1,7 @@
-'use strict'
+import _ from './lodash'
+import aggregation from './aggregation'
 
-var _ = require('./lodash')
-
-var aggregation = require('./aggregation')
-
-module.exports = function (/* service */) {
+export default function (/* service */) {
   return {
     post: post,
     sortByKey: sortByKey,

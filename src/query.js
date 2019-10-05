@@ -1,11 +1,12 @@
-'use strict'
+import _ from './lodash'
+import _reductiofy from './reductiofy'
+import _filters from './filters'
+import _postAggregation from './postAggregation'
 
-var _ = require('./lodash')
-
-module.exports = function (service) {
-  var reductiofy = require('./reductiofy')(service)
-  var filters = require('./filters')(service)
-  var postAggregation = require('./postAggregation')(service)
+export default function (service) {
+  var reductiofy = _reductiofy(service)
+  var filters = _filters(service)
+  var postAggregation = _postAggregation(service)
 
   var postAggregationMethods = _.keys(postAggregation)
 
@@ -174,7 +175,7 @@ module.exports = function (service) {
       }
 
       // Assign the regular query properties
-      _.assign(q, {
+      Object.assign(q, {
         // The Universe for continuous promise chaining
         universe: service,
         // Crossfilter instance

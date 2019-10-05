@@ -1,6 +1,4 @@
-'use strict'
-
-var _ = require('./lodash')
+import _ from './lodash'
 
 var aggregators = {
   // Collections
@@ -20,12 +18,13 @@ var aggregators = {
   $map: $map,
 }
 
-module.exports = {
+export default {
   makeValueAccessor: makeValueAccessor,
   aggregators: aggregators,
   extractKeyValOrArray: extractKeyValOrArray,
   parseAggregatorParams: parseAggregatorParams,
 }
+
 // This is used to build aggregation stacks for sub-reductio
 // aggregations, or plucking values for use in filters from the data
 function makeValueAccessor(obj) {

@@ -1,9 +1,8 @@
-'use strict'
+import _ from './lodash'
+import _dimension from './dimension'
 
-var _ = require('./lodash')
-
-module.exports = function (service) {
-  var dimension = require('./dimension')(service)
+export default function (service) {
+  var dimension = _dimension(service)
 
   var columnFunc = column
   columnFunc.find = findColumn

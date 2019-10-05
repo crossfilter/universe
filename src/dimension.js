@@ -1,8 +1,6 @@
-'use strict'
+import _ from './lodash'
 
-var _ = require('./lodash')
-
-module.exports = function (service) {
+export default function (service) {
   return {
     make: make,
     makeAccessor: makeAccessor,
