@@ -779,15 +779,8 @@ cross-spawn@^5.0.1:
     shebang-command "^1.2.0"
     which "^1.2.9"
 
-crossfilter2@1.4.6:
-  version "1.4.6"
-  resolved "https://registry.yarnpkg.com/crossfilter2/-/crossfilter2-1.4.6.tgz#c173f0d75a04344ad226b1f8ae747f0386f98750"
-  dependencies:
-    lodash.result "^4.4.0"
-
-crossfilter2@^1.4.0-alpha.6:
-  version "1.4.0-alpha.6"
-  resolved "https://registry.yarnpkg.com/crossfilter2/-/crossfilter2-1.4.0-alpha.6.tgz#f0197c6fab2d6a583b51254bfc6357093f80521b"
+"crossfilter2@file:../crossfilter":
+  version "1.4.7"
   dependencies:
     lodash.result "^4.4.0"
 
@@ -1969,11 +1962,10 @@ redent@^2.0.0:
     indent-string "^3.0.0"
     strip-indent "^2.0.0"
 
-reductio@^0.6.3:
+"reductio@file:../reductio":
   version "0.6.3"
-  resolved "https://registry.yarnpkg.com/reductio/-/reductio-0.6.3.tgz#292b2f66964a08abe0d061fe04d3eae974e41d83"
   dependencies:
-    crossfilter2 "^1.4.0-alpha.6"
+    crossfilter2 "file:../../../../.cache/yarn/v2/crossfilter"
 
 regenerate-unicode-properties@^8.1.0:
   version "8.1.0"

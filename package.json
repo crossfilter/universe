@@ -13,8 +13,8 @@
     "universe.*"
   ],
   "dependencies": {
-    "crossfilter2": "1.4.6",
-    "reductio": "^0.6.3"
+    "crossfilter2": "git+https://github.com/preignition/crossfilter.git#ES6module",
+    "reductio": "git+https://github.com/preignition/reductio.git#ES6module"
   },
   "devDependencies": {
     "esm": "3.2.25",

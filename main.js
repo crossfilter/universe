@@ -1,1 +1,1 @@
-export { default } from  './src/universe.js';
+export { default } from './src/universe.js';
