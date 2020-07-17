@@ -31,7 +31,7 @@ function find(a, b) {
 }
 
 function remove(a, b) {
-  return a.filter(function (o, i) {
+  return a.filter(function(o, i) {
     var r = b(o)
     if (r) {
       a.splice(i, 1)
@@ -73,10 +73,9 @@ function get(a, b) {
     .replace('[', '.').replace(']', '')
     .split('.')
     .reduce(
-      function (obj, property) {
+      function(obj, property) {
         return obj[property]
-      }, a
-    )
+      }, a)
 }
 
 function set(obj, prop, value) {
@@ -88,9 +87,7 @@ function set(obj, prop, value) {
   if (prop.length > 1) {
     var e = prop.shift()
     Object.assign(obj[e] =
-      Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
-    prop,
-    value)
+      Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {}, prop, value)
   } else {
     obj[prop[0]] = value
   }
@@ -120,7 +117,7 @@ function map(a, b) {
     }
     return m
   }
-  return a.map(function (aa) {
+  return a.map(function(aa) {
     return aa[b]
   })
 }
@@ -131,7 +128,7 @@ function keys(obj) {
 
 function sortBy(a, b) {
   if (isFunction(b)) {
-    return a.sort(function (aa, bb) {
+    return a.sort(function(aa, bb) {
       if (b(aa) > b(bb)) {
         return 1
       }
@@ -164,7 +161,7 @@ function isUndefined(a) {
 
 function pick(a, b) {
   var c = {}
-  forEach(b, function (bb) {
+  forEach(b, function(bb) {
     if (typeof a[bb] !== 'undefined') {
       c[bb] = a[bb]
     }
@@ -174,12 +171,12 @@ function pick(a, b) {
 
 function xor(a, b) {
   var unique = []
-  forEach(a, function (aa) {
+  forEach(a, function(aa) {
     if (b.indexOf(aa) === -1) {
       return unique.push(aa)
     }
   })
-  forEach(b, function (bb) {
+  forEach(b, function(bb) {
     if (a.indexOf(bb) === -1) {
       return unique.push(bb)
     }
@@ -226,7 +223,7 @@ function replaceArray(a, b) {
   } else if (al < bl) {
     a.push.apply(a, new Array(bl - al))
   }
-  forEach(a, function (val, key) {
+  forEach(a, function(val, key) {
     a[key] = b[key]
   })
   return a
@@ -234,7 +231,7 @@ function replaceArray(a, b) {
 
 function uniq(a) {
   var seen = new Set()
-  return a.filter(function (item) {
+  return a.filter(function(item) {
     var allow = false
     if (!seen.has(item)) {
       seen.add(item)
@@ -261,7 +258,7 @@ function sort(arr) {
     var j = i
     while (arr[j - 1] > tmp) {
       arr[j] = arr[j - 1]
-      --j
+        --j
     }
     arr[j] = tmp
   }
@@ -282,6 +279,7 @@ function values(a) {
 function recurseObject(obj, cb) {
   _recurseObject(obj, [])
   return obj
+
   function _recurseObject(obj, path) {
     for (var k in obj) { //  eslint-disable-line guard-for-in
       var newPath = clone(path)

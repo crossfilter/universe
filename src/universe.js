@@ -20,7 +20,7 @@ function universe(data, options) {
   data = cf.generateColumns(data)
 
   return cf.build(data)
-    .then(function (data) {
+    .then(function(data) {
       service.cf = data
       return Object.assign(service, {
         add: cf.add,
@@ -39,14 +39,14 @@ function universe(data, options) {
 
   function onDataChange(cb) {
     service.dataListeners.push(cb)
-    return function () {
+    return function() {
       service.dataListeners.splice(service.dataListeners.indexOf(cb), 1)
     }
   }
 
   function onFilter(cb) {
     service.filterListeners.push(cb)
-    return function () {
+    return function() {
       service.filterListeners.splice(service.filterListeners.indexOf(cb), 1)
     }
   }

@@ -2,7 +2,7 @@ import _ from './lodash'
 import expressions from './expressions'
 import aggregation from './aggregation'
 
-export default function (service) {
+export default function(service) {
   return {
     filter: filter,
     filterAll: filterAll,
@@ -13,8 +13,8 @@ export default function (service) {
 
   function filter(column, fil, isRange, replace) {
     return getColumn(column)
-      .then(function (column) {
-      // Clone a copy of the new filters
+      .then(function(column) {
+        // Clone a copy of the new filters
         var newFilters = Object.assign({}, service.filters)
         // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
         var filterKey = column.key
@@ -34,14 +34,14 @@ export default function (service) {
   function getColumn(column) {
     var exists = service.column.find(column)
     // If the filters dimension doesn't exist yet, try and create it
-    return new Promise(function (resolve, reject) {
+    return new Promise(function(resolve, reject) {
       try {
         if (!exists) {
           return resolve(service.column({
-            key: column,
-            temporary: true,
-          })
-            .then(function () {
+              key: column,
+              temporary: true,
+            })
+            .then(function() {
               // It was able to be created, so retrieve and return it
               return service.column.find(column)
             })
@@ -59,7 +59,7 @@ export default function (service) {
   function filterAll(fils) {
     // If empty, remove all filters
     if (!fils) {
-      service.columns.forEach(function (col) {
+      service.columns.forEach(function(col) {
         col.dimension.filterAll()
       })
       return applyFilters({})
@@ -68,9 +68,9 @@ export default function (service) {
     // Clone a copy for the new filters
     var newFilters = Object.assign({}, service.filters)
 
-    var ds = _.map(fils, function (fil) {
+    var ds = _.map(fils, function(fil) {
       return getColumn(fil.column)
-        .then(function (column) {
+        .then(function(column) {
           // Here we use the registered column key despite the filter key passed, just in case the filter key's ordering is ordered differently :)
           var filterKey = column.complex ? JSON.stringify(column.key) : column.key
           // Build the filter object
@@ -79,7 +79,7 @@ export default function (service) {
     })
 
     return Promise.all(ds)
-      .then(function () {
+      .then(function() {
         return applyFilters(newFilters)
       })
   }
@@ -119,7 +119,7 @@ export default function (service) {
   }
 
   function applyFilters(newFilters) {
-    var ds = _.map(newFilters, function (fil, i) {
+    var ds = _.map(newFilters, function(fil, i) {
       var existing = service.filters[i]
       // Filters are the same, so no change is needed on this column
       if (fil === existing) {
@@ -150,7 +150,7 @@ export default function (service) {
         return Promise.resolve(column.dimension.filterRange(fil.value))
       }
       if (fil.type === 'inclusive') {
-        return Promise.resolve(column.dimension.filterFunction(function (d) {
+        return Promise.resolve(column.dimension.filterFunction(function(d) {
           return fil.value.indexOf(d) > -1
         }))
       }
@@ -162,13 +162,13 @@ export default function (service) {
     })
 
     return Promise.all(ds)
-      .then(function () {
+      .then(function() {
         // Save the new filters satate
         service.filters = newFilters
 
         // Pluck and remove falsey filters from the mix
         var tryRemoval = []
-        _.forEach(service.filters, function (val, key) {
+        _.forEach(service.filters, function(val, key) {
           if (!val) {
             tryRemoval.push({
               key: key,
@@ -179,20 +179,20 @@ export default function (service) {
         })
 
         // If any of those filters are the last dependency for the column, then remove the column
-        return Promise.all(_.map(tryRemoval, function (v) {
+        return Promise.all(_.map(tryRemoval, function(v) {
           var column = service.column.find((v.key.charAt(0) === '[') ? JSON.parse(v.key) : v.key)
           if (column.temporary && !column.dynamicReference) {
             return service.clear(column.key)
           }
         }))
       })
-      .then(function () {
+      .then(function() {
         // Call the filterListeners and wait for their return
-        return Promise.all(_.map(service.filterListeners, function (listener) {
+        return Promise.all(_.map(service.filterListeners, function(listener) {
           return listener()
         }))
       })
-      .then(function () {
+      .then(function() {
         return service
       })
   }
@@ -237,7 +237,7 @@ export default function (service) {
     return columns
 
     function walk(obj) {
-      _.forEach(obj, function (val, key) {
+      _.forEach(obj, function(val, key) {
         // find the data references, if any
         var ref = findDataReferences(val, key)
         if (ref) {
@@ -282,18 +282,18 @@ export default function (service) {
       var dataRef = findDataReferences(null, obj)
       if (dataRef) {
         var data = service.cf.all()
-        return function () {
+        return function() {
           return data
         }
       }
     }
 
     if (_.isString(obj) || _.isNumber(obj) || _.isBoolean(obj)) {
-      return function (d) {
+      return function(d) {
         if (typeof d === 'undefined') {
           return obj
         }
-        return expressions.$eq(d, function () {
+        return expressions.$eq(d, function() {
           return obj
         })
       }
@@ -301,11 +301,11 @@ export default function (service) {
 
     // If an array, recurse into each item and return as a map
     if (_.isArray(obj)) {
-      subGetters = _.map(obj, function (o) {
+      subGetters = _.map(obj, function(o) {
         return makeFunction(o, isAggregation)
       })
-      return function (d) {
-        return subGetters.map(function (s) {
+      return function(d) {
+        return subGetters.map(function(s) {
           return s(d)
         })
       }
@@ -313,7 +313,7 @@ export default function (service) {
 
     // If object, return a recursion function that itself, returns the results of all of the object keys
     if (_.isObject(obj)) {
-      subGetters = _.map(obj, function (val, key) {
+      subGetters = _.map(obj, function(val, key) {
         // Get the child
         var getSub = makeFunction(val, isAggregation)
 
@@ -322,14 +322,14 @@ export default function (service) {
         if (dataRef) {
           var column = service.column.find(dataRef)
           var data = column.values
-          return function () {
+          return function() {
             return data
           }
         }
 
         // If expression, pass the parentValue and the subGetter
         if (expressions[key]) {
-          return function (d) {
+          return function(d) {
             return expressions[key](d, getSub)
           }
         }
@@ -343,13 +343,13 @@ export default function (service) {
           // an aggregatino chain has started and to stop using $AND
           getSub = makeFunction(val, isAggregation)
           // If it's an aggregation object, be sure to pass in the children, and then any additional params passed into the aggregation string
-          return function () {
+          return function() {
             return aggregatorObj.aggregator.apply(null, [getSub()].concat(aggregatorObj.params))
           }
         }
 
         // It must be a string then. Pluck that string key from parent, and pass it as the new value to the subGetter
-        return function (d) {
+        return function(d) {
           d = d[key]
           return getSub(d, getSub)
         }
@@ -359,19 +359,19 @@ export default function (service) {
       // Return AND with a map of the subGetters
       if (isAggregation) {
         if (subGetters.length === 1) {
-          return function (d) {
+          return function(d) {
             return subGetters[0](d)
           }
         }
-        return function (d) {
-          return _.map(subGetters, function (getSub) {
+        return function(d) {
+          return _.map(subGetters, function(getSub) {
             return getSub(d)
           })
         }
       }
-      return function (d) {
-        return expressions.$and(d, function (d) {
-          return _.map(subGetters, function (getSub) {
+      return function(d) {
+        return expressions.$and(d, function(d) {
+          return _.map(subGetters, function(getSub) {
             return getSub(d)
           })
         })

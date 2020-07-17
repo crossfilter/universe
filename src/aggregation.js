@@ -174,8 +174,7 @@ function convertAggregatorString(keyString) {
               hasComma,
               function(/* p2 , pr2 */) {
                 return '","'
-              }
-            ) +
+              }) +
             '"]'
           )
         }

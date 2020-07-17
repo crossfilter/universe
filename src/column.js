@@ -1,7 +1,7 @@
 import _ from './lodash'
 import _dimension from './dimension'
 
-export default function (service) {
+export default function(service) {
   var dimension = _dimension(service)
 
   var columnFunc = column
@@ -22,13 +22,13 @@ export default function (service) {
 
     // Mapp all column creation, wait for all to settle, then return the instance
     return Promise.all(_.map(def, makeColumn))
-      .then(function () {
+      .then(function() {
         return service
       })
   }
 
   function findColumn(d) {
-    return _.find(service.columns, function (c) {
+    return _.find(service.columns, function(c) {
       if (_.isArray(d)) {
         return !_.xor(c.key, d).length
       }
@@ -65,7 +65,7 @@ export default function (service) {
         existing.dynamicReference = false
       }
       return existing.promise
-        .then(function () {
+        .then(function() {
           return service
         })
     }
@@ -74,14 +74,14 @@ export default function (service) {
     column.queries = []
     service.columns.push(column)
 
-    column.promise = new Promise(function (resolve, reject) {
-      try {
-        resolve(service.cf.all())
-      } catch (err) {
-        reject(err)
-      }
-    })
-      .then(function (all) {
+    column.promise = new Promise(function(resolve, reject) {
+        try {
+          resolve(service.cf.all())
+        } catch (err) {
+          reject(err)
+        }
+      })
+      .then(function(all) {
         var sample
 
         // Complex column Keys
@@ -122,7 +122,7 @@ export default function (service) {
 
         return dimension.make(column.key, column.type, column.complex)
       })
-      .then(function (dim) {
+      .then(function(dim) {
         column.dimension = dim
         column.filterCount = 0
         var stopListeningForData = service.onDataChange(buildColumnKeys)
@@ -139,18 +139,18 @@ export default function (service) {
           var accessor = dimension.makeAccessor(column.key, column.complex)
           column.values = column.values || []
 
-          return new Promise(function (resolve, reject) {
-            try {
-              if (changes && changes.added) {
-                resolve(changes.added)
-              } else {
-                resolve(column.dimension.bottom(Infinity))
+          return new Promise(function(resolve, reject) {
+              try {
+                if (changes && changes.added) {
+                  resolve(changes.added)
+                } else {
+                  resolve(column.dimension.bottom(Infinity))
+                }
+              } catch (err) {
+                reject(err)
               }
-            } catch (err) {
-              reject(err)
-            }
-          })
-            .then(function (rows) {
+            })
+            .then(function(rows) {
               var newValues
               if (column.complex === 'string' || column.complex === 'function') {
                 newValues = _.map(rows, accessor)
@@ -166,7 +166,7 @@ export default function (service) {
       })
 
     return column.promise
-      .then(function () {
+      .then(function() {
         return service
       })
   }

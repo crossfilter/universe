@@ -1,12 +1,12 @@
-export default function (service) {
+export default function(service) {
   return function destroy() {
     return service.clear()
-      .then(function () {
+      .then(function() {
         service.cf.dataListeners = []
         service.cf.filterListeners = []
         return Promise.resolve(service.cf.remove())
       })
-      .then(function () {
+      .then(function() {
         return service
       })
   }

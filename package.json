@@ -32,11 +32,12 @@
   },
   "scripts": {
     "lint": "eslint src",
-    "test": "yarn lint && ava --verbose",
+    "_test": "pnpm lint && ava --verbose",
+    "test": "ava --verbose",
     "__build": "npm run browserify && npm run min && echo 'Done building.'",
     "build": "rollup -c rollup.config.js && echo 'Done building.'",
     "watch": "onchange 'src/**' -i -w -- npm run build",
-    "prepublishOnly": "npm run build",
+    "prepublishOnly": "pnpm run build",
     "postpublish": "git push && git push --tags"
   },
   "repository": {

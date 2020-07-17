@@ -1,6 +1,6 @@
 import _ from './lodash'
 
-export default function (service) {
+export default function(service) {
   return {
     make: make,
     makeAccessor: makeAccessor,
@@ -17,26 +17,26 @@ export default function (service) {
     var accessorFunction
 
     if (complex === 'string') {
-      accessorFunction = function (d) {
+      accessorFunction = function(d) {
         return _.get(d, key)
       }
     } else if (complex === 'function') {
       accessorFunction = key
     } else if (complex === 'array') {
-      var arrayString = _.map(key, function (k) {
+      var arrayString = _.map(key, function(k) {
         return 'd[\'' + k + '\']'
       })
-      accessorFunction = new Function('d', String('return ' + JSON.stringify(arrayString).replace(/"/g, '')))  // eslint-disable-line  no-new-func
+      accessorFunction = new Function('d', String('return ' + JSON.stringify(arrayString).replace(/"/g, ''))) // eslint-disable-line  no-new-func
     } else {
       accessorFunction =
         // Index Dimension
         key === true ? function accessor(d, i) {
           return i
         } :
-          // Value Accessor Dimension
-          function (d) {
-            return d[key]
-          }
+        // Value Accessor Dimension
+        function(d) {
+          return d[key]
+        }
     }
     return accessorFunction
   }

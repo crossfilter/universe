@@ -5,7 +5,7 @@ import _filters from './filters'
 
 import aggregation from './aggregation'
 
-export default function (service) {
+export default function(service) {
   var filters = _filters(service)
 
   return function reductiofy(query) {
@@ -27,13 +27,13 @@ export default function (service) {
     function aggregateOrNest(reducer, selects) {
       // Sort so nested values are calculated last by reductio's .value method
       var sortedSelectKeyValue = _.sortBy(
-        _.map(selects, function (val, key) {
+        _.map(selects, function(val, key) {
           return {
             key: key,
             value: val,
           }
         }),
-        function (s) {
+        function(s) {
           if (rAggregators.aggregators[s.key]) {
             return 0
           }
@@ -41,7 +41,7 @@ export default function (service) {
         })
 
       // dive into each key/value
-      return _.forEach(sortedSelectKeyValue, function (s) {
+      return _.forEach(sortedSelectKeyValue, function(s) {
         // Found a Reductio Aggregation
         if (rAggregators.aggregators[s.key]) {
           // Build the valueAccessorFunction
