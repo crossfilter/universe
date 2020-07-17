@@ -62,6 +62,7 @@ export default function(service) {
           key: query.original.groupBy,
           type: _.isUndefined(query.type) ? null : query.type,
           array: Boolean(query.array),
+          missingValue: query.original.missingValue
         })
         .then(function() {
           // Attach the column to the query

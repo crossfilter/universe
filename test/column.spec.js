@@ -2,6 +2,7 @@ import test from 'ava'
 
 import universe from '../src/universe'
 import data from './fixtures/data.json'
+import dataMissing from './fixtures/dataMissing.json'
 
 test('has the columns properties', async t => {
   const u = await universe(data)
@@ -35,6 +36,18 @@ test('can add a column with a specified type', async t => {
 
 test('can add a column with a complex key', async t => {
   const u = await universe(data)
+
+  const res = await u.column({
+    key: ['type', 'total', 'quantity', 'tip']
+  })
+
+  t.deepEqual(res.columns[0].key, ['type', 'total', 'quantity', 'tip'])
+  t.is(res.columns[0].type, 'complex')
+  t.is(typeof res.columns[0].dimension, 'object')
+})
+
+test('can add a column with a complex key and missing value', async t => {
+  const u = await universe(dataMissing)
 
   const res = await u.column({
     key: ['type', 'total', 'quantity', 'tip']

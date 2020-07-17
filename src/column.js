@@ -120,7 +120,7 @@ export default function(service) {
           column.type = getType(sample)
         }
 
-        return dimension.make(column.key, column.type, column.complex)
+        return dimension.make(column.key, column.type, column.complex, column.missingValue)
       })
       .then(function(dim) {
         column.dimension = dim
@@ -136,7 +136,7 @@ export default function(service) {
             return Promise.resolve()
           }
 
-          var accessor = dimension.makeAccessor(column.key, column.complex)
+          var accessor = dimension.makeAccessor(column.key, column.complex, column.missingValue)
           column.values = column.values || []
 
           return new Promise(function(resolve, reject) {

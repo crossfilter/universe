@@ -6,19 +6,20 @@ export default function(service) {
     makeAccessor: makeAccessor,
   }
 
-  function make(key, type, complex) {
-    var accessor = makeAccessor(key, complex)
+  function make(key, type, complex, missingValue = '__missing__') {
+    var accessor = makeAccessor(key, complex, missingValue)
     // Promise.resolve will handle promises or non promises, so
     // this crossfilter async is supported if present
     return Promise.resolve(service.cf.dimension(accessor, type === 'array'))
   }
 
-  function makeAccessor(key, complex) {
+  function makeAccessor(key, complex, missingValue) {
     var accessorFunction
 
     if (complex === 'string') {
       accessorFunction = function(d) {
-        return _.get(d, key)
+        const value = _.get(d, key)
+        return value === undefined || isNaN(value) ? missingValue : value
       }
     } else if (complex === 'function') {
       accessorFunction = key
@@ -32,7 +33,10 @@ export default function(service) {
         // Index Dimension
         key === true ? (d, i) => i :
         // Value Accessor Dimension
-        (d) => d[key]
+        (d) => {
+          const value = d[key]
+          return value === undefined ? missingValue : value
+        }
     }
     return accessorFunction
   }
