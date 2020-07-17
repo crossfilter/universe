@@ -1,3 +1,6 @@
+import deep from '@ranfdev/deepobj'
+const reg = /\[([\w\d]+)\]/g
+
 export default {
   find: find,
   remove: remove,
@@ -65,33 +68,36 @@ function isFunction(a) {
   return typeof a === 'function'
 }
 
-function get(a, b) {
-  if (isArray(b)) {
-    b = b.join('.')
+/**
+ * get value of object at a deep path.
+ *
+ * @param  {Object} obj  the object (e.g. { 'a': [{ 'b': { 'c1': 3, 'c2': 4} }], 'd': {e:1} }; )
+ * @param  {String} path deep path (e.g. `d.e`` or `a[0].b.c1`. Dot notation (a.0.b)is also supported)
+ * @return {Any}      the resolved value
+ */
+function get(obj, path) {
+  if (isArray(path)) {
+    path = path.join('.')
   }
-  return b
-    .replace('[', '.').replace(']', '')
-    .split('.')
-    .reduce(
-      function(obj, property) {
-        return obj[property]
-      }, a)
+  return deep(_get, obj, path.replace(reg, '.$1'))
 }
+const _get = (obj, prop) => obj[prop]
 
-function set(obj, prop, value) {
-  if (typeof prop === 'string') {
-    prop = prop
-      .replace('[', '.').replace(']', '')
-      .split('.')
+/**
+ * set value of object at a deep path.
+ *
+ * @param  {Object} obj  the object (e.g. { 'a': [{ 'b': { 'c1': 3, 'c2': 4} }], 'd': {e:1} }; )
+ * @param  {String} path deep path (e.g. `d.e`` or `a[0].b.c1`. Dot notation (a.0.b)is also supported)
+ * @param {Any} value to set
+ * @return {Any}      the resolved value
+ */
+function set(obj, path, value) {
+  if (isArray(path)) {
+    path = path.join('.')
   }
-  if (prop.length > 1) {
-    var e = prop.shift()
-    Object.assign(obj[e] =
-      Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {}, prop, value)
-  } else {
-    obj[prop[0]] = value
-  }
+  return deep(_set(value), obj, path.replace(reg, '.$1'))
 }
+const _set = n => (obj, prop) => (obj[prop] = n)
 
 function map(a, b) {
   var m

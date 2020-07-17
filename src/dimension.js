@@ -30,13 +30,9 @@ export default function(service) {
     } else {
       accessorFunction =
         // Index Dimension
-        key === true ? function accessor(d, i) {
-          return i
-        } :
+        key === true ? (d, i) => i :
         // Value Accessor Dimension
-        function(d) {
-          return d[key]
-        }
+        (d) => d[key]
     }
     return accessorFunction
   }
