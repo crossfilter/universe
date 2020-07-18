@@ -19,7 +19,7 @@ export default function(service) {
     if (complex === 'string') {
       accessorFunction = function(d) {
         const value = _.get(d, key)
-        return value === undefined || isNaN(value) ? missingValue : value
+        return value === undefined ? missingValue : value
       }
     } else if (complex === 'function') {
       accessorFunction = key
