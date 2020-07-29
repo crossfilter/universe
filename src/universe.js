@@ -25,6 +25,10 @@ function universe(data, options) {
       return Object.assign(service, {
         add: cf.add,
         remove: cf.remove,
+        size: cf.size,
+        all: cf.all,
+        allFiltered: cf.allFiltered,
+        isElementFiltered: cf.isElementFiltered,
         column: column(service),
         query: query(service),
         filter: filters.filter,

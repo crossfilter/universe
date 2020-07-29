@@ -1,9 +1,14 @@
 import _ from './lodash'
 
+
+// TODO(cg): add dimension dispose to get rid of unused dimension 
+// and free up space
+
 export default function(service) {
   return {
     make: make,
     makeAccessor: makeAccessor,
+    dispose: dispose,
   }
 
   function make(key, type, complex, missingValue = '__missing__') {
@@ -39,5 +44,9 @@ export default function(service) {
         }
     }
     return accessorFunction
+  }
+
+  function dispose(key) {
+    console.warn('universe dispose not yet implemented');
   }
 }

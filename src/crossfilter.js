@@ -7,6 +7,18 @@ export default function(service) {
     generateColumns: generateColumns,
     add: add,
     remove: remove,
+    all: () => {
+      return service.cf.all()
+    },
+    allFiltered: () => {
+      return service.cf.allFiltered()
+    },
+    size: () => {
+      return service.cf.size()
+    },
+    isElementFiltered: () => {
+      return service.cf.isElementFiltered(...arguments)
+    },
   }
 
   function build(c) {
