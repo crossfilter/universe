@@ -1,9 +1,9 @@
 import test from 'ava'
 
 import universe from '../src/universe'
-import data from './fixtures/data'
+import data from './fixtures/data.json'
 
-test('can destroy the universe a few times over', async () => {
+test('can destroy the universe a few times over', async (assert) => {
   const u = await universe(data)
 
   await u.query({
@@ -78,4 +78,8 @@ test('can destroy the universe a few times over', async () => {
   })
 
   await u.destroy()
+
+  // Note(cg): tests were failing with ava 4.2: "Test finished without running any assertion"
+  // https://stackoverflow.com/questions/51230995/test-finished-without-running-any-assertion-ava-nodejs.
+  assert.true(u!== undefined);
 })

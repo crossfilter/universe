@@ -1,14 +1,12 @@
-'use strict'
+import reductio from 'reductio'
+import _ from './lodash'
+import rAggregators from './reductioAggregators'
+import _filters from './filters'
 
-var reductio = require('reductio')
+import aggregation from './aggregation'
 
-var _ = require('./lodash')
-var rAggregators = require('./reductioAggregators')
-// var expressions = require('./expressions')  // exporession is defined but never used
-var aggregation = require('./aggregation')
-
-module.exports = function (service) {
-  var filters = require('./filters')(service)
+export default function(service) {
+  var filters = _filters(service)
 
   return function reductiofy(query) {
     var reducer = reductio()
@@ -29,13 +27,13 @@ module.exports = function (service) {
     function aggregateOrNest(reducer, selects) {
       // Sort so nested values are calculated last by reductio's .value method
       var sortedSelectKeyValue = _.sortBy(
-        _.map(selects, function (val, key) {
+        _.map(selects, function(val, key) {
           return {
             key: key,
             value: val,
           }
         }),
-        function (s) {
+        function(s) {
           if (rAggregators.aggregators[s.key]) {
             return 0
           }
@@ -43,7 +41,7 @@ module.exports = function (service) {
         })
 
       // dive into each key/value
-      return _.forEach(sortedSelectKeyValue, function (s) {
+      return _.forEach(sortedSelectKeyValue, function(s) {
         // Found a Reductio Aggregation
         if (rAggregators.aggregators[s.key]) {
           // Build the valueAccessorFunction

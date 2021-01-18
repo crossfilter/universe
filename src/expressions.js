@@ -1,8 +1,4 @@
-'use strict'
-
-// var moment = require('moment')
-
-module.exports = {
+export default {
   // Getters
   $field: $field,
   // Booleans

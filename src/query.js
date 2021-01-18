@@ -1,11 +1,12 @@
-'use strict'
+import _ from './lodash'
+import _reductiofy from './reductiofy'
+import _filters from './filters'
+import _postAggregation from './postAggregation'
 
-var _ = require('./lodash')
-
-module.exports = function (service) {
-  var reductiofy = require('./reductiofy')(service)
-  var filters = require('./filters')(service)
-  var postAggregation = require('./postAggregation')(service)
+export default function(service) {
+  var reductiofy = _reductiofy(service)
+  var filters = _filters(service)
+  var postAggregation = _postAggregation(service)
 
   var postAggregationMethods = _.keys(postAggregation)
 
@@ -16,7 +17,7 @@ module.exports = function (service) {
     for (var i = 0; i < service.columns.length; i++) {
       for (var j = 0; j < service.columns[i].queries.length; j++) {
         if (service.columns[i].queries[j].hash === queryHash) {
-          return new Promise(function (resolve, reject) { // eslint-disable-line no-loop-func
+          return new Promise(function(resolve, reject) { // eslint-disable-line no-loop-func
             try {
               resolve(service.columns[i].queries[j])
             } catch (err) {
@@ -58,16 +59,17 @@ module.exports = function (service) {
     function createColumn(query) {
       // Ensure column is created
       return service.column({
-        key: query.original.groupBy,
-        type: _.isUndefined(query.type) ? null : query.type,
-        array: Boolean(query.array),
-      })
-        .then(function () {
-        // Attach the column to the query
+          key: query.original.groupBy,
+          type: _.isUndefined(query.type) ? null : query.type,
+          array: Boolean(query.array),
+          missingValue: query.original.missingValue
+        })
+        .then(function() {
+          // Attach the column to the query
           var column = service.column.find(query.original.groupBy)
           query.column = column
           column.queries.push(query)
-          column.removeListeners.push(function () {
+          column.removeListeners.push(function() {
             return query.clear()
           })
           return query
@@ -79,7 +81,7 @@ module.exports = function (service) {
       // Using Promise Resolve allows support for crossfilter async
       // TODO check if query already exists, and use the same base query // if possible
       return Promise.resolve(query.column.dimension.group())
-        .then(function (g) {
+        .then(function(g) {
           query.group = g
           return query
         })
@@ -90,13 +92,13 @@ module.exports = function (service) {
       // We need to scan the group for any filters that would require
       // the group to be rebuilt when data is added or removed in any way.
       if (requiredColumns.length) {
-        return Promise.all(_.map(requiredColumns, function (columnKey) {
-          return service.column({
-            key: columnKey,
-            dynamicReference: query.group,
-          })
-        }))
-          .then(function () {
+        return Promise.all(_.map(requiredColumns, function(columnKey) {
+            return service.column({
+              key: columnKey,
+              dynamicReference: query.group,
+            })
+          }))
+          .then(function() {
             return query
           })
       }
@@ -106,14 +108,14 @@ module.exports = function (service) {
     function setupDataListeners(query) {
       // Here, we create a listener to recreate and apply the reducer to
       // the group anytime underlying data changes
-      var stopDataListen = service.onDataChange(function () {
+      var stopDataListen = service.onDataChange(function() {
         return applyQuery(query)
       })
       query.removeListeners.push(stopDataListen)
 
       // This is a similar listener for filtering which will (if needed)
       // run any post aggregations on the data after each filter action
-      var stopFilterListen = service.onFilter(function () {
+      var stopFilterListen = service.onFilter(function() {
         return postAggregate(query)
       })
       query.removeListeners.push(stopFilterListen)
@@ -130,7 +132,7 @@ module.exports = function (service) {
 
     function buildReducer(query) {
       return reductiofy(query.original)
-        .then(function (reducer) {
+        .then(function(reducer) {
           query.reducer = reducer
           return query
         })
@@ -138,14 +140,14 @@ module.exports = function (service) {
 
     function applyReducer(query) {
       return Promise.resolve(query.reducer(query.group))
-        .then(function () {
+        .then(function() {
           return query
         })
     }
 
     function attachData(query) {
       return Promise.resolve(query.group.all())
-        .then(function (data) {
+        .then(function(data) {
           query.data = data
           return query
         })
@@ -157,10 +159,10 @@ module.exports = function (service) {
         // it against getting mutated by the post-aggregations
         query.locked = true
       }
-      return Promise.all(_.map(query.postAggregations, function (post) {
-        return post()
-      }))
-        .then(function () {
+      return Promise.all(_.map(query.postAggregations, function(post) {
+          return post()
+        }))
+        .then(function() {
           return query
         })
     }
@@ -174,7 +176,7 @@ module.exports = function (service) {
       }
 
       // Assign the regular query properties
-      _.assign(q, {
+      Object.assign(q, {
         // The Universe for continuous promise chaining
         universe: service,
         // Crossfilter instance
@@ -203,7 +205,7 @@ module.exports = function (service) {
         clear: clearQuery,
       })
 
-      _.forEach(postAggregationMethods, function (method) {
+      _.forEach(postAggregationMethods, function(method) {
         q[method] = postAggregateMethodWrap(postAggregation[method])
       })
 
@@ -222,36 +224,36 @@ module.exports = function (service) {
       }
 
       function clearQuery() {
-        _.forEach(q.removeListeners, function (l) {
+        _.forEach(q.removeListeners, function(l) {
           l()
         })
-        return new Promise(function (resolve, reject) {
-          try {
-            resolve(q.group.dispose())
-          } catch (err) {
-            reject(err)
-          }
-        })
-          .then(function () {
+        return new Promise(function(resolve, reject) {
+            try {
+              resolve(q.group.dispose())
+            } catch (err) {
+              reject(err)
+            }
+          })
+          .then(function() {
             q.column.queries.splice(q.column.queries.indexOf(q), 1)
             // Automatically recycle the column if there are no queries active on it
             if (!q.column.queries.length) {
               return service.clear(q.column.key)
             }
           })
-          .then(function () {
+          .then(function() {
             return service
           })
       }
 
       function postAggregateMethodWrap(postMethod) {
-        return function () {
+        return function() {
           var args = Array.prototype.slice.call(arguments)
           var sub = {}
           newQueryObj(sub, q)
           args.unshift(sub, q)
 
-          q.postAggregations.push(function () {
+          q.postAggregations.push(function() {
             Promise.resolve(postMethod.apply(null, args))
               .then(postAggregateChildren)
           })
@@ -261,7 +263,7 @@ module.exports = function (service) {
 
           function postAggregateChildren() {
             return postAggregate(sub)
-              .then(function () {
+              .then(function() {
                 return sub
               })
           }

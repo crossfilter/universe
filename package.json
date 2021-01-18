@@ -3,29 +3,43 @@
   "version": "0.8.1",
   "description": "The fastest way to query and explore multivariate datasets",
   "main": "src/universe.js",
+  "module": "main.js",
   "directories": {
     "test": "test"
   },
-  "files": ["src", "universe.*"],
+  "files": [
+    "src",
+    "main.js",
+    "universe.*"
+  ],
   "dependencies": {
-    "crossfilter2": "1.4.1",
-    "reductio": "^0.6.2"
+    "@ranfdev/deepobj": "^1.0.2",
+    "crossfilter2": "^1.5.4",
+    "reductio": "git+https://github.com/preignition/reductio.git#ES6module"
   },
   "devDependencies": {
-    "ava": "^0.15.2",
-    "browserify": "^13.0.0",
-    "browserify-shim": "^3.8.12",
-    "uglify-js": "^2.7.0"
+    "ava": "2",
+    "esm": "3.2.25",
+    "rollup": "1",
+    "rollup-plugin-commonjs": "^10.1.0",
+    "rollup-plugin-json": "4",
+    "rollup-plugin-node-resolve": "5",
+    "rollup-plugin-terser": "5"
+  },
+  "ava": {
+    "require": [
+      "esm"
+    ]
   },
   "scripts": {
     "lint": "eslint src",
-    "test": "yarn lint && ava --verbose",
-    "browserify": "browserify ./src/universe.js -d -s universe -o universe.js",
-    "min": "uglifyjs universe.js -o universe.min.js",
-    "build": "npm run browserify && npm run min && echo 'Done building.'",
+    "_test": "pnpm lint && ava --verbose",
+    "test": "ava --verbose",
+    "__build": "npm run browserify && npm run min && echo 'Done building.'",
+    "build": "rollup -c rollup.config.js && echo 'Done building.'",
     "watch": "onchange 'src/**' -i -w -- npm run build",
-    "prepublish": "npm run build",
-    "postpublish": "git push --tags"
+    "prepublishOnly": "pnpm run build",
+    "postpublish": "git push && git push --tags"
   },
   "repository": {
     "type": "git",
@@ -39,7 +53,9 @@
     "filtering",
     "data"
   ],
-  "author": "Tanner Linsley",
+  "author": {
+    "name": "Tanner Linsley"
+  },
   "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/crossfilter/universe/issues"

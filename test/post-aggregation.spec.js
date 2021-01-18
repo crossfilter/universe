@@ -1,7 +1,7 @@
 import test from 'ava'
 
 import universe from '../src/universe'
-import data from './fixtures/data'
+import data from './fixtures/data.json'
 
 test('can do chained general post aggregations', async t => {
   const u = await universe(data)

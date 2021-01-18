@@ -3,7 +3,7 @@ import test from 'ava'
 import crossfilter from 'crossfilter2'
 
 import universe from '../src/universe'
-import data from './fixtures/data'
+import data from './fixtures/data.json'
 
 test('is a function', async t => {
   t.is(typeof universe, 'function')
@@ -19,12 +19,14 @@ test('requires a crossfilter instance', t => {
     })
 })
 
-test('can accept a crossfilter instance', () => {
-  return universe(crossfilter(data))
+test('can accept a crossfilter instance', (assert) => {
+  universe(crossfilter(data))
+  return assert.true(universe !== undefined)
 })
 
-test('can accept an array of data points', () => {
-  return universe(data)
+test('can accept an array of data points', (assert) => {
+   universe(data)
+   return assert.true(universe !== undefined)
 })
 
 test('can create generated columns using an accessor function', async t => {

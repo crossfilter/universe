@@ -1,9 +1,8 @@
-'use strict'
+import _ from './lodash'
+import _dimension from './dimension'
 
-var _ = require('./lodash')
-
-module.exports = function (service) {
-  var dimension = require('./dimension')(service)
+export default function(service) {
+  var dimension = _dimension(service)
 
   var columnFunc = column
   columnFunc.find = findColumn
@@ -23,13 +22,13 @@ module.exports = function (service) {
 
     // Mapp all column creation, wait for all to settle, then return the instance
     return Promise.all(_.map(def, makeColumn))
-      .then(function () {
+      .then(function() {
         return service
       })
   }
 
   function findColumn(d) {
-    return _.find(service.columns, function (c) {
+    return _.find(service.columns, function(c) {
       if (_.isArray(d)) {
         return !_.xor(c.key, d).length
       }
@@ -66,7 +65,7 @@ module.exports = function (service) {
         existing.dynamicReference = false
       }
       return existing.promise
-        .then(function () {
+        .then(function() {
           return service
         })
     }
@@ -75,14 +74,14 @@ module.exports = function (service) {
     column.queries = []
     service.columns.push(column)
 
-    column.promise = new Promise(function (resolve, reject) {
-      try {
-        resolve(service.cf.all())
-      } catch (err) {
-        reject(err)
-      }
-    })
-      .then(function (all) {
+    column.promise = new Promise(function(resolve, reject) {
+        try {
+          resolve(service.cf.all())
+        } catch (err) {
+          reject(err)
+        }
+      })
+      .then(function(all) {
         var sample
 
         // Complex column Keys
@@ -121,9 +120,9 @@ module.exports = function (service) {
           column.type = getType(sample)
         }
 
-        return dimension.make(column.key, column.type, column.complex)
+        return dimension.make(column.key, column.type, column.complex, column.missingValue)
       })
-      .then(function (dim) {
+      .then(function(dim) {
         column.dimension = dim
         column.filterCount = 0
         var stopListeningForData = service.onDataChange(buildColumnKeys)
@@ -137,21 +136,21 @@ module.exports = function (service) {
             return Promise.resolve()
           }
 
-          var accessor = dimension.makeAccessor(column.key, column.complex)
+          var accessor = dimension.makeAccessor(column.key, column.complex, column.missingValue)
           column.values = column.values || []
 
-          return new Promise(function (resolve, reject) {
-            try {
-              if (changes && changes.added) {
-                resolve(changes.added)
-              } else {
-                resolve(column.dimension.bottom(Infinity))
+          return new Promise(function(resolve, reject) {
+              try {
+                if (changes && changes.added) {
+                  resolve(changes.added)
+                } else {
+                  resolve(column.dimension.bottom(Infinity))
+                }
+              } catch (err) {
+                reject(err)
               }
-            } catch (err) {
-              reject(err)
-            }
-          })
-            .then(function (rows) {
+            })
+            .then(function(rows) {
               var newValues
               if (column.complex === 'string' || column.complex === 'function') {
                 newValues = _.map(rows, accessor)
@@ -167,7 +166,7 @@ module.exports = function (service) {
       })
 
     return column.promise
-      .then(function () {
+      .then(function() {
         return service
       })
   }

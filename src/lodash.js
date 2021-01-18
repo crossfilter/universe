@@ -1,8 +1,7 @@
-/* eslint no-prototype-builtins: 0 */
-'use strict'
+import deep from '@ranfdev/deepobj'
+const reg = /\[([\w\d]+)\]/g
 
-module.exports = {
-  assign: assign,
+export default {
   find: find,
   remove: remove,
   isArray: isArray,
@@ -30,27 +29,12 @@ module.exports = {
   recurseObject: recurseObject,
 }
 
-function assign(out) {
-  out = out || {}
-  for (var i = 1; i < arguments.length; i++) {
-    if (!arguments[i]) {
-      continue
-    }
-    for (var key in arguments[i]) {
-      if (arguments[i].hasOwnProperty(key)) {
-        out[key] = arguments[i][key]
-      }
-    }
-  }
-  return out
-}
-
 function find(a, b) {
   return a.find(b)
 }
 
 function remove(a, b) {
-  return a.filter(function (o, i) {
+  return a.filter(function(o, i) {
     var r = b(o)
     if (r) {
       a.splice(i, 1)
@@ -84,36 +68,36 @@ function isFunction(a) {
   return typeof a === 'function'
 }
 
-function get(a, b) {
-  if (isArray(b)) {
-    b = b.join('.')
+/**
+ * get value of object at a deep path.
+ *
+ * @param  {Object} obj  the object (e.g. { 'a': [{ 'b': { 'c1': 3, 'c2': 4} }], 'd': {e:1} }; )
+ * @param  {String} path deep path (e.g. `d.e`` or `a[0].b.c1`. Dot notation (a.0.b)is also supported)
+ * @return {Any}      the resolved value
+ */
+function get(obj, path) {
+  if (isArray(path)) {
+    path = path.join('.')
   }
-  return b
-    .replace('[', '.').replace(']', '')
-    .split('.')
-    .reduce(
-      function (obj, property) {
-        return obj[property]
-      }, a
-    )
+  return deep(_get, obj, path.replace(reg, '.$1'))
 }
+const _get = (obj, prop) => obj[prop]
 
-function set(obj, prop, value) {
-  if (typeof prop === 'string') {
-    prop = prop
-      .replace('[', '.').replace(']', '')
-      .split('.')
+/**
+ * set value of object at a deep path.
+ *
+ * @param  {Object} obj  the object (e.g. { 'a': [{ 'b': { 'c1': 3, 'c2': 4} }], 'd': {e:1} }; )
+ * @param  {String} path deep path (e.g. `d.e`` or `a[0].b.c1`. Dot notation (a.0.b)is also supported)
+ * @param {Any} value to set
+ * @return {Any}      the resolved value
+ */
+function set(obj, path, value) {
+  if (isArray(path)) {
+    path = path.join('.')
   }
-  if (prop.length > 1) {
-    var e = prop.shift()
-    assign(obj[e] =
-      Object.prototype.toString.call(obj[e]) === '[object Object]' ? obj[e] : {},
-    prop,
-    value)
-  } else {
-    obj[prop[0]] = value
-  }
+  return deep(_set(value), obj, path.replace(reg, '.$1'))
 }
+const _set = n => (obj, prop) => (obj[prop] = n)
 
 function map(a, b) {
   var m
@@ -139,7 +123,7 @@ function map(a, b) {
     }
     return m
   }
-  return a.map(function (aa) {
+  return a.map(function(aa) {
     return aa[b]
   })
 }
@@ -150,7 +134,7 @@ function keys(obj) {
 
 function sortBy(a, b) {
   if (isFunction(b)) {
-    return a.sort(function (aa, bb) {
+    return a.sort(function(aa, bb) {
       if (b(aa) > b(bb)) {
         return 1
       }
@@ -183,7 +167,7 @@ function isUndefined(a) {
 
 function pick(a, b) {
   var c = {}
-  forEach(b, function (bb) {
+  forEach(b, function(bb) {
     if (typeof a[bb] !== 'undefined') {
       c[bb] = a[bb]
     }
@@ -193,12 +177,12 @@ function pick(a, b) {
 
 function xor(a, b) {
   var unique = []
-  forEach(a, function (aa) {
+  forEach(a, function(aa) {
     if (b.indexOf(aa) === -1) {
       return unique.push(aa)
     }
   })
-  forEach(b, function (bb) {
+  forEach(b, function(bb) {
     if (a.indexOf(bb) === -1) {
       return unique.push(bb)
     }
@@ -245,7 +229,7 @@ function replaceArray(a, b) {
   } else if (al < bl) {
     a.push.apply(a, new Array(bl - al))
   }
-  forEach(a, function (val, key) {
+  forEach(a, function(val, key) {
     a[key] = b[key]
   })
   return a
@@ -253,7 +237,7 @@ function replaceArray(a, b) {
 
 function uniq(a) {
   var seen = new Set()
-  return a.filter(function (item) {
+  return a.filter(function(item) {
     var allow = false
     if (!seen.has(item)) {
       seen.add(item)
@@ -280,7 +264,7 @@ function sort(arr) {
     var j = i
     while (arr[j - 1] > tmp) {
       arr[j] = arr[j - 1]
-      --j
+        --j
     }
     arr[j] = tmp
   }
@@ -301,6 +285,7 @@ function values(a) {
 function recurseObject(obj, cb) {
   _recurseObject(obj, [])
   return obj
+
   function _recurseObject(obj, path) {
     for (var k in obj) { //  eslint-disable-line guard-for-in
       var newPath = clone(path)

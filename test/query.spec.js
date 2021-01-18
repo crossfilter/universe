@@ -1,14 +1,15 @@
 import test from 'ava'
 
 import universe from '../src/universe'
-import data from './fixtures/data'
+import data from './fixtures/data.json'
+import dataMissing from './fixtures/dataMissing.json'
 
 test('has the query method', async t => {
   const u = await universe(data)
   t.deepEqual(typeof u.query, 'function')
 })
 
-test('can create ad-hoc dimensions for each column', async () => {
+test('can create ad-hoc dimensions for each column', async (assert) => {
   const u = await universe(data)
 
   await u.query({
@@ -45,6 +46,7 @@ test('can create ad-hoc dimensions for each column', async () => {
     groupBy: ['productIDs', 'date'],
     select: {}
   })
+  assert.true(u !== undefined)
 })
 
 test('Defaults to counting each record', async t => {
@@ -193,6 +195,21 @@ test('supports groupBy', async t => {
   t.deepEqual(q.data, [
     {key: 'cash', value: {count: 2}},
     {key: 'tab', value: {count: 8}},
+    {key: 'visa', value: {count: 2}}
+  ])
+})
+
+test('supports groupBy - event with missing value', async t => {
+  const u = await universe(dataMissing)
+
+  const q = await u.query({
+    groupBy: 'type'
+  })
+
+  t.deepEqual(q.data, [
+    {key: '__missing__', value: {count: 2}},
+    {key: 'cash', value: {count: 2}},
+    {key: 'tab', value: {count: 6}},
     {key: 'visa', value: {count: 2}}
   ])
 })

@@ -1,15 +1,24 @@
-'use strict'
+import crossfilter from 'crossfilter2'
+import _ from './lodash'
 
-var crossfilter = require('crossfilter2')
-
-var _ = require('./lodash')
-
-module.exports = function (service) {
+export default function(service) {
   return {
     build: build,
     generateColumns: generateColumns,
     add: add,
     remove: remove,
+    all: () => {
+      return service.cf.all()
+    },
+    allFiltered: () => {
+      return service.cf.allFiltered()
+    },
+    size: () => {
+      return service.cf.size()
+    },
+    isElementFiltered: () => {
+      return service.cf.isElementFiltered(...arguments)
+    },
   }
 
   function build(c) {
@@ -27,8 +36,8 @@ module.exports = function (service) {
     if (!service.options.generatedColumns) {
       return data
     }
-    return _.map(data, function (d/* , i */) {
-      _.forEach(service.options.generatedColumns, function (val, key) {
+    return _.map(data, function(d /* , i */ ) {
+      _.forEach(service.options.generatedColumns, function(val, key) {
         d[key] = val(d)
       })
       return d
@@ -37,16 +46,16 @@ module.exports = function (service) {
 
   function add(data) {
     data = generateColumns(data)
-    return new Promise(function (resolve, reject) {
-      try {
-        resolve(service.cf.add(data))
-      } catch (err) {
-        reject(err)
-      }
-    })
-      .then(function () {
-        return _.map(service.dataListeners, function (listener) {
-          return function () {
+    return new Promise(function(resolve, reject) {
+        try {
+          resolve(service.cf.add(data))
+        } catch (err) {
+          reject(err)
+        }
+      })
+      .then(function() {
+        return _.map(service.dataListeners, function(listener) {
+          return function() {
             return listener({
               added: data,
             })
@@ -55,20 +64,34 @@ module.exports = function (service) {
           return promise.then(data)
         }, Promise.resolve(true))
       })
-      .then(function () {
+
+      .then(function() {
+        return Promise.all(_.map(service.filterListeners, function(listener) {
+          return listener()
+        }))
+      })
+
+      .then(function() {
         return service
       })
   }
 
-  function remove() {
-    return new Promise(function (resolve, reject) {
-      try {
-        resolve(service.cf.remove())
-      } catch (err) {
-        reject(err)
-      }
-    })
-      .then(function () {
+  function remove(predicate) {
+    return new Promise(function(resolve, reject) {
+        try {
+          resolve(service.cf.remove(predicate))
+        } catch (err) {
+          reject(err)
+        }
+      })
+
+      .then(function() {
+        return Promise.all(_.map(service.filterListeners, function(listener) {
+          return listener()
+        }))
+      })
+
+      .then(function() {
         return service
       })
   }
