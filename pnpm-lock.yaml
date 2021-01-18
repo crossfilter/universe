@@ -1,7 +1,7 @@
 dependencies:
   '@ranfdev/deepobj': 1.0.2
-  crossfilter2: 1.5.2
-  reductio: github.com/preignition/reductio/7c03a5b71e002532bf74cfa8d1d0767263aa963d
+  crossfilter2: 1.5.4
+  reductio: github.com/preignition/reductio/d722d483bebb230beedd9ac6e6b2a56b549bce7e
 devDependencies:
   ava: 2.4.0
   esm: 3.2.25
@@ -10,7 +10,7 @@ devDependencies:
   rollup-plugin-json: 4.0.0
   rollup-plugin-node-resolve: 5.2.0_rollup@1.26.3
   rollup-plugin-terser: 5.1.2_rollup@1.26.3
-lockfileVersion: 5.1
+lockfileVersion: 5.2
 packages:
   /@ava/babel-plugin-throws-helper/4.0.0:
     dev: true
@@ -897,12 +897,12 @@ packages:
     dev: true
     resolution:
       integrity: sha1-6L0O/uWPz/b4+UUQoKVUu/ojVEk=
-  /crossfilter2/1.5.2:
+  /crossfilter2/1.5.4:
     dependencies:
       '@ranfdev/deepobj': 1.0.2
     dev: false
     resolution:
-      integrity: sha512-ImlvPlUOQ2MW+DJmoglK3anU9GwvHk2EWaqUoXczydhIKzg7ot4W+w8kPNlUAW6Onoyg2AE1QhH5fzK2gNSbYg==
+      integrity: sha512-oOGqOM0RocwQFOXJnEaUKqYV6Mc1TNCRv3LrNUa0QlofQTutGAXyQaLW1aGKLls2sfnbwBEtsa6tPD3jY+ycqQ==
   /crypto-random-string/1.0.0:
     dev: true
     engines:
@@ -1216,6 +1216,8 @@ packages:
     engines:
       node: ^8.16.0 || ^10.6.0 || >=11.0.0
     optional: true
+    os:
+      - darwin
     resolution:
       integrity: sha512-4FRPXWETxtigtJW/gxzEDsX1LVbPAM93VleB83kZB+ellqbHMkyt2aJfuzNLRvFPnGi6bcE5SvfxgbXPeKteJw==
   /function-bind/1.1.1:
@@ -3067,27 +3069,18 @@ packages:
     dev: true
     resolution:
       integrity: sha512-VCIyR1wJoEBZUqk5PA+oOBF6ypbwh5aNB3I50guxAL/quggdfs4TtNHQrSazFA3fYZ+tEqfs0zIGlv0c/rgjbQ==
-  github.com/preignition/crossfilter/920f95aa8a709d579770641a2c4aae9ce9d53dde:
+  github.com/preignition/reductio/d722d483bebb230beedd9ac6e6b2a56b549bce7e:
     dependencies:
-      '@ranfdev/deepobj': 1.0.2
-    dev: false
-    name: crossfilter2
-    resolution:
-      tarball: 'https://codeload.github.com/preignition/crossfilter/tar.gz/920f95aa8a709d579770641a2c4aae9ce9d53dde'
-    version: 1.4.7
-  github.com/preignition/reductio/7c03a5b71e002532bf74cfa8d1d0767263aa963d:
-    dependencies:
-      crossfilter2: github.com/preignition/crossfilter/920f95aa8a709d579770641a2c4aae9ce9d53dde
+      crossfilter2: 1.5.4
     dev: false
     name: reductio
     resolution:
-      registry: 'https://registry.npmjs.org/'
-      tarball: 'https://codeload.github.com/preignition/reductio/tar.gz/7c03a5b71e002532bf74cfa8d1d0767263aa963d'
+      tarball: 'https://codeload.github.com/preignition/reductio/tar.gz/d722d483bebb230beedd9ac6e6b2a56b549bce7e'
     version: 0.6.3
 specifiers:
   '@ranfdev/deepobj': ^1.0.2
   ava: '2'
-  crossfilter2: ^1.5.2
+  crossfilter2: ^1.5.4
   esm: 3.2.25
   reductio: 'git+https://github.com/preignition/reductio.git#ES6module'
   rollup: '1'

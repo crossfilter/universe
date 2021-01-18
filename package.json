@@ -14,7 +14,7 @@
   ],
   "dependencies": {
     "@ranfdev/deepobj": "^1.0.2",
-    "crossfilter2": "^1.5.2",
+    "crossfilter2": "^1.5.4",
     "reductio": "git+https://github.com/preignition/reductio.git#ES6module"
   },
   "devDependencies": {
